@@ -1,9 +1,31 @@
 ?   	github.com/wangding75/ai-content-go/apps/api-server/cmd/api	[no test files]
 ?   	github.com/wangding75/ai-content-go/apps/api-server/internal/config	[no test files]
 ?   	github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers	[no test files]
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/app	1.024s [no tests to run]
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http	1.024s [no tests to run]
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/api	1.024s [no tests to run]
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system	1.020s
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/store	1.021s [no tests to run]
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/worker	1.022s [no tests to run]
+--- FAIL: TestCIIncludesFrontendBuildJob (0.00s)
+    ci_test.go:17: expected CI workflow to include apps/web-admin
+--- FAIL: TestWebAdminPackageUsesBuildablePinnedDependencies (0.00s)
+    web_admin_test.go:16: expected lint script not to use removed next lint command
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/app	0.023s
+--- FAIL: TestOpenAPIYAMLRouteReturnsDocument (0.00s)
+    router_test.go:21: expected openapi route to return 200 independent of working directory, got 404
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http	0.021s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/api	(cached)
+--- FAIL: TestConfigCheckIncludesAllRequiredRuntimeKeys (0.00s)
+    config_check_test.go:20: expected APP_NAME, APP_ENV, and DATABASE_URL checks, got 1
+--- FAIL: TestDBCheckWrapsDependencyErrorWithContext (0.00s)
+    db_migration_test.go:28: expected wrapped db check context, got "connection refused"
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system	0.020s
+--- FAIL: TestOperationLogMigrationDeclaresRequiredIndexesAndSecretGuard (0.00s)
+    operation_log_test.go:17: expected migration to include CHECK
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/store	0.018s
+--- FAIL: TestQueueContractRejectsEmptyTaskType (0.00s)
+    queue_test.go:16: expected empty task type to be rejected
+--- FAIL: TestQueueContractReturnsJobIDImmediately (0.00s)
+    queue_test.go:29: expected job_id
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/worker	0.018s
+FAIL
