@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Content Factory - Clickable Prototype</title>
+<style>
+:root{--bg:#f6f7fb;--panel:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;--brand:#2563eb;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--soft:#eef2ff}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;background:var(--bg);color:var(--text)}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.sidebar{background:#111827;color:#cbd5e1;padding:18px 12px;position:sticky;top:0;height:100vh;overflow:auto}
+.logo{font-weight:800;color:#fff;font-size:18px;margin:4px 10px 18px}
+.nav button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#cbd5e1;padding:10px 12px;border-radius:10px;cursor:pointer;margin:2px 0;font-size:14px}
+.nav button:hover,.nav button.active{background:#1f2937;color:#fff}
+.main{padding:22px 28px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+h1{margin:0;font-size:24px} h2{margin:22px 0 12px;font-size:18px} h3{margin:0 0 10px;font-size:15px}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:12px;background:#e0f2fe;color:#0369a1}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.metric{font-size:26px;font-weight:800;margin:8px 0}
+.muted{color:var(--muted);font-size:13px}
+.btn{border:1px solid var(--line);background:white;border-radius:10px;padding:8px 12px;cursor:pointer}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.danger{background:#fee2e2;color:#991b1b}
+.btn.ok{background:#dcfce7;color:#166534}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden}
+th,td{border-bottom:1px solid var(--line);padding:11px 12px;text-align:left;font-size:13px;vertical-align:top}
+th{background:#f9fafb;color:#374151;font-weight:700}
+tr:hover td{background:#fafafa}
+.page{display:none}.page.active{display:block}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}
+.tabs button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.project-shell{display:none}.project-shell.active{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:10}
+.modal.active{display:flex}
+.modal-box{width:min(720px,92vw);background:#fff;border-radius:18px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{font-size:13px;color:#374151} input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-top:5px}
+textarea{min-height:90px;grid-column:span 2}
+.toast{position:fixed;right:24px;bottom:24px;background:#111827;color:#fff;border-radius:12px;padding:12px 14px;display:none;z-index:20}
+.api{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#f3f4f6;border-radius:8px;padding:2px 6px}
+.status{font-weight:700}.status.ok{color:var(--ok)}.status.warn{color:var(--warn)}.status.bad{color:var(--bad)}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:8px;font-size:13px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.grid,.grid3{grid-template-columns:1fr}.form{grid-template-columns:1fr}textarea{grid-column:span 1}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">AI Content Factory</div>
+  <div class="nav" id="nav">
+    <button data-page="dashboard" class="active">首页 / 系统大盘</button>
+    <button data-page="projects">项目管理</button>
+    <button data-page="content-types">项目模板管理</button>
+    <button data-page="workflows">工作流模板</button>
+    <button data-page="agents">Agent 管理</button>
+    <button data-page="prompts">Prompt 模板</button>
+    <button data-page="llm">模型 Provider</button>
+    <button data-page="schedules">生产计划 / 调度</button>
+    <button data-page="runs">运行记录</button>
+    <button data-page="adapters">平台 Adapter</button>
+    <button data-page="automation">外部自动化 / n8n</button>
+    <button data-page="portfolio">Portfolio 管理</button>
+    <button data-page="article">Article Pack</button>
+    <button data-page="social">Social Post Pack</button>
+    <button data-page="settings">系统设置</button>
+  </div>
+</aside>
+<main class="main">
+  <div id="system">
+    <section class="page active" id="page-dashboard">
+      <div class="top"><h1>首页 / 系统大盘</h1><button class="btn primary" onclick="openModal('新建项目','POST /api/v1/projects')">新建项目</button></div>
+      <div class="grid">
+        <div class="card"><div class="muted">运行中项目</div><div class="metric">6</div><span class="badge">GET /api/v1/dashboard/summary</span></div>
+        <div class="card"><div class="muted">待审稿</div><div class="metric">12</div><span class="badge">Iteration 5</span></div>
+        <div class="card"><div class="muted">待发布</div><div class="metric">8</div><span class="badge">Iteration 7</span></div>
+        <div class="card"><div class="muted">今日模型成本</div><div class="metric">¥36.8</div><span class="badge">LLMCallLog</span></div>
+      </div>
+      <h2>进行中的项目</h2>
+      <table><thead><tr><th>项目</th><th>类型</th><th>状态</th><th>今日计划</th><th>待处理</th><th>操作</th></tr></thead><tbody>
+        <tr><td>逆命剑尊</td><td>Novel</td><td><span class="status ok">生成中</span></td><td>生成 5 章 / 已完成 3</td><td>待审稿 2</td><td><button class="btn primary" onclick="enterProject()">进入项目</button></td></tr>
+        <tr><td>AI 产品周报</td><td>Article</td><td><span class="status warn">规划中</span></td><td>生成 1 篇</td><td>选题待确认</td><td><button class="btn" onclick="toast('Article 项目详情将在 Iteration 12 完成')">进入项目</button></td></tr>
+        <tr><td>小红书健身号</td><td>Social Post</td><td><span class="status ok">发布中</span></td><td>发布 3 条</td><td>待发布 1</td><td><button class="btn" onclick="toast('Social Post 项目详情将在 Iteration 13 完成')">进入项目</button></td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="page" id="page-projects">
+      <div class="top"><h1>项目管理</h1><button class="btn primary" onclick="openModal('新建项目','POST /api/v1/projects')">新建项目</button></div>
+      <div class="toolbar"><button class="btn">全部</button><button class="btn">生成中</button><button class="btn">待处理</button><button class="btn">已暂停</button></div>
+      <table><thead><tr><th>项目</th><th>类型</th><th>目标平台</th><th>状态</th><th>生产计划</th><th>接口</th><th>操作</th></tr></thead><tbody>
+      <tr><td>逆命剑尊</td><td>Novel</td><td>番茄小说</td><td>generating</td><td>每天 5 个 ContentItem</td><td><span class="api">GET /api/v1/projects</span></td><td><button class="btn primary" onclick="enterProject()">进入</button><button class="btn" onclick="toast('已暂停：POST /api/v1/projects/:id/pause')">暂停</button></td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="page" id="page-content-types">
+      <div class="top"><h1>项目模板管理</h1><button class="btn primary" onclick="openModal('新增项目模板','POST /api/v1/content-types')">新增模板</button></div>
+      <div class="grid3">
+        <div class="card"><h3>Novel Pack</h3><p class="muted">题材、目标平台、目标章节数、单章字数。</p><button class="btn" onclick="openModal('查看 Schema','GET /api/v1/content-types/:id/project-schema')">查看 Schema</button></div>
+        <div class="card"><h3>Article Pack</h3><p class="muted">选题、资料、SEO、标题优化。</p><button class="btn" onclick="showPage('article')">进入 Article Pack</button></div>
+        <div class="card"><h3>Social Post Pack</h3><p class="muted">标题、正文、标签、封面文案、多版本。</p><button class="btn" onclick="showPage('social')">进入 Social Pack</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-workflows">
+      <div class="top"><h1>工作流模板</h1><button class="btn primary" onclick="openModal('新建工作流模板','POST /api/v1/workflow-templates')">新建工作流</button></div>
+      <table><thead><tr><th>模板</th><th>内容类型</th><th>分类</th><th>版本</th><th>节点</th><th>接口</th><th>操作</th></tr></thead><tbody>
+      <tr><td>Novel 新书规划</td><td>novel</td><td>planning</td><td>v1.0.0</td><td>Topic → Human → World → Character → Outline</td><td><span class="api">POST /workflow-runs</span></td><td><button class="btn" onclick="openModal('编辑步骤','POST /api/v1/workflow-templates/:id/versions')">编辑版本</button><button class="btn ok" onclick="toast('已发布模板版本')">发布</button></td></tr>
+      <tr><td>Novel 章节生成</td><td>novel</td><td>generation</td><td>v1.0.0</td><td>Context → Plot → Writing → Review</td><td><span class="api">GET /workflow-templates</span></td><td><button class="btn primary" onclick="toast('已触发试运行：POST /api/v1/workflow-runs')">试运行</button></td></tr>
+      </tbody></table>
+      <div class="card" style="margin-top:14px"><b>边界说明：</b>核心流程由 Go Workflow Engine 承载；n8n 仅作为 external_automation 节点或外围通知，不保存核心状态。</div>
+    </section>
+
+    <section class="page" id="page-agents">
+      <div class="top"><h1>Agent 管理</h1><button class="btn primary" onclick="openModal('新增 Agent','POST /api/v1/agents')">新增 Agent</button></div>
+      <div class="grid3">
+        <div class="card"><h3>TopicAgent</h3><p>生成候选选题</p><button class="btn" onclick="openModal('查看 AgentTask','GET /api/v1/agent-tasks/:id')">查看任务</button></div>
+        <div class="card"><h3>WritingAgent</h3><p>生成正文</p><button class="btn">配置 Prompt</button></div>
+        <div class="card"><h3>ReviewAgent</h3><p>质量检查</p><button class="btn">查看质检报告</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-prompts">
+      <div class="top"><h1>Prompt 模板</h1><button class="btn primary" onclick="openModal('新建 Prompt','POST /api/v1/prompt-templates')">新建 Prompt</button></div>
+      <table><thead><tr><th>Code</th><th>Agent</th><th>版本</th><th>状态</th><th>操作</th></tr></thead><tbody>
+      <tr><td>novel_topic_v1</td><td>TopicAgent</td><td>1.0.0</td><td>published</td><td><button class="btn">编辑</button></td></tr>
+      <tr><td>novel_writing_v1</td><td>WritingAgent</td><td>1.0.0</td><td>draft</td><td><button class="btn">发布</button></td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="page" id="page-llm">
+      <div class="top"><h1>模型 Provider</h1><button class="btn primary" onclick="openModal('新增 Provider','POST /api/v1/llm-providers')">新增 Provider</button></div>
+      <table><thead><tr><th>Provider</th><th>类型</th><th>默认模型</th><th>状态</th><th>密钥</th></tr></thead><tbody>
+      <tr><td>openai_compatible_main</td><td>openai_compatible</td><td>gpt-5.5</td><td><span class="status ok">enabled</span></td><td>sk-***</td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="page" id="page-schedules">
+      <div class="top"><h1>生产计划 / 调度</h1><button class="btn primary" onclick="openModal('新建生产计划','POST /api/v1/workflow-schedules')">新建计划</button></div>
+      <table><thead><tr><th>项目</th><th>计划</th><th>Cron</th><th>批量</th><th>状态</th><th>下一次</th><th>操作</th></tr></thead><tbody>
+      <tr><td>逆命剑尊</td><td>每日章节生成</td><td>0 9 * * *</td><td>5</td><td><span class="status ok">enabled</span></td><td>明天 09:00</td><td><button class="btn" onclick="toast('试跑成功：POST /api/v1/workflow-schedules/:id/test-run')">试跑</button><button class="btn danger" onclick="toast('已停用计划')">停用</button></td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="page" id="page-runs">
+      <div class="top"><h1>运行记录</h1><button class="btn" onclick="toast('刷新：GET /api/v1/workflow-runs')">刷新</button></div>
+      <table><thead><tr><th>Run ID</th><th>项目</th><th>模板</th><th>状态</th><th>步骤</th><th>成本</th><th>操作</th></tr></thead><tbody>
+      <tr><td>wfr_001</td><td>逆命剑尊</td><td>Novel 章节生成</td><td><span class="status ok">success</span></td><td>4/4</td><td>¥18.6</td><td><button class="btn" onclick="openModal('运行详情','GET /api/v1/workflow-runs/:id')">详情</button></td></tr>
+      <tr><td>wfr_002</td><td>逆命剑尊</td><td>Novel 新书规划</td><td><span class="status warn">waiting_human</span></td><td>2/5</td><td>¥5.2</td><td><button class="btn" onclick="openModal('步骤详情','GET /api/v1/workflow-runs/:id/steps')">步骤</button></td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="page" id="page-adapters">
+      <div class="top"><h1>平台 Adapter</h1><button class="btn primary" onclick="openModal('新增平台配置','POST /api/v1/platform-adapter-configs')">新增配置</button></div>
+      <div class="grid3">
+        <div class="card"><h3>FanqieAdapter</h3><p>手动发布辅助、数据采集。</p><button class="btn">配置</button></div>
+        <div class="card"><h3>WeChatAdapter</h3><p>后续 Article Pack 使用。</p><button class="btn">占位</button></div>
+        <div class="card"><h3>XiaohongshuAdapter</h3><p>后续 Social Post 使用。</p><button class="btn">占位</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-automation">
+      <div class="top"><h1>外部自动化 / n8n</h1><button class="btn primary" onclick="openModal('新增 n8n Provider','POST /api/v1/external-automation/providers')">新增 Provider</button></div>
+      <table><thead><tr><th>触发事件</th><th>用途</th><th>状态</th><th>边界</th><th>操作</th></tr></thead><tbody>
+      <tr><td>workflow_run.failed</td><td>失败告警</td><td>enabled</td><td>只通知，不改变核心状态</td><td><button class="btn">测试 Webhook</button></td></tr>
+      <tr><td>content_review.pending</td><td>待审稿提醒</td><td>enabled</td><td>审批结果回写系统</td><td><button class="btn">停用</button></td></tr>
+      </tbody></table>
+    </section>
+
+    <section class="page" id="page-portfolio">
+      <div class="top"><h1>Portfolio 管理</h1><button class="btn primary" onclick="openModal('新建 Portfolio','POST /api/v1/portfolios')">新建组合</button></div>
+      <div class="grid3">
+        <div class="card"><h3>Novel 增长组合</h3><div class="metric">3 项目</div><button class="btn">查看健康度</button></div>
+        <div class="card"><h3>成本汇总</h3><div class="metric">¥386</div><button class="btn">查看成本</button></div>
+        <div class="card"><h3>高优先级</h3><div class="metric">2</div><button class="btn">调整优先级</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-article">
+      <div class="top"><h1>Article Pack</h1><button class="btn primary" onclick="openModal('注册 Article Pack','POST /api/v1/content-packs/article/register')">注册内容包</button></div>
+      <div class="card"><p>验证新增文章类内容类型不修改 Core 表。支持选题、资料整理、大纲、正文生成、审稿。</p><button class="btn" onclick="toast('触发文章生成：POST /api/v1/projects/:projectId/article/generation-runs')">生成文章</button></div>
+    </section>
+
+    <section class="page" id="page-social">
+      <div class="top"><h1>Social Post Pack</h1><button class="btn primary" onclick="openModal('注册 Social Post Pack','POST /api/v1/content-packs/social-post/register')">注册内容包</button></div>
+      <div class="card"><p>支持标题、正文、标签、封面文案、多版本生成。</p><button class="btn" onclick="toast('生成标签：POST /api/v1/content-items/:id/social-post/tags/generate')">生成标签</button><button class="btn" onclick="toast('生成封面文案')">生成封面文案</button></div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="top"><h1>系统设置</h1></div>
+      <div class="grid3">
+        <div class="card"><h3>Go API Server</h3><div class="kv"><span>Framework</span><b>Chi / Gin</b><span>DB</span><b>PostgreSQL</b><span>Worker</span><b>asynq</b></div></div>
+        <div class="card"><h3>OpenAPI</h3><p class="muted">所有接口进入 OpenAPI 3.0。</p><button class="btn">打开文档</button></div>
+        <div class="card"><h3>健康检查</h3><p><span class="api">GET /api/v1/health</span></p><button class="btn" onclick="toast('status=ok')">检查</button></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="project" class="project-shell">
+    <div class="top"><div><button class="btn" onclick="leaveProject()">← 返回系统</button><h1 style="margin-top:10px">项目工作区：逆命剑尊</h1><span class="badge">Novel｜generating｜每天 5 章</span></div><button class="btn primary" onclick="toast('执行每日生产计划：POST /api/v1/workflow-schedules/:id/test-run')">执行今日生产</button></div>
+    <div class="tabs" id="ptabs">
+      <button class="active" data-tab="overview">项目概览</button><button data-tab="config">项目配置</button><button data-tab="planning">内容规划</button><button data-tab="generation">内容生产</button><button data-tab="review">审稿中心</button><button data-tab="publish">发布队列</button><button data-tab="metrics">指标表现</button><button data-tab="strategy">策略建议</button><button data-tab="memory">记忆上下文</button><button data-tab="pruns">运行记录</button>
+    </div>
+
+    <section class="page active ptab" id="ptab-overview">
+      <div class="grid"><div class="card"><div class="muted">目标章节</div><div class="metric">300</div></div><div class="card"><div class="muted">已生成</div><div class="metric">25</div></div><div class="card"><div class="muted">待审稿</div><div class="metric">3</div></div><div class="card"><div class="muted">待发布</div><div class="metric">5</div></div></div>
+      <h2>最新运行</h2><table><tr><th>运行</th><th>状态</th><th>接口</th><th>操作</th></tr><tr><td>wfr_001</td><td>success</td><td><span class="api">GET /api/v1/workflow-runs/:id</span></td><td><button class="btn">详情</button></td></tr></table>
+    </section>
+    <section class="page ptab" id="ptab-config"><div class="card"><h3>项目配置</h3><p>题材：玄幻；平台：番茄；单章字数：2000；默认模型：gpt-5.5。</p><button class="btn primary" onclick="openModal('编辑项目配置','PATCH /api/v1/projects/:id')">编辑</button></div></section>
+    <section class="page ptab" id="ptab-planning"><div class="toolbar"><button class="btn primary" onclick="toast('启动规划：POST /api/v1/projects/:projectId/novel/planning-runs')">启动规划</button><button class="btn">确认选题</button></div><div class="grid3"><div class="card"><h3>候选选题</h3><p>逆命剑尊 / 废柴逆袭 / 剑道升级。</p><button class="btn ok">确认</button></div><div class="card"><h3>世界观</h3><p>九州大陆，剑道等级体系。</p><button class="btn">编辑</button></div><div class="card"><h3>人物</h3><p>主角、反派、师父、女主。</p><button class="btn">新增人物</button></div></div></section>
+    <section class="page ptab" id="ptab-generation"><div class="toolbar"><button class="btn primary" onclick="toast('生成 5 章：POST /api/v1/projects/:projectId/generation-runs/batch')">批量生成 5 章</button></div><table><tr><th>内容单元</th><th>状态</th><th>字数</th><th>操作</th></tr><tr><td>第 21 章</td><td>待审稿</td><td>2130</td><td><button class="btn">查看</button></td></tr><tr><td>第 22 章</td><td>生成失败</td><td>-</td><td><button class="btn danger" onclick="toast('重试：POST /api/v1/generation-runs/:id/retry')">重试</button></td></tr></table></section>
+    <section class="page ptab" id="ptab-review"><table><tr><th>章节</th><th>质检</th><th>状态</th><th>操作</th></tr><tr><td>第 21 章</td><td>82 分</td><td>pending</td><td><button class="btn ok" onclick="toast('通过：POST /api/v1/content-reviews/:id/approve')">通过</button><button class="btn danger" onclick="toast('打回：POST /api/v1/content-reviews/:id/reject')">打回</button></td></tr></table></section>
+    <section class="page ptab" id="ptab-publish"><table><tr><th>内容</th><th>平台</th><th>状态</th><th>操作</th></tr><tr><td>第 19 章</td><td>番茄</td><td>pending</td><td><button class="btn">复制发布内容</button><button class="btn ok" onclick="toast('已发布：POST /api/v1/publish-jobs/:id/mark-published')">标记已发布</button></td></tr></table></section>
+    <section class="page ptab" id="ptab-metrics"><div class="grid3"><div class="card"><h3>阅读量</h3><div class="metric">12,860</div></div><div class="card"><h3>书架率</h3><div class="metric">8.2%</div></div><div class="card"><h3>完读率</h3><div class="metric">41%</div></div></div><button class="btn primary" onclick="openModal('录入指标','POST /api/v1/metric-records')">录入指标</button></section>
+    <section class="page ptab" id="ptab-strategy"><div class="card"><h3>建议：优化开局节奏</h3><p>第 3-5 章完读率低于阈值，建议强化冲突和钩子。</p><button class="btn ok" onclick="toast('确认建议：POST /api/v1/strategy-suggestions/:id/confirm')">确认</button><button class="btn">忽略</button></div></section>
+    <section class="page ptab" id="ptab-memory"><div class="grid3"><div class="card"><h3>StaticContext</h3><p>世界观、人物、力量体系。</p></div><div class="card"><h3>DynamicState</h3><p>当前剧情、悬念、关系变化。</p></div><div class="card"><h3>RecentContentWindow</h3><p>最近 5 章正文摘要。</p></div></div><button class="btn primary" onclick="toast('装配上下文：POST /api/v1/projects/:projectId/knowledge-memory/assemble-context')">装配上下文</button></section>
+    <section class="page ptab" id="ptab-pruns"><table><tr><th>Run ID</th><th>模板</th><th>状态</th><th>操作</th></tr><tr><td>wfr_001</td><td>章节生成</td><td>success</td><td><button class="btn">详情</button></td></tr></table></section>
+  </div>
+</main>
+</div>
+
+<div class="modal" id="modal"><div class="modal-box"><div class="top"><h2 id="modalTitle">标题</h2><button class="btn" onclick="closeModal()">关闭</button></div><p class="muted" id="modalApi"></p><div class="form"><label>名称<input value="示例名称"/></label><label>类型<select><option>novel</option><option>article</option><option>social_post</option></select></label><label>状态<select><option>draft</option><option>enabled</option><option>published</option></select></label><label>备注<input value="Mock 表单"/></label><textarea>这里展示请求 Body / Schema / 配置内容。</textarea></div><div class="toolbar"><button class="btn primary" onclick="submitModal()">提交</button><button class="btn" onclick="closeModal()">取消</button></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+function showPage(id){
+  document.getElementById('system').style.display='block';
+  document.getElementById('project').classList.remove('active');
+  document.querySelectorAll('.page').forEach(p=>{ if(!p.classList.contains('ptab')) p.classList.remove('active')});
+  const page=document.getElementById('page-'+id); if(page) page.classList.add('active');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function enterProject(){document.getElementById('system').style.display='none';document.getElementById('project').classList.add('active');toast('进入项目工作区：GET /api/v1/projects/:id/overview')}
+function leaveProject(){document.getElementById('system').style.display='block';document.getElementById('project').classList.remove('active');showPage('projects')}
+document.querySelectorAll('#ptabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#ptabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.ptab').forEach(p=>p.classList.remove('active'));document.getElementById('ptab-'+b.dataset.tab).classList.add('active')});
+function openModal(title,api){document.getElementById('modalTitle').textContent=title;document.getElementById('modalApi').innerHTML='<span class="api">'+api+'</span>';document.getElementById('modal').classList.add('active')}
+function closeModal(){document.getElementById('modal').classList.remove('active')}
+function submitModal(){closeModal();toast('已提交 Mock 请求，页面状态已更新')}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
+</script>
+</body>
+</html>
