@@ -12,10 +12,11 @@ branch: feature/0
 tasks:
   - task: "Task-01：初始化 Go API Server 工程与启动入口"
     test_file: server_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-14 17:40"
     test_passed: 1
     test_total: 1
+    completed_at: "2026-05-14 17:45"
   - task: "Task-02：实现统一 API 响应契约骨架"
     test_file: response_test.go
     phase: locked

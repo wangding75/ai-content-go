@@ -51,3 +51,13 @@
 - 修改：.github/workflows/ci.yml
 
 ---
+
+## 任务 1：Task-01：初始化 Go API Server 工程与启动入口（完成时间：2026-05-14 17:45）
+
+- 测试文件：server_test.go
+- 测试结果：1/1 通过
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/app/server.go]（与计划一致）
+- phase：locked → green → done
+- 回归验证：全量测试仍因后续 locked 任务失败，Task-01 断言已通过
+
+---
