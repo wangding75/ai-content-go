@@ -39,7 +39,11 @@ func (s *service) Info(ctx context.Context) (InfoResponse, error) {
 }
 
 func (s *service) ConfigCheck(ctx context.Context) (ConfigCheckResponse, error) {
-	items := []ConfigCheckItem{{Key: "DATABASE_URL", Required: true, Configured: s.cfg.DatabaseURL != "", Status: statusFor(s.cfg.DatabaseURL != "")}}
+	items := []ConfigCheckItem{
+		{Key: "APP_NAME", Required: true, Configured: s.cfg.AppName != "", Status: statusFor(s.cfg.AppName != "")},
+		{Key: "APP_ENV", Required: true, Configured: s.cfg.Environment != "", Status: statusFor(s.cfg.Environment != "")},
+		{Key: "DATABASE_URL", Required: true, Configured: s.cfg.DatabaseURL != "", Status: statusFor(s.cfg.DatabaseURL != "")},
+	}
 	missing := 0
 	for _, item := range items {
 		if item.Required && !item.Configured {

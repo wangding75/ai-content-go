@@ -33,7 +33,10 @@ tasks:
     completed_at: "2026-05-14 17:56"
   - task: "Task-04：实现系统配置检查接口骨架"
     test_file: config_check_test.go
-    phase: locked
+    phase: green
+    started_at: "2026-05-14 17:57"
+    test_passed: 1
+    test_total: 1
   - task: "Task-05：实现数据库与迁移状态检查接口骨架"
     test_file: db_migration_test.go
     phase: locked
