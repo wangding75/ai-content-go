@@ -26,7 +26,10 @@ tasks:
     completed_at: "2026-05-14 17:52"
   - task: "Task-03：实现系统健康与信息接口骨架"
     test_file: health_info_test.go
-    phase: locked
+    phase: green
+    started_at: "2026-05-14 17:54"
+    test_passed: 1
+    test_total: 1
   - task: "Task-04：实现系统配置检查接口骨架"
     test_file: config_check_test.go
     phase: locked
