@@ -91,3 +91,13 @@
 - 回归验证：全量测试仍因后续 locked 任务失败，Task-04 断言已通过
 
 ---
+
+## 任务 5：Task-05：实现数据库与迁移状态检查接口骨架（完成时间：2026-05-14 18:02）
+
+- 测试文件：db_migration_test.go
+- 测试结果：1/1 通过
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/system/service.go]（与计划一致）
+- phase：locked → green → done
+- 回归验证：全量测试仍因后续 locked 任务失败，system 包已通过
+
+---

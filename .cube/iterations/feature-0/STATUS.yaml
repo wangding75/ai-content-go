@@ -40,10 +40,11 @@ tasks:
     completed_at: "2026-05-14 17:59"
   - task: "Task-05：实现数据库与迁移状态检查接口骨架"
     test_file: db_migration_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-14 18:00"
     test_passed: 1
     test_total: 1
+    completed_at: "2026-05-14 18:02"
   - task: "Task-06：建立 operation_log 迁移与操作日志接口骨架"
     test_file: operation_log_test.go
     phase: locked
