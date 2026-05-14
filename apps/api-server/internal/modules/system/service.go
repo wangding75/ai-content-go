@@ -2,6 +2,7 @@ package system
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/config"
@@ -56,7 +57,7 @@ func (s *service) ConfigCheck(ctx context.Context) (ConfigCheckResponse, error) 
 func (s *service) DBCheck(ctx context.Context) (DBCheckResponse, error) {
 	result, err := s.dbChecker.Check(ctx)
 	if err != nil {
-		return DBCheckResponse{}, err
+		return DBCheckResponse{}, fmt.Errorf("db check: %w", err)
 	}
 	return DBCheckResponse{Database: result.Database, Status: result.Status, LatencyMS: result.LatencyMS}, nil
 }
