@@ -47,10 +47,11 @@ tasks:
     completed_at: "2026-05-14 18:02"
   - task: "Task-06：建立 operation_log 迁移与操作日志接口骨架"
     test_file: operation_log_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-14 18:03"
     test_passed: 1
     test_total: 1
+    completed_at: "2026-05-14 18:05"
   - task: "Task-07：建立异步任务队列契约骨架"
     test_file: queue_test.go
     phase: locked

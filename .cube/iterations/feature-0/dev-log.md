@@ -101,3 +101,13 @@
 - 回归验证：全量测试仍因后续 locked 任务失败，system 包已通过
 
 ---
+
+## 任务 6：Task-06：建立 operation_log 迁移与操作日志接口骨架（完成时间：2026-05-14 18:05）
+
+- 测试文件：operation_log_test.go
+- 测试结果：1/1 通过
+- 文件变更：新增 [] / 修改 [apps/api-server/migrations/00001_create_operation_log.sql]（与计划一致）
+- phase：locked → green → done
+- 回归验证：全量测试仍因后续 locked 任务失败，store 包已通过
+
+---
