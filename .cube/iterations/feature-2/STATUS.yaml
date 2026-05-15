@@ -33,10 +33,18 @@ tasks:
     test_total: 8
   - task: "Task-04：WorkflowTemplate + Version HTTP 端点（含路由注册）"
     test_file: workflow_template_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:37"
+    completed_at: "2026-05-15 18:40"
+    test_passed: 5
+    test_total: 5
   - task: "Task-05：WorkflowRun HTTP 端点（触发 + 查询 + 取消 + 重试，含路由注册）"
     test_file: workflow_run_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:40"
+    completed_at: "2026-05-15 18:41"
+    test_passed: 5
+    test_total: 5
   - task: "Task-06：agent 模块（Service 接口 + DTO + in-memory 实现）"
     test_file: agent_service_red_test.go
     phase: locked

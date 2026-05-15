@@ -130,6 +130,9 @@ func (s *workflowService) ListTemplates(_ context.Context, req ListWorkflowTempl
 		}
 		items = append(items, t.WorkflowTemplateResponse)
 	}
+	if items == nil {
+		items = []WorkflowTemplateResponse{}
+	}
 	page, pageSize := normalizePage(req.Page, req.PageSize)
 	total := len(items)
 	start := (page - 1) * pageSize
@@ -312,6 +315,9 @@ func (s *workflowService) ListRuns(_ context.Context, req ListWorkflowRunsReques
 			continue
 		}
 		items = append(items, r.WorkflowRunResponse)
+	}
+	if items == nil {
+		items = []WorkflowRunResponse{}
 	}
 	page, pageSize := normalizePage(req.Page, req.PageSize)
 	total := len(items)
