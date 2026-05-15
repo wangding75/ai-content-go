@@ -1,0 +1,104 @@
+tasks:
+  - task: "Task-01：新增 API 错误码（api/response.go）"
+    module: apps/api-server/internal/http/api
+    test_file: error_codes_red_test.go
+    test_cases: 1
+
+  - task: "Task-02：workflow 模块 — Template/Version/StepTemplate 服务层"
+    module: apps/api-server/internal/modules/workflow
+    test_file: template_service_red_test.go
+    test_cases: 9
+
+  - task: "Task-03：workflow 模块 — Run/StepRun 服务层（状态机 + 幂等）"
+    module: apps/api-server/internal/modules/workflow
+    test_file: run_service_red_test.go
+    test_cases: 8
+
+  - task: "Task-04：WorkflowTemplate + Version HTTP 端点（含路由注册）"
+    module: apps/api-server/internal/http/handlers
+    test_file: workflow_template_handler_red_test.go
+    test_cases: 5
+
+  - task: "Task-05：WorkflowRun HTTP 端点（触发 + 查询 + 取消 + 重试，含路由注册）"
+    module: apps/api-server/internal/http/handlers
+    test_file: workflow_run_handler_red_test.go
+    test_cases: 5
+
+  - task: "Task-06：agent 模块（Service 接口 + DTO + in-memory 实现）"
+    module: apps/api-server/internal/modules/agent
+    test_file: agent_service_red_test.go
+    test_cases: 5
+
+  - task: "Task-07：AgentTask HTTP 端点（含路由注册）"
+    module: apps/api-server/internal/http/handlers
+    test_file: agent_handler_red_test.go
+    test_cases: 3
+
+  - task: "Task-08：LLMCallLog 服务扩展（llm 模块）"
+    module: apps/api-server/internal/modules/llm
+    test_file: llm_calllog_service_red_test.go
+    test_cases: 4
+
+  - task: "Task-09：LLMCallLog HTTP 端点（含路由注册）"
+    module: apps/api-server/internal/http/handlers
+    test_file: llmlog_handler_red_test.go
+    test_cases: 3
+
+  - task: "Task-10：WorkflowSchedule 契约占位（模块 + 端点 + 路由注册）"
+    module: apps/api-server/internal/modules/schedule
+    test_file: schedule_service_red_test.go
+    test_cases: 2
+
+  - task: "Task-11：WorkflowEngine 异步执行链路"
+    module: apps/api-server/internal/engine
+    test_file: engine_red_test.go
+    test_cases: 3
+
+  - task: "Task-12：SQL migration（iteration 2 tables）"
+    module: apps/api-server/internal/store
+    test_file: workflow_tables_migration_red_test.go
+    test_cases: 3
+
+  - task: "Task-13：前端 API 类型扩展（apps/web-admin/lib/api.ts）"
+    module: apps/api-server/internal/http/contract
+    test_file: web_admin_iteration2_api_contract_test.go
+    test_cases: 2
+
+  - task: "Task-14：工作流模板管理页（apps/web-admin/app/workflow/templates/）"
+    module: apps/api-server/internal/http/contract
+    test_file: web_admin_workflow_template_pages_contract_test.go
+    test_cases: 2
+
+  - task: "Task-15：工作流运行记录页（apps/web-admin/app/workflow/runs/）"
+    module: apps/api-server/internal/http/contract
+    test_file: web_admin_workflow_runs_pages_contract_test.go
+    test_cases: 2
+
+  - task: "Task-16：AgentTask 列表与详情页（apps/web-admin/app/agent/tasks/）"
+    module: apps/api-server/internal/http/contract
+    test_file: web_admin_agent_tasks_pages_contract_test.go
+    test_cases: 2
+
+  - task: "Task-17：LLM 调用日志页（apps/web-admin/app/llm/logs/）"
+    module: apps/api-server/internal/http/contract
+    test_file: web_admin_llm_logs_page_contract_test.go
+    test_cases: 1
+
+type_tests:
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: workflow_template_handler_red_test.go
+    resources: []
+    covers:
+      - "Task-04：WorkflowTemplate + Version HTTP 端点（含路由注册）"
+      - "Task-05：WorkflowRun HTTP 端点（触发 + 查询 + 取消 + 重试，含路由注册）"
+      - "Task-07：AgentTask HTTP 端点（含路由注册）"
+      - "Task-09：LLMCallLog HTTP 端点（含路由注册）"
+      - "Task-10：WorkflowSchedule 契约占位（模块 + 端点 + 路由注册）"
+
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: engine_red_test.go
+    resources: []
+    covers:
+      - "Task-11：WorkflowEngine 异步执行链路"

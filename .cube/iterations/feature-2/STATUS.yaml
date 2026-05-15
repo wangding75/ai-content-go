@@ -89,19 +89,35 @@ tasks:
     test_total: 3
   - task: "Task-12：SQL migration（iteration 2 tables）"
     test_file: workflow_tables_migration_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:50"
+    completed_at: "2026-05-15 18:51"
+    test_passed: 3
+    test_total: 3
   - task: "Task-13：前端 API 类型扩展（apps/web-admin/lib/api.ts）"
     test_file: web_admin_iteration2_api_contract_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:51"
+    completed_at: "2026-05-15 18:53"
+    test_passed: 2
+    test_total: 2
   - task: "Task-14：工作流模板管理页（apps/web-admin/app/workflow/templates/）"
     test_file: web_admin_workflow_template_pages_contract_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:53"
+    completed_at: "2026-05-15 18:55"
+    test_passed: 2
+    test_total: 2
   - task: "Task-15：工作流运行记录页（apps/web-admin/app/workflow/runs/）"
     test_file: web_admin_workflow_runs_pages_contract_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:55"
+    completed_at: "2026-05-15 18:57"
+    test_passed: 2
+    test_total: 2
   - task: "Task-16：AgentTask 列表与详情页（apps/web-admin/app/agent/tasks/）"
     test_file: web_admin_agent_tasks_pages_contract_test.go
-    phase: locked
+    phase: green
   - task: "Task-17：LLM 调用日志页（apps/web-admin/app/llm/logs/）"
     test_file: web_admin_llm_logs_page_contract_test.go
     phase: locked
