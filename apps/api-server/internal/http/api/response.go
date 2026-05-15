@@ -20,6 +20,11 @@ const (
 	ErrorQueueEnqueueFailed    ErrorCode = "QUEUE_ENQUEUE_FAILED"
 	ErrorSerializationFailed   ErrorCode = "SERIALIZATION_FAILED"
 	ErrorInternal              ErrorCode = "INTERNAL_ERROR"
+	ErrorIdempotencyConflict   ErrorCode = "IDEMPOTENCY_CONFLICT"
+	ErrorWorkflowRunFailed     ErrorCode = "WORKFLOW_RUN_FAILED"
+	ErrorAgentOutputInvalid    ErrorCode = "AGENT_OUTPUT_INVALID"
+	ErrorLLMProviderError      ErrorCode = "LLM_PROVIDER_ERROR"
+	ErrorExternalAutomation    ErrorCode = "EXTERNAL_AUTOMATION_ERROR"
 )
 
 type Envelope struct {

@@ -1,0 +1,21 @@
+branch: feature/2
+current_stage: 03-test-cases
+created: 2026-05-15
+
+stages:
+  01-prd: DONE
+  02-design: PASS
+  03-test-cases: IN_PROGRESS
+  04-development: PENDING
+  05-testing: PENDING
+
+history:
+  - time: "2026-05-15 09:00:26"
+    action: advance
+    detail: "01-prd → 02-design"
+  - time: "2026-05-15 09:41:53"
+    action: advance
+    detail: "02-design → 03-test-cases"
+  - stage: 01-prd
+    status: DONE
+    completed: 2026-05-15

@@ -10,17 +10,23 @@ import (
 
 var (
 	ErrValidation = errors.New("validation error")
+	ErrNotFound   = errors.New("not found")
 	ErrConflict   = errors.New("conflict")
 )
 
 type Service interface {
 	ListProviders(ctx context.Context, req ListProvidersRequest) (PagedProvidersResponse, error)
 	CreateProvider(ctx context.Context, req CreateProviderRequest) (CreateProviderResponse, error)
+	CreateCallLog(ctx context.Context, req CreateLLMCallLogRequest) (LLMCallLogResponse, error)
+	ListCallLogs(ctx context.Context, req ListLLMCallLogsRequest) (PagedLLMCallLogsResponse, error)
+	GetCallLog(ctx context.Context, id string) (LLMCallLogDetailResponse, error)
 }
 
 type service struct {
 	mu        sync.RWMutex
 	providers []ProviderResponse
+	callLogs  []LLMCallLogDetailResponse
+	callLogNext int
 }
 
 func NewService() Service {
@@ -61,6 +67,18 @@ func (s *service) CreateProvider(ctx context.Context, req CreateProviderRequest)
 	return CreateProviderResponse{ProviderID: id, APIKeyMasked: masked}, nil
 }
 
+func (s *service) CreateCallLog(ctx context.Context, req CreateLLMCallLogRequest) (LLMCallLogResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ListCallLogs(ctx context.Context, req ListLLMCallLogsRequest) (PagedLLMCallLogsResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) GetCallLog(ctx context.Context, id string) (LLMCallLogDetailResponse, error) {
+	panic("not implemented")
+}
+
 func MaskAPIKey(apiKey string) string {
 	if len(apiKey) <= 8 {
 		return "****"
@@ -77,3 +95,4 @@ func normalizePage(page, pageSize int) (int, int) {
 	}
 	return page, pageSize
 }
+

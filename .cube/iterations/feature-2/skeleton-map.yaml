@@ -1,0 +1,127 @@
+files:
+  - path: apps/api-server/internal/http/api/response.go
+    type: constant
+    tasks:
+      - "Task-01：新增 API 错误码（api/response.go）"
+
+  - path: apps/api-server/internal/modules/workflow/dto.go
+    type: dto
+    tasks:
+      - "Task-02：workflow 模块 — Template/Version/StepTemplate 服务层"
+      - "Task-03：workflow 模块 — Run/StepRun 服务层（状态机 + 幂等）"
+
+  - path: apps/api-server/internal/modules/workflow/service.go
+    type: interface
+    tasks:
+      - "Task-02：workflow 模块 — Template/Version/StepTemplate 服务层"
+      - "Task-03：workflow 模块 — Run/StepRun 服务层（状态机 + 幂等）"
+
+  - path: apps/api-server/internal/http/handlers/workflow.go
+    type: class
+    tasks:
+      - "Task-04：WorkflowTemplate + Version HTTP 端点（含路由注册）"
+      - "Task-05：WorkflowRun HTTP 端点（触发 + 查询 + 取消 + 重试，含路由注册）"
+
+  - path: apps/api-server/internal/modules/agent/dto.go
+    type: dto
+    tasks:
+      - "Task-06：agent 模块（Service 接口 + DTO + in-memory 实现）"
+
+  - path: apps/api-server/internal/modules/agent/service.go
+    type: interface
+    tasks:
+      - "Task-06：agent 模块（Service 接口 + DTO + in-memory 实现）"
+
+  - path: apps/api-server/internal/http/handlers/agent.go
+    type: class
+    tasks:
+      - "Task-07：AgentTask HTTP 端点（含路由注册）"
+
+  - path: apps/api-server/internal/modules/llm/dto.go
+    type: dto
+    tasks:
+      - "Task-08：LLMCallLog 服务扩展（llm 模块）"
+
+  - path: apps/api-server/internal/modules/llm/service.go
+    type: interface
+    tasks:
+      - "Task-08：LLMCallLog 服务扩展（llm 模块）"
+
+  - path: apps/api-server/internal/http/handlers/llmlog.go
+    type: class
+    tasks:
+      - "Task-09：LLMCallLog HTTP 端点（含路由注册）"
+
+  - path: apps/api-server/internal/modules/schedule/dto.go
+    type: dto
+    tasks:
+      - "Task-10：WorkflowSchedule 契约占位（模块 + 端点 + 路由注册）"
+
+  - path: apps/api-server/internal/modules/schedule/service.go
+    type: interface
+    tasks:
+      - "Task-10：WorkflowSchedule 契约占位（模块 + 端点 + 路由注册）"
+
+  - path: apps/api-server/internal/http/handlers/schedule.go
+    type: class
+    tasks:
+      - "Task-10：WorkflowSchedule 契约占位（模块 + 端点 + 路由注册）"
+
+  - path: apps/api-server/internal/engine/engine.go
+    type: class
+    tasks:
+      - "Task-11：WorkflowEngine 异步执行链路"
+
+  - path: apps/api-server/internal/http/router.go
+    type: class
+    tasks:
+      - "Task-04：WorkflowTemplate + Version HTTP 端点（含路由注册）"
+      - "Task-05：WorkflowRun HTTP 端点（触发 + 查询 + 取消 + 重试，含路由注册）"
+      - "Task-07：AgentTask HTTP 端点（含路由注册）"
+      - "Task-09：LLMCallLog HTTP 端点（含路由注册）"
+      - "Task-10：WorkflowSchedule 契约占位（模块 + 端点 + 路由注册）"
+
+  - path: apps/api-server/migrations/00003_create_workflow_tables.sql
+    type: none
+    tasks:
+      - "Task-12：SQL migration（iteration 2 tables）"
+
+  - path: apps/web-admin/lib/api.ts
+    type: none
+    tasks:
+      - "Task-13：前端 API 类型扩展（apps/web-admin/lib/api.ts）"
+
+  - path: apps/web-admin/app/workflow/templates/page.tsx
+    type: none
+    tasks:
+      - "Task-14：工作流模板管理页（apps/web-admin/app/workflow/templates/）"
+
+  - path: apps/web-admin/app/workflow/templates/[id]/page.tsx
+    type: none
+    tasks:
+      - "Task-14：工作流模板管理页（apps/web-admin/app/workflow/templates/）"
+
+  - path: apps/web-admin/app/workflow/runs/page.tsx
+    type: none
+    tasks:
+      - "Task-15：工作流运行记录页（apps/web-admin/app/workflow/runs/）"
+
+  - path: apps/web-admin/app/workflow/runs/[id]/page.tsx
+    type: none
+    tasks:
+      - "Task-15：工作流运行记录页（apps/web-admin/app/workflow/runs/）"
+
+  - path: apps/web-admin/app/agent/tasks/page.tsx
+    type: none
+    tasks:
+      - "Task-16：AgentTask 列表与详情页（apps/web-admin/app/agent/tasks/）"
+
+  - path: apps/web-admin/app/agent/tasks/[id]/page.tsx
+    type: none
+    tasks:
+      - "Task-16：AgentTask 列表与详情页（apps/web-admin/app/agent/tasks/）"
+
+  - path: apps/web-admin/app/llm/logs/page.tsx
+    type: none
+    tasks:
+      - "Task-17：LLM 调用日志页（apps/web-admin/app/llm/logs/）"
