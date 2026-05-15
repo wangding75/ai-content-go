@@ -2,6 +2,10 @@ package worker
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -21,12 +25,23 @@ type TaskReceipt struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type memoryQueue struct{}
-
-func NewMemoryQueue() Queue {
-	return memoryQueue{}
+type memoryQueue struct {
+	counter atomic.Uint64
 }
 
-func (memoryQueue) Enqueue(ctx context.Context, req TaskRequest) (TaskReceipt, error) {
-	return TaskReceipt{}, nil
+func NewMemoryQueue() Queue {
+	return &memoryQueue{}
+}
+
+func (q *memoryQueue) Enqueue(ctx context.Context, req TaskRequest) (TaskReceipt, error) {
+	if strings.TrimSpace(req.Type) == "" {
+		return TaskReceipt{}, errors.New("task type is required")
+	}
+	select {
+	case <-ctx.Done():
+		return TaskReceipt{}, ctx.Err()
+	default:
+	}
+	id := q.counter.Add(1)
+	return TaskReceipt{JobID: fmt.Sprintf("job_%d", id), Status: "queued", CreatedAt: time.Now().UTC()}, nil
 }

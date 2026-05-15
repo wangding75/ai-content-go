@@ -1,0 +1,82 @@
+{
+  "archived_at": "2026-05-14T10:14:11.315Z",
+  "reason": "regress-02-design-skeleton-files",
+  "files": [
+    {
+      "path": "go.mod",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/go.mod"
+    },
+    {
+      "path": "apps/api-server/cmd/api/main.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/cmd/api/main.go"
+    },
+    {
+      "path": "apps/api-server/internal/app/server.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/app/server.go"
+    },
+    {
+      "path": "apps/api-server/internal/config/config.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/config/config.go"
+    },
+    {
+      "path": "apps/api-server/internal/http/api/response.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/http/api/response.go"
+    },
+    {
+      "path": "apps/api-server/internal/http/router.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/http/router.go"
+    },
+    {
+      "path": "apps/api-server/internal/http/handlers/system.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/http/handlers/system.go"
+    },
+    {
+      "path": "apps/api-server/internal/modules/system/dto.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/modules/system/dto.go"
+    },
+    {
+      "path": "apps/api-server/internal/modules/system/service.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/modules/system/service.go"
+    },
+    {
+      "path": "apps/api-server/internal/store/store.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/store/store.go"
+    },
+    {
+      "path": "apps/api-server/internal/worker/queue.go",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/internal/worker/queue.go"
+    },
+    {
+      "path": "apps/api-server/migrations/00001_create_operation_log.sql",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/api-server/migrations/00001_create_operation_log.sql"
+    },
+    {
+      "path": "openapi/openapi.yaml",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/openapi/openapi.yaml"
+    },
+    {
+      "path": "apps/web-admin/package.json",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/web-admin/package.json"
+    },
+    {
+      "path": "apps/web-admin/app/page.tsx",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/web-admin/app/page.tsx"
+    },
+    {
+      "path": "apps/web-admin/app/swagger-openapi/page.tsx",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/web-admin/app/swagger-openapi/page.tsx"
+    },
+    {
+      "path": "apps/web-admin/app/system/config-check/page.tsx",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/web-admin/app/system/config-check/page.tsx"
+    },
+    {
+      "path": "apps/web-admin/lib/api.ts",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/apps/web-admin/lib/api.ts"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "archived_as": "stale/2026-05-14T10-14-11-300Z-regress-02-design-skeleton-files/project/.github/workflows/ci.yml"
+    }
+  ]
+}

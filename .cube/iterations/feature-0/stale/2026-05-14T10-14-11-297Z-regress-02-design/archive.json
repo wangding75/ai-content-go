@@ -1,0 +1,14 @@
+{
+  "archived_at": "2026-05-14T10:14:11.298Z",
+  "reason": "regress-02-design",
+  "files": [
+    {
+      "name": "skeleton-map.yaml",
+      "archived_as": "stale/2026-05-14T10-14-11-297Z-regress-02-design/skeleton-map.yaml"
+    },
+    {
+      "name": "test-map.yaml",
+      "archived_as": "stale/2026-05-14T10-14-11-297Z-regress-02-design/test-map.yaml"
+    }
+  ]
+}

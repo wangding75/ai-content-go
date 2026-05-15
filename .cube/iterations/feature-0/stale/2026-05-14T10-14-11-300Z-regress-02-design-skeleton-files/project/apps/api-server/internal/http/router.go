@@ -1,12 +1,8 @@
 package http
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
-	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
@@ -33,7 +29,9 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Get("/system/db-check", systemHandler.DBCheck)
 		r.Get("/system/migration-status", systemHandler.MigrationStatus)
 	})
-	r.Get("/openapi.yaml", serveOpenAPI)
+	r.Get("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "openapi/openapi.yaml")
+	})
 
 	return r
 }
@@ -47,36 +45,3 @@ func bearerAuth(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-func serveOpenAPI(w http.ResponseWriter, r *http.Request) {
-	path, err := openAPIPath()
-	if err != nil {
-		api.WriteError(w, r, http.StatusInternalServerError, api.ErrorInternal, "openapi document unavailable", nil)
-		return
-	}
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			api.WriteError(w, r, http.StatusNotFound, api.ErrorNotFound, "openapi document not found", nil)
-			return
-		}
-		api.WriteError(w, r, http.StatusInternalServerError, api.ErrorInternal, "openapi document unavailable", nil)
-		return
-	}
-	http.ServeFile(w, r, path)
-}
-
-func openAPIPath() (string, error) {
-	if path := os.Getenv("OPENAPI_FILE"); path != "" {
-		if !filepath.IsAbs(path) || filepath.Base(path) != "openapi.yaml" {
-			return "", errOpenAPIPathUnavailable
-		}
-		return path, nil
-	}
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		return "", errOpenAPIPathUnavailable
-	}
-	return filepath.Clean(filepath.Join(filepath.Dir(file), "../../../../openapi/openapi.yaml")), nil
-}
-
-var errOpenAPIPathUnavailable = errors.New("openapi path unavailable")

@@ -1,0 +1,23 @@
+?   	github.com/wangding75/ai-content-go/apps/api-server/cmd/api	[no test files]
+?   	github.com/wangding75/ai-content-go/apps/api-server/internal/config	[no test files]
+?   	github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers	[no test files]
+--- FAIL: TestCIIncludesFrontendBuildJob (0.00s)
+    ci_test.go:17: expected CI workflow to include apps/web-admin
+--- FAIL: TestWebAdminPackageUsesBuildablePinnedDependencies (0.00s)
+    web_admin_test.go:16: expected lint script not to use removed next lint command
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/app	0.024s
+--- FAIL: TestOpenAPIYAMLRouteReturnsDocument (0.00s)
+    router_test.go:21: expected openapi route to return 200 independent of working directory, got 404
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http	0.022s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/api	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/store	1.018s
+--- FAIL: TestQueueContractRejectsEmptyTaskType (0.00s)
+    queue_test.go:16: expected empty task type to be rejected
+--- FAIL: TestQueueContractReturnsJobIDImmediately (0.00s)
+    queue_test.go:29: expected job_id
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/worker	0.021s
+FAIL
