@@ -12,7 +12,9 @@ type ErrorCode string
 const (
 	ErrorValidation            ErrorCode = "VALIDATION_ERROR"
 	ErrorUnauthorized          ErrorCode = "UNAUTHORIZED"
+	ErrorForbidden             ErrorCode = "FORBIDDEN"
 	ErrorNotFound              ErrorCode = "NOT_FOUND"
+	ErrorConflict              ErrorCode = "CONFLICT"
 	ErrorDependencyUnavailable ErrorCode = "DEPENDENCY_UNAVAILABLE"
 	ErrorMigrationReadFailed   ErrorCode = "MIGRATION_READ_FAILED"
 	ErrorQueueEnqueueFailed    ErrorCode = "QUEUE_ENQUEUE_FAILED"
