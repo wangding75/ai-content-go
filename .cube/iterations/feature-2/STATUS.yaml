@@ -19,10 +19,18 @@ tasks:
     test_total: 1
   - task: "Task-02：workflow 模块 — Template/Version/StepTemplate 服务层"
     test_file: template_service_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:31"
+    completed_at: "2026-05-15 18:35"
+    test_passed: 9
+    test_total: 9
   - task: "Task-03：workflow 模块 — Run/StepRun 服务层（状态机 + 幂等）"
     test_file: run_service_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-15 18:35"
+    completed_at: "2026-05-15 18:36"
+    test_passed: 8
+    test_total: 8
   - task: "Task-04：WorkflowTemplate + Version HTTP 端点（含路由注册）"
     test_file: workflow_template_handler_red_test.go
     phase: locked
