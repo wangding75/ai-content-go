@@ -1,0 +1,86 @@
+files:
+  - path: go.mod
+    type: module
+    tasks:
+      - "Task-01：初始化 Go API Server 工程与启动入口"
+  - path: apps/api-server/cmd/api/main.go
+    type: class
+    tasks:
+      - "Task-01：初始化 Go API Server 工程与启动入口"
+  - path: apps/api-server/internal/app/server.go
+    type: class
+    tasks:
+      - "Task-01：初始化 Go API Server 工程与启动入口"
+  - path: apps/api-server/internal/config/config.go
+    type: class
+    tasks:
+      - "Task-01：初始化 Go API Server 工程与启动入口"
+      - "Task-04：实现系统配置检查接口骨架"
+  - path: apps/api-server/internal/http/api/response.go
+    type: dto
+    tasks:
+      - "Task-02：实现统一 API 响应契约骨架"
+  - path: apps/api-server/internal/http/router.go
+    type: class
+    tasks:
+      - "Task-01：初始化 Go API Server 工程与启动入口"
+      - "Task-08：建立 OpenAPI 文档入口骨架"
+  - path: apps/api-server/internal/http/handlers/system.go
+    type: class
+    tasks:
+      - "Task-03：实现系统健康与信息接口骨架"
+      - "Task-04：实现系统配置检查接口骨架"
+      - "Task-05：实现数据库与迁移状态检查接口骨架"
+  - path: apps/api-server/internal/modules/system/dto.go
+    type: dto
+    tasks:
+      - "Task-03：实现系统健康与信息接口骨架"
+      - "Task-04：实现系统配置检查接口骨架"
+      - "Task-05：实现数据库与迁移状态检查接口骨架"
+  - path: apps/api-server/internal/modules/system/service.go
+    type: interface
+    tasks:
+      - "Task-03：实现系统健康与信息接口骨架"
+      - "Task-04：实现系统配置检查接口骨架"
+      - "Task-05：实现数据库与迁移状态检查接口骨架"
+  - path: apps/api-server/internal/store/store.go
+    type: interface
+    tasks:
+      - "Task-05：实现数据库与迁移状态检查接口骨架"
+      - "Task-06：建立 operation_log 迁移与操作日志接口骨架"
+  - path: apps/api-server/internal/worker/queue.go
+    type: interface
+    tasks:
+      - "Task-07：建立异步任务队列契约骨架"
+  - path: apps/api-server/migrations/00001_create_operation_log.sql
+    type: schema
+    tasks:
+      - "Task-06：建立 operation_log 迁移与操作日志接口骨架"
+  - path: openapi/openapi.yaml
+    type: schema
+    tasks:
+      - "Task-08：建立 OpenAPI 文档入口骨架"
+  - path: apps/web-admin/package.json
+    type: config
+    tasks:
+      - "Task-09：建立 Next.js 管理台壳层骨架"
+  - path: apps/web-admin/app/page.tsx
+    type: class
+    tasks:
+      - "Task-09：建立 Next.js 管理台壳层骨架"
+  - path: apps/web-admin/app/swagger-openapi/page.tsx
+    type: class
+    tasks:
+      - "Task-09：建立 Next.js 管理台壳层骨架"
+  - path: apps/web-admin/app/system/config-check/page.tsx
+    type: class
+    tasks:
+      - "Task-09：建立 Next.js 管理台壳层骨架"
+  - path: apps/web-admin/lib/api.ts
+    type: interface
+    tasks:
+      - "Task-09：建立 Next.js 管理台壳层骨架"
+  - path: .github/workflows/ci.yml
+    type: config
+    tasks:
+      - "Task-10：建立 CI 基线"

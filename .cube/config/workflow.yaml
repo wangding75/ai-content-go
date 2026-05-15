@@ -1,0 +1,34 @@
+project:
+  name: ai-content-go
+  language: golang
+  structure: single-module
+  features: []
+
+stages:
+  - id: 01-prd
+    name: PRD
+  - id: 02-design
+    name: Design
+  - id: 03-test-cases
+    name: Test Cases
+  - id: 04-development
+    name: Development
+    on_enter:
+      - create_status_yaml
+      - lock_tests
+  - id: 05-testing
+    name: Testing
+
+paths:
+  source_dir: .
+  test_dir: .
+  test_resource_dir: testdata
+
+language_config:
+  build_tool: go
+  compile_command: go build ./...
+  test_command: go test -race ./...
+  red_test_command: go test -race ./...
+  green_test_command: go test -race ./...
+  test_command_single: go test -race -run {{class}} ./...
+  test_file_pattern: '*_test.go'

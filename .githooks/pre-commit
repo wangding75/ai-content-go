@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# pre-commit hook — cube stage-gate workflow
+#
+# Blocks commits that modify locked test directories (test code and test resources).
+#
+# Install: git config core.hooksPath .githooks
+
+set -e
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+LOCK_DIR="$REPO_ROOT/.git/locks"
+BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)"
+SAFE_BRANCH="${BRANCH//\//-}"
+STATE_FILE="$REPO_ROOT/.cube/iterations/$SAFE_BRANCH/state.yaml"
+WORKFLOW_FILE="$REPO_ROOT/.cube/config/workflow.yaml"
+
+get_locked_dirs_from_state() {
+  [ -f "$STATE_FILE" ] || return 0
+  [ -f "$WORKFLOW_FILE" ] || return 0
+
+  CURRENT_STAGE="$(grep '^current_stage:' "$STATE_FILE" | head -1 | cut -d: -f2- | xargs || true)"
+  case "$CURRENT_STAGE" in
+    04-development|05-testing) ;;
+    *) return 0 ;;
+  esac
+
+  grep -E '^[[:space:]]*(test_dir|test_resource_dir):' "$WORKFLOW_FILE" \
+    | sed -E 's/^[[:space:]]*(test_dir|test_resource_dir):[[:space:]]*//g' \
+    | sed -E 's/[[:space:]]+#.*$//g' \
+    | sed -E 's/^"(.*)"$/\1/g' \
+    | sed -E "s/^'(.*)'$/\\1/g" \
+    | sed '/^[[:space:]]*$/d'
+}
+
+# ---- Check: Locked test files and test resources ----
+STAGED=$(git diff --cached --name-only)
+BLOCKED=""
+LOCKED_DIRS=""
+
+if [ -d "$LOCK_DIR" ]; then
+  for lock_file in "$LOCK_DIR"/*.lock; do
+    [ -f "$lock_file" ] || continue
+    TESTS_DIR=$(grep "^tests_dir=" "$lock_file" | cut -d= -f2-)
+    [ -z "$TESTS_DIR" ] && continue
+    TESTS_DIR="${TESTS_DIR%/}"
+    TESTS_DIR="${TESTS_DIR//\\//}"
+    LOCKED_DIRS="$LOCKED_DIRS
+$TESTS_DIR"
+  done
+fi
+
+STATE_LOCKED_DIRS="$(get_locked_dirs_from_state)"
+if [ -n "$STATE_LOCKED_DIRS" ]; then
+  LOCKED_DIRS="$LOCKED_DIRS
+$STATE_LOCKED_DIRS"
+fi
+
+if [ -n "$LOCKED_DIRS" ]; then
+  for tests_dir in $LOCKED_DIRS; do
+    tests_dir="${tests_dir%/}"
+    tests_dir="${tests_dir//\\//}"
+    [ -z "$tests_dir" ] && continue
+    for staged_file in $STAGED; do
+      case "$staged_file" in
+        "$tests_dir"|"$tests_dir"/*)
+          BLOCKED="$BLOCKED $staged_file"
+          ;;
+      esac
+    done
+  done
+fi
+
+if [ -n "$BLOCKED" ]; then
+    echo "ERROR: Commit blocked — modifications to locked test directories"
+    echo ""
+    echo "Locked test files and test resources cannot be modified directly. Blocked files:"
+    for f in $BLOCKED; do
+      echo "   - $f"
+    done
+    echo ""
+    echo "If you MUST modify tests or test resources:"
+    echo "   1. If the contract changed, use /cube:regress 02-design or /cube:regress 03-test-cases"
+    echo "   2. For narrow local edits only, run: cube-unlock \"your reason here\""
+    echo "   3. Make the changes"
+    echo "   4. Re-lock with: cube-lock"
+    echo "   5. Retry the commit"
+    exit 1
+fi
+
+exit 0
