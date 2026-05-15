@@ -1,7 +1,0 @@
---- FAIL: TestQueueContractRejectsEmptyTaskType (0.00s)
-    queue_test.go:16: expected empty task type to be rejected
---- FAIL: TestQueueContractReturnsJobIDImmediately (0.00s)
-    queue_test.go:29: expected job_id
-FAIL
-FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/worker	0.002s
-FAIL
