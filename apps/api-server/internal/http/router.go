@@ -14,6 +14,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/http/api"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
 )
 
@@ -23,8 +27,13 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(cors)
 
 	systemHandler := handlers.NewSystemHandler(systemService, logger)
+	dashboardHandler := handlers.NewDashboardHandler(dashboard.NewService(), logger)
+	contentHandler := handlers.NewContentHandler(content.NewService(), logger)
+	promptHandler := handlers.NewPromptHandler(prompt.NewService(), logger)
+	llmHandler := handlers.NewLLMHandler(llm.NewService(), logger)
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
 		r.Get("/health", systemHandler.Health)
@@ -32,20 +41,56 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Get("/system/config-check", systemHandler.ConfigCheck)
 		r.Get("/system/db-check", systemHandler.DBCheck)
 		r.Get("/system/migration-status", systemHandler.MigrationStatus)
+		r.Get("/dashboard/summary", dashboardHandler.Summary)
+		r.Get("/content-types", contentHandler.ListContentTypes)
+		r.Post("/content-types", contentHandler.CreateContentType)
+		r.Get("/content-types/{id}/project-schema", contentHandler.ProjectSchema)
+		r.Get("/projects", contentHandler.ListProjects)
+		r.Post("/projects", contentHandler.CreateProject)
+		r.Get("/projects/{id}/overview", contentHandler.ProjectOverview)
+		r.Post("/projects/{id}/pause", contentHandler.PauseProject)
+		r.Get("/prompt-templates", promptHandler.ListTemplates)
+		r.Post("/prompt-templates", promptHandler.CreateTemplate)
+		r.Get("/llm-providers", llmHandler.ListProviders)
+		r.Post("/llm-providers", llmHandler.CreateProvider)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
 	return r
 }
 
-func bearerAuth(next http.Handler) http.Handler {
+func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.Header.Get("Authorization"), "Bearer ") {
-			api.WriteError(w, r, http.StatusUnauthorized, api.ErrorUnauthorized, "missing bearer token", nil)
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-Id")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func bearerAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authorization := r.Header.Get("Authorization")
+		if !strings.HasPrefix(authorization, "Bearer ") {
+			api.WriteError(w, r, http.StatusUnauthorized, api.ErrorUnauthorized, "missing bearer token", nil)
+			return
+		}
+		token := strings.TrimSpace(strings.TrimPrefix(authorization, "Bearer "))
+		if token == "" || !validBearerToken(token) {
+			api.WriteError(w, r, http.StatusUnauthorized, api.ErrorUnauthorized, "invalid bearer token", nil)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func validBearerToken(token string) bool {
+	expected := strings.TrimSpace(os.Getenv("API_BEARER_TOKEN"))
+	return expected == "" || token == expected
 }
 
 func serveOpenAPI(w http.ResponseWriter, r *http.Request) {

@@ -1,6 +1,6 @@
-# Iteration 0：项目脚手架与基础工程
+# Iteration 1：通用内容项目入口
 
-> 文件定位：本文件是 Iteration 0 的最新需求、技术、前端页面、接口契约和原型映射文档。  
+> 文件定位：本文件是 Iteration 1 的最新需求、技术、前端页面、接口契约和原型映射文档。  
 > 蓝图约束：必须遵守 `00-product-blueprint.md`。  
 > 技术栈：后端 Go / Golang；前端 Next.js + TypeScript。  
 > 更新日期：2026-05-14  
@@ -10,7 +10,7 @@
 
 ## 1. 迭代目标
 
-建立 Go 后端工程底座、Next.js 管理台壳层、文档与 CI 基线。
+建立项目管理、内容类型、Prompt、LLM Provider 管理能力，并提供系统首页与项目管理页面。
 
 ---
 
@@ -40,12 +40,11 @@
 
 ## 4. Go 后端技术需求
 
-- apps/api-server Go 工程初始化
-- Chi/Gin HTTP Server
-- PostgreSQL 连接检查
-- goose 迁移工具
-- slog 结构化日志
-- OpenAPI 输出占位
+- content_project
+- content_type
+- content_item
+- prompt_template
+- llm_provider_config
 
 通用要求：
 
@@ -63,9 +62,12 @@
 
 | 页面 / 组件 | 路由建议 | 交互 |
 |---|---|---|
-| 系统默认页 / 健康检查页 | `/` | 查看、筛选、编辑、触发动作、查看详情 |
-| Swagger / OpenAPI 入口页 | `/swagger-openapi` | 查看、筛选、编辑、触发动作、查看详情 |
-| 系统配置检查页 | `/` | 查看、筛选、编辑、触发动作、查看详情 |
+| 首页 / 系统大盘 | `/` | 查看、筛选、编辑、触发动作、查看详情 |
+| 项目管理 | `/` | 查看、筛选、编辑、触发动作、查看详情 |
+| 项目详情壳层 | `/` | 查看、筛选、编辑、触发动作、查看详情 |
+| 项目模板管理 | `/` | 查看、筛选、编辑、触发动作、查看详情 |
+| Prompt 模板管理 | `/prompt` | 查看、筛选、编辑、触发动作、查看详情 |
+| 模型 Provider 管理 | `/provider` | 查看、筛选、编辑、触发动作、查看详情 |
 
 ---
 
@@ -73,11 +75,18 @@
 
 | 方法 | 接口 | 输入 | 输出 | 原型页面映射 |
 |---|---|---|---|---|
-| GET | `/api/v1/health` | 无 | status、service、version、timestamp | 默认页显示服务状态 |
-| GET | `/api/v1/system/info` | 无 | app_name、environment、build_commit | 系统信息卡片 |
-| GET | `/api/v1/system/config-check` | 无 | 配置项存在性检查 | 配置检查页 |
-| GET | `/api/v1/system/db-check` | 无 | database、latency_ms | 健康检查页 |
-| GET | `/api/v1/system/migration-status` | 无 | applied_migrations、pending_migrations | 运维检查 |
+| GET | `/api/v1/dashboard/summary` | 无 | 项目数、待审稿、待发布、失败任务、今日成本 | 首页卡片 |
+| GET | `/api/v1/content-types` | page、enabled | 内容类型列表 | 项目模板管理 |
+| POST | `/api/v1/content-types` | code、name、project_schema | content_type_id | 新增项目模板 |
+| GET | `/api/v1/content-types/:id/project-schema` | id | project_schema | 新建项目动态表单 |
+| GET | `/api/v1/projects` | page、status、content_type | 项目列表 | 项目管理 |
+| POST | `/api/v1/projects` | name、content_type_id、project_config | project_id、status | 新建项目 |
+| GET | `/api/v1/projects/:id/overview` | id | 项目进度、待处理、成本 | 项目工作区概览 |
+| POST | `/api/v1/projects/:id/pause` | reason、note | 状态变更、operation_log_id | 项目暂停 |
+| GET | `/api/v1/prompt-templates` | page、agent_code | Prompt 列表 | Prompt 模板管理 |
+| POST | `/api/v1/prompt-templates` | code、template、variables | prompt_template_id | 新增 Prompt |
+| GET | `/api/v1/llm-providers` | page | Provider 列表 | 模型管理 |
+| POST | `/api/v1/llm-providers` | provider_type、base_url、api_key | provider_id、api_key_masked | 新增 Provider |
 
 ---
 
@@ -105,9 +114,12 @@ prototype/ai-content-factory-clickable-prototype.html
 
 对应页面：
 
-- 系统默认页 / 健康检查页
-- Swagger / OpenAPI 入口页
-- 系统配置检查页
+- 首页 / 系统大盘
+- 项目管理
+- 项目详情壳层
+- 项目模板管理
+- Prompt 模板管理
+- 模型 Provider 管理
 
 ---
 
