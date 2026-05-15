@@ -19,11 +19,28 @@ func NewLLMLogHandler(service llm.Service, logger *slog.Logger) *LLMLogHandler {
 }
 
 func (h *LLMLogHandler) ListCallLogs(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	resp, err := h.service.ListCallLogs(r.Context(), llm.ListLLMCallLogsRequest{
+		WorkflowRunID: r.URL.Query().Get("workflow_run_id"),
+		AgentTaskID:   r.URL.Query().Get("agent_task_id"),
+		Provider:      r.URL.Query().Get("provider"),
+		Model:         r.URL.Query().Get("model"),
+		Status:        r.URL.Query().Get("status"),
+	})
+	if err != nil {
+		writeLLMLogError(w, r, err, "list call logs failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, resp)
 }
 
 func (h *LLMLogHandler) GetCallLog(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	id := pathID(r)
+	resp, err := h.service.GetCallLog(r.Context(), id)
+	if err != nil {
+		writeLLMLogError(w, r, err, "call log not found")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, resp)
 }
 
 func writeLLMLogError(w http.ResponseWriter, r *http.Request, err error, message string) {
