@@ -1,5 +1,19 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:18080';
-const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN ?? 'dev';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const USE_LOCAL_DEV_TOKEN = (() => {
+  if (!IS_DEVELOPMENT) {
+    return false;
+  }
+  if (API_BASE_URL === '') {
+    return true;
+  }
+  try {
+    const url = new URL(API_BASE_URL);
+    return url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
+  } catch {
+    return false;
+  }
+})();
 
 export type APIEnvelope<T> = {
   success: boolean;
@@ -7,6 +21,37 @@ export type APIEnvelope<T> = {
   error: { code: string; message: string; details: Array<{ field?: string; reason: string }> } | null;
   request_id: string;
 };
+
+export type PageError = { code?: string; message: string; request_id?: string };
+
+export function pageErrorFromEnvelope<T>(envelope: APIEnvelope<T>, fallbackMessage: string): PageError {
+  return {
+    code: envelope.error?.code,
+    message: envelope.error?.message ?? fallbackMessage,
+    request_id: envelope.request_id,
+  };
+}
+
+const sensitiveKeyPattern = /(api[_-]?key|authorization|bearer|cookie|credential|password|secret|token)/i;
+const sensitiveValuePattern = /(Bearer\s+)[^\s,;]+|((?:api[_-]?key|authorization|cookie|credential|password|secret|token)=)[^\s,;&]+|\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b|\b(?:sk|pk|api)[_-][A-Za-z0-9]{16,}\b/gi;
+
+export function redactSensitive(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return value.replace(sensitiveValuePattern, (_match, bearerPrefix: string | undefined, keyPrefix: string | undefined) => `${bearerPrefix ?? keyPrefix}[REDACTED]`);
+  }
+  if (Array.isArray(value)) {
+    return value.map(item => redactSensitive(item));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, item]) => [
+        key,
+        sensitiveKeyPattern.test(key) ? '[REDACTED]' : redactSensitive(item),
+      ]),
+    );
+  }
+  return value;
+}
 
 export type Pagination = { page: number; page_size: number; total: number; has_next: boolean };
 export type PagedResponse<T> = { items: T[]; pagination: Pagination };
@@ -81,7 +126,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<APIEnve
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
-      Authorization: `Bearer ${API_TOKEN}`,
+      ...(USE_LOCAL_DEV_TOKEN ? { Authorization: 'Bearer dev' } : {}),
       ...(init.body ? { 'Content-Type': 'application/json' } : {}),
       ...init.headers,
     },

@@ -191,6 +191,9 @@ func (s *workflowService) ListVersions(_ context.Context, templateID string, req
 			items = append(items, v.WorkflowTemplateVersionResponse)
 		}
 	}
+	if items == nil {
+		items = []WorkflowTemplateVersionResponse{}
+	}
 	page, pageSize := normalizePage(req.Page, req.PageSize)
 	total := len(items)
 	return PagedVersionsResponse{

@@ -1,0 +1,23 @@
+?   	github.com/wangding75/ai-content-go/apps/api-server/cmd/api	[no test files]
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/app	(cached)
+?   	github.com/wangding75/ai-content-go/apps/api-server/internal/config	[no test files]
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/cube	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/engine	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/api	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	(cached)
+--- FAIL: TestCancelWorkflowRunEndpointReturns200WithCancelledStatus (0.00s)
+    workflow_run_handler_red_test.go:118: expected 200, got 409: {"success":false,"data":null,"error":{"code":"CONFLICT","message":"cancel run failed","details":null},"request_id":"LAPTOP-MUCR3O1G/WJSW1xrn79-000021"}
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers	0.048s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/agent	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/store	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/worker	(cached)
+FAIL

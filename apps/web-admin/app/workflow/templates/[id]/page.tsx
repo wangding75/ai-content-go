@@ -7,17 +7,24 @@ import {
   fetchWorkflowVersions,
   createWorkflowVersion,
   publishWorkflowVersion,
+  pageErrorFromEnvelope,
+  PageError,
+  WorkflowTemplateResponse,
   WorkflowTemplateVersionResponse,
 } from '@/lib/api'
 
 export default function WorkflowTemplateDetailPage() {
   const params = useParams()
   const id = params?.id as string
-  const [template, setTemplate] = useState<any>(null)
+  const [template, setTemplate] = useState<WorkflowTemplateResponse | null>(null)
   const [versions, setVersions] = useState<WorkflowTemplateVersionResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [publishingID, setPublishingID] = useState('')
+  const [success, setSuccess] = useState('')
   const [newDefinition, setNewDefinition] = useState('')
+  const [error, setError] = useState<PageError | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -26,8 +33,25 @@ export default function WorkflowTemplateDetailPage() {
         fetchWorkflowTemplate(id),
         fetchWorkflowVersions(id),
       ])
-      setTemplate(tmpl)
-      setVersions(vResp.items ?? [])
+      if (!tmpl.success || !tmpl.data) {
+        setError(pageErrorFromEnvelope(tmpl, 'Failed to load workflow template'))
+        setTemplate(null)
+        setVersions([])
+        return
+      }
+      if (!vResp.success || !vResp.data) {
+        setError(pageErrorFromEnvelope(vResp, 'Failed to load workflow template versions'))
+        setTemplate(null)
+        setVersions([])
+        return
+      }
+      setError(null)
+      setTemplate(tmpl.data)
+      setVersions(vResp.data.items)
+    } catch {
+      setError({ message: 'Failed to load workflow template' })
+      setTemplate(null)
+      setVersions([])
     } finally {
       setLoading(false)
     }
@@ -37,21 +61,71 @@ export default function WorkflowTemplateDetailPage() {
 
   const handleCreateVersion = async (e: React.FormEvent) => {
     e.preventDefault()
-    const idempotencyKey = `create-version-${id}-${Date.now()}`
-    await createWorkflowVersion(id, { definition: JSON.parse(newDefinition || '{}') }, { 'Idempotency-Key': idempotencyKey })
+    let definition: { steps?: Array<{ step_code: string; step_type: string; agent_code?: string; order_index: number }> }
+    try {
+      definition = JSON.parse(newDefinition || '{"steps": []}') as { steps?: Array<{ step_code: string; step_type: string; agent_code?: string; order_index: number }> }
+    } catch {
+      setError({ message: 'Version definition must be valid JSON' })
+      return
+    }
+    setSubmitting(true)
+    setSuccess('')
+    try {
+      const res = await createWorkflowVersion(id, { steps: definition.steps ?? [] })
+      if (!res.success) {
+        setError(pageErrorFromEnvelope(res, 'Failed to create workflow version'))
+        return
+      }
+      setError(null)
+      setSuccess(`Created workflow version ${res.data?.template_version_id ?? ''}`.trim())
+    } catch {
+      setError({ message: 'Failed to create workflow version' })
+      return
+    } finally {
+      setSubmitting(false)
+    }
     setCreating(false)
     setNewDefinition('')
     load()
   }
 
   const handlePublish = async (versionId: string) => {
-    const idempotencyKey = `publish-${versionId}-${Date.now()}`
-    await publishWorkflowVersion(id, versionId, { 'Idempotency-Key': idempotencyKey })
+    const headers = { 'Idempotency-Key': `publish-${versionId}-${Date.now()}` }
+    setPublishingID(versionId)
+    setSuccess('')
+    try {
+      const res = await publishWorkflowVersion(versionId, {}, headers['Idempotency-Key'])
+      if (!res.success) {
+        setError(pageErrorFromEnvelope(res, 'Failed to publish workflow version'))
+        return
+      }
+      setError(null)
+      setSuccess(`Published workflow version ${versionId}`)
+    } catch {
+      setError({ message: 'Failed to publish workflow version' })
+      return
+    } finally {
+      setPublishingID('')
+    }
     load()
   }
 
   if (loading) return <p className="p-6">Loading...</p>
-  if (!template) return <p className="p-6">Template not found</p>
+  if (!template) {
+    return (
+      <div className="p-6">
+        {error ? (
+          <div className="mb-4 text-red-600">
+            <p>{error.message}</p>
+            {error.code && <p>code: {error.code}</p>}
+            {error.request_id && <p>request_id: {error.request_id}</p>}
+          </div>
+        ) : (
+          <p>Template not found</p>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="p-6">
@@ -60,9 +134,18 @@ export default function WorkflowTemplateDetailPage() {
         {template.content_type} / {template.category} — {template.status}
       </p>
 
+      {success && <p className="mb-4 text-green-600">{success}</p>}
+      {error && (
+        <div className="mb-4 text-red-600">
+          <p>{error.message}</p>
+          {error.code && <p>code: {error.code}</p>}
+          {error.request_id && <p>request_id: {error.request_id}</p>}
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Versions</h2>
-        <button onClick={() => setCreating(true)} className="btn-primary">New Version</button>
+        <button onClick={() => setCreating(true)} disabled={submitting || Boolean(publishingID)} className="btn-primary">New Version</button>
       </div>
 
       {creating && (
@@ -73,8 +156,10 @@ export default function WorkflowTemplateDetailPage() {
             onChange={e => setNewDefinition(e.target.value)}
             className="border px-2 py-1 rounded w-full mb-2 h-24"
           />
-          <button type="submit" className="btn-primary mr-2">Create Version</button>
-          <button type="button" onClick={() => setCreating(false)}>Cancel</button>
+          <button type="submit" disabled={submitting} className="btn-primary mr-2">
+            {submitting ? 'Creating...' : 'Create Version'}
+          </button>
+          <button type="button" disabled={submitting} onClick={() => setCreating(false)}>Cancel</button>
         </form>
       )}
 
@@ -97,9 +182,10 @@ export default function WorkflowTemplateDetailPage() {
                 {v.status === 'draft' && (
                   <button
                     onClick={() => handlePublish(v.id)}
-                    className="text-blue-600 hover:underline"
+                    disabled={Boolean(publishingID)}
+                    className="text-blue-600 hover:underline disabled:text-gray-400"
                   >
-                    publishWorkflowVersion
+                    {publishingID === v.id ? 'Publishing...' : 'publishWorkflowVersion'}
                   </button>
                 )}
               </td>
