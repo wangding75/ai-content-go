@@ -564,3 +564,72 @@ export async function fetchArcs(projectID: string, params?: { page?: number; pag
   const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
   return request<PagedResponse<ArcResponse>>(`/api/v1/projects/${projectID}/novel/arcs?${q}`);
 }
+
+export type GenerationRunResponse = {
+  id: string;
+  project_id: string;
+  workflow_run_id: string;
+  template_version_id: string;
+  status: string;
+  trigger_type: string;
+  retry_of_generation_run_id?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ContentItemResponse = {
+  id: string;
+  project_id: string;
+  generation_run_id: string;
+  content_type_code: string;
+  status: string;
+  sequence_no: number;
+  title: string;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type GenerationRunDetailResponse = GenerationRunResponse & {
+  step_runs: Array<{ id: string; status: string; error?: string }>;
+  agent_tasks: Array<{ id: string; agent_code: string; status: string; error?: string }>;
+  llm_call_logs: Array<{ id: string; model: string; status: string; cost: number }>;
+  content_items: ContentItemResponse[];
+  error?: string;
+};
+
+export type ContentItemDetailResponse = ContentItemResponse & {
+  body: string;
+  metadata: Record<string, unknown>;
+  extension: Record<string, unknown>;
+};
+
+export async function createGenerationRun(projectID: string, input: Record<string, unknown>, idempotencyKey?: string): Promise<APIEnvelope<{ generation_run_id: string; workflow_run_id: string; status: string }>> {
+  return request<{ generation_run_id: string; workflow_run_id: string; status: string }>(`/api/v1/projects/${projectID}/generation-runs`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function createBatchGenerationRuns(projectID: string, input: Record<string, unknown>, idempotencyKey?: string): Promise<APIEnvelope<{ generation_run_ids: string[]; workflow_run_ids: string[]; accepted_count: number }>> {
+  return request<{ generation_run_ids: string[]; workflow_run_ids: string[]; accepted_count: number }>(`/api/v1/projects/${projectID}/generation-runs/batch`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function fetchGenerationRuns(projectID: string, params?: { status?: string; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<GenerationRunResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.status ? { status: params.status } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<GenerationRunResponse>>(`/api/v1/projects/${projectID}/generation-runs?${q}`);
+}
+
+export async function fetchGenerationRun(runID: string): Promise<APIEnvelope<GenerationRunDetailResponse>> {
+  return request<GenerationRunDetailResponse>(`/api/v1/generation-runs/${runID}`);
+}
+
+export async function retryGenerationRun(runID: string, input: { reason: string; input_override?: Record<string, unknown> }, idempotencyKey?: string): Promise<APIEnvelope<{ new_generation_run_id: string; workflow_run_id: string; operation_log_id: string }>> {
+  return request<{ new_generation_run_id: string; workflow_run_id: string; operation_log_id: string }>(`/api/v1/generation-runs/${runID}/retry`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function fetchContentItems(projectID: string, params?: { status?: string; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<ContentItemResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.status ? { status: params.status } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<ContentItemResponse>>(`/api/v1/projects/${projectID}/content-items?${q}`);
+}
+
+export async function fetchContentItem(itemID: string): Promise<APIEnvelope<ContentItemDetailResponse>> {
+  return request<ContentItemDetailResponse>(`/api/v1/content-items/${itemID}`);
+}

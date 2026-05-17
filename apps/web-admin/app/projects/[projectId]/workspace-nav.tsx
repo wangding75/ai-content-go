@@ -9,6 +9,8 @@ const items = [
   { href: 'novel/worldview', label: '世界观' },
   { href: 'novel/characters', label: '人物' },
   { href: 'novel/arcs', label: '大纲' },
+  { href: 'production', label: '内容生产' },
+  { href: 'content-items', label: '内容单元' },
 ];
 
 export default function ProjectWorkspaceNav({ projectId }: { projectId: string }) {

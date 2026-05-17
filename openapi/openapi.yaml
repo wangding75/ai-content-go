@@ -943,6 +943,105 @@ paths:
           $ref: '#/components/responses/InternalError'
       security:
         - bearerAuth: []
+  /api/v1/projects/{projectId}/generation-runs:
+    post:
+      summary: Create generation run
+      tags: [generation]
+      operationId: createGenerationRun
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '202': { description: Generation run accepted }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+      security:
+        - bearerAuth: []
+    get:
+      summary: List generation runs
+      tags: [generation]
+      operationId: listGenerationRuns
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+      responses:
+        '200': { description: Generation run list }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/generation-runs/batch:
+    post:
+      summary: Create batch generation runs
+      tags: [generation]
+      operationId: createBatchGenerationRuns
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '202': { description: Batch generation accepted }
+      security:
+        - bearerAuth: []
+  /api/v1/generation-runs/{id}:
+    get:
+      summary: Get generation run
+      tags: [generation]
+      operationId: getGenerationRun
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200': { description: Generation run detail }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+  /api/v1/generation-runs/{id}/retry:
+    post:
+      summary: Retry generation run
+      tags: [generation]
+      operationId: retryGenerationRun
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '202': { description: Generation retry accepted }
+        '409': { $ref: '#/components/responses/Conflict' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/content-items:
+    get:
+      summary: List content items
+      tags: [generation]
+      operationId: listContentItems
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+      responses:
+        '200': { description: Content item list }
+      security:
+        - bearerAuth: []
+  /api/v1/content-items/{id}:
+    get:
+      summary: Get content item
+      tags: [generation]
+      operationId: getContentItem
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200': { description: Content item detail }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
 components:
   parameters:
     RequestIdHeader:

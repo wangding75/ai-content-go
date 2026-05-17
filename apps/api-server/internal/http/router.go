@@ -20,6 +20,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/external"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/generation"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/novel"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
@@ -55,6 +56,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	scheduleHandler := handlers.NewScheduleHandler(schedule.NewService(), wfSvc, eng, logger)
 	externalHandler := handlers.NewExternalHandler(external.NewService(), logger)
 	novelHandler := handlers.NewNovelHandler(novel.NewService(), wfSvc, eng, logger)
+	generationHandler := handlers.NewGenerationHandler(generation.NewService(), wfSvc, eng, logger)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
@@ -124,6 +126,15 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Get("/projects/{projectId}/novel/characters", novelHandler.ListCharacters)
 		r.Post("/projects/{projectId}/novel/characters", novelHandler.CreateCharacter)
 		r.Get("/projects/{projectId}/novel/arcs", novelHandler.ListArcs)
+
+		// Iteration 4: Content generation loop
+		r.Post("/projects/{projectId}/generation-runs", generationHandler.CreateGenerationRun)
+		r.Post("/projects/{projectId}/generation-runs/batch", generationHandler.CreateBatchGenerationRuns)
+		r.Get("/projects/{projectId}/generation-runs", generationHandler.ListGenerationRuns)
+		r.Get("/generation-runs/{id}", generationHandler.GetGenerationRun)
+		r.Post("/generation-runs/{id}/retry", generationHandler.RetryGenerationRun)
+		r.Get("/projects/{projectId}/content-items", generationHandler.ListContentItems)
+		r.Get("/content-items/{id}", generationHandler.GetContentItem)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
