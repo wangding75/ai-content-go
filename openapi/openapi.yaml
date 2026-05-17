@@ -636,6 +636,313 @@ paths:
         '201': { description: External binding created }
       security:
         - bearerAuth: []
+  /api/v1/projects/{projectId}/novel/planning-runs:
+    get:
+      summary: List Novel planning runs
+      tags: [novel]
+      operationId: listNovelPlanningRuns
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Novel planning run list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanningRunsEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create Novel planning run
+      tags: [novel]
+      operationId: createNovelPlanningRun
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanningRunRequest'
+            examples:
+              default:
+                value:
+                  genre: fantasy
+                  audience: young-adult
+                  count: 3
+                  template_version_id: wftv-novel-planning
+                  input_override:
+                    content_pack: novel
+      responses:
+        '202':
+          description: Novel planning run accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePlanningRunEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          description: Workflow run failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/novel/planning-runs/{runId}:
+    get:
+      summary: Get Novel planning run detail
+      tags: [novel]
+      operationId: getNovelPlanningRun
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/RunIdPath'
+      responses:
+        '200':
+          description: Novel planning run detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanningRunDetailEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/novel/topics/{topicId}/confirm:
+    post:
+      summary: Confirm Novel topic candidate
+      tags: [novel]
+      operationId: confirmNovelTopic
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/TopicIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmTopicRequest'
+      responses:
+        '200':
+          description: Topic confirmation response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfirmTopicEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/novel/worldview:
+    get:
+      summary: Get Novel worldview
+      tags: [novel]
+      operationId: getNovelWorldview
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      responses:
+        '200':
+          description: Novel worldview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldviewEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+    patch:
+      summary: Update Novel worldview
+      tags: [novel]
+      operationId: updateNovelWorldview
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorldviewRequest'
+      responses:
+        '200':
+          description: Worldview update response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateWorldviewEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/novel/characters:
+    get:
+      summary: List Novel characters
+      tags: [novel]
+      operationId: listNovelCharacters
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Novel character list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CharactersEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create Novel character
+      tags: [novel]
+      operationId: createNovelCharacter
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCharacterRequest'
+      responses:
+        '201':
+          description: Novel character created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCharacterEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/novel/arcs:
+    get:
+      summary: List Novel arcs
+      tags: [novel]
+      operationId: listNovelArcs
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+      responses:
+        '200':
+          description: Novel arc list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArcsEnvelope'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - bearerAuth: []
 components:
   parameters:
     RequestIdHeader:
@@ -674,6 +981,30 @@ components:
     IdPath:
       name: id
       in: path
+      required: true
+      schema:
+        type: string
+    ProjectIdPath:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
+    RunIdPath:
+      name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+    TopicIdPath:
+      name: topicId
+      in: path
+      required: true
+      schema:
+        type: string
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
       required: true
       schema:
         type: string
@@ -759,6 +1090,7 @@ components:
       properties:
         code:
           type: string
+          enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, IDEMPOTENCY_CONFLICT, WORKFLOW_RUN_FAILED, INTERNAL_ERROR]
         message:
           type: string
         details:
@@ -922,6 +1254,240 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/CreateLLMProviderResponse'
+    PlanningRunsEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PlanningRunsPage'
+    CreatePlanningRunEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/CreatePlanningRunResponse'
+    PlanningRunDetailEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PlanningRunDetailResponse'
+    ConfirmTopicEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ConfirmTopicResponse'
+    WorldviewEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/WorldviewResponse'
+    UpdateWorldviewEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/UpdateWorldviewResponse'
+    CharactersEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/CharactersPage'
+    CreateCharacterEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/CreateCharacterResponse'
+    ArcsEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ArcsPage'
+    CreatePlanningRunRequest:
+      type: object
+      properties:
+        genre: { type: string }
+        audience: { type: string }
+        count: { type: integer, minimum: 1 }
+        template_version_id: { type: string }
+        input_override: { type: object }
+      required: [genre, audience, count, template_version_id]
+    CreatePlanningRunResponse:
+      type: object
+      properties:
+        planning_run_id: { type: string }
+        workflow_run_id: { type: string }
+        status: { type: string }
+      required: [planning_run_id, workflow_run_id, status]
+    PlanningRun:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        workflow_run_id: { type: string }
+        template_version_id: { type: string }
+        status: { type: string }
+        genre: { type: string }
+        audience: { type: string }
+        candidate_count: { type: integer }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, project_id, workflow_run_id, template_version_id, status, genre, audience, candidate_count, created_at, updated_at]
+    PlanningRunsPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanningRun'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [items, pagination]
+    TopicCandidate:
+      type: object
+      properties:
+        candidate_id: { type: string }
+        planning_run_id: { type: string }
+        snapshot_id: { type: string }
+        title: { type: string }
+        logline: { type: string }
+        status: { type: string }
+        score: { type: number }
+        reason: { type: string }
+        confirmed_topic_id: { type: string }
+      required: [candidate_id, planning_run_id, snapshot_id, title, logline, status, score, reason]
+    PlanningRunDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/PlanningRun'
+        - type: object
+          properties:
+            topics:
+              type: array
+              items:
+                $ref: '#/components/schemas/TopicCandidate'
+            step_runs:
+              type: array
+              items:
+                type: object
+            agent_tasks:
+              type: array
+              items:
+                type: object
+            llm_call_logs:
+              type: array
+              items:
+                type: object
+          required: [topics, step_runs, agent_tasks, llm_call_logs]
+    ConfirmTopicRequest:
+      type: object
+      properties:
+        note: { type: string }
+    ConfirmTopicResponse:
+      type: object
+      properties:
+        confirmed_topic_id: { type: string }
+        previous_status: { type: string }
+        current_status: { type: string }
+        operation_log_id: { type: string }
+      required: [confirmed_topic_id, previous_status, current_status, operation_log_id]
+    WorldviewResponse:
+      type: object
+      properties:
+        project_id: { type: string }
+        version_id: { type: string }
+        version: { type: integer }
+        worldview: { type: object }
+        forbidden_rules:
+          type: array
+          items: { type: string }
+        planning_run_id: { type: string }
+        snapshot_id: { type: string }
+      required: [project_id, version_id, version, worldview, forbidden_rules]
+    UpdateWorldviewRequest:
+      type: object
+      properties:
+        worldview: { type: object }
+        forbidden_rules:
+          type: array
+          items: { type: string }
+        note: { type: string }
+      required: [worldview, forbidden_rules]
+    UpdateWorldviewResponse:
+      type: object
+      properties:
+        version_id: { type: string }
+        operation_log_id: { type: string }
+      required: [version_id, operation_log_id]
+    Character:
+      type: object
+      properties:
+        character_id: { type: string }
+        project_id: { type: string }
+        name: { type: string }
+        role: { type: string }
+        profile: { type: object }
+        planning_run_id: { type: string }
+        snapshot_id: { type: string }
+      required: [character_id, project_id, name, role, profile]
+    CharactersPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Character'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [items, pagination]
+    CreateCharacterRequest:
+      type: object
+      properties:
+        name: { type: string }
+        role: { type: string }
+        profile: { type: object }
+        note: { type: string }
+      required: [name, role, profile]
+    CreateCharacterResponse:
+      type: object
+      properties:
+        character_id: { type: string }
+        operation_log_id: { type: string }
+      required: [character_id, operation_log_id]
+    Arc:
+      type: object
+      properties:
+        arc_id: { type: string }
+        project_id: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        order_index: { type: integer }
+        planning_run_id: { type: string }
+        snapshot_id: { type: string }
+      required: [arc_id, project_id, title, summary, order_index]
+    ArcsPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Arc'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [items, pagination]
     HealthResponse:
       type: object
       properties:

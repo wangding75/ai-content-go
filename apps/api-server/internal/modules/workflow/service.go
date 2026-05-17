@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -69,6 +70,12 @@ type workflowStepRun struct {
 	WorkflowStepRunResponse
 }
 
+type idempotentOperation struct {
+	kind     string
+	payload  any
+	response any
+}
+
 type workflowService struct {
 	mu sync.RWMutex
 
@@ -76,7 +83,7 @@ type workflowService struct {
 	versions      []workflowVersion
 	runs          []workflowRun
 	stepRuns      []workflowStepRun
-	idempotentOps map[string]any
+	idempotentOps map[string]idempotentOperation
 
 	tmplNext     int
 	versionNext  int
@@ -92,7 +99,7 @@ func NewService() interface {
 	EnginePort
 } {
 	return &workflowService{
-		idempotentOps: make(map[string]any),
+		idempotentOps: make(map[string]idempotentOperation),
 	}
 }
 
@@ -109,6 +116,17 @@ func normalizePage(page, pageSize int) (int, int) {
 		pageSize = 20
 	}
 	return page, pageSize
+}
+
+func (s *workflowService) idempotentResponse(key string, kind string, payload any) (any, bool) {
+	if key == "" {
+		return nil, false
+	}
+	cached, ok := s.idempotentOps[key]
+	if !ok || cached.kind != kind || !reflect.DeepEqual(cached.payload, payload) {
+		return nil, false
+	}
+	return cached.response, true
 }
 
 // --- Template methods ---
@@ -272,9 +290,15 @@ func (s *workflowService) PublishVersion(_ context.Context, id string, req Publi
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if idempotencyKey != "" {
-		if cached, ok := s.idempotentOps[idempotencyKey]; ok {
-			return cached.(PublishVersionResponse), nil
+	payload := struct {
+		ID      string
+		Request PublishVersionRequest
+	}{ID: id, Request: req}
+	if cached, ok := s.idempotentResponse(idempotencyKey, "publish_version", payload); ok {
+		return cached.(PublishVersionResponse), nil
+	} else if idempotencyKey != "" {
+		if _, exists := s.idempotentOps[idempotencyKey]; exists {
+			return PublishVersionResponse{}, ErrIdempotencyConflict
 		}
 	}
 
@@ -291,9 +315,8 @@ func (s *workflowService) PublishVersion(_ context.Context, id string, req Publi
 				OperationLogID: s.nextOplogID(),
 			}
 			if idempotencyKey != "" {
-				s.idempotentOps[idempotencyKey] = resp
+				s.idempotentOps[idempotencyKey] = idempotentOperation{kind: "publish_version", payload: payload, response: resp}
 			}
-			_ = req
 			return resp, nil
 		}
 	}
@@ -334,9 +357,12 @@ func (s *workflowService) CreateRun(_ context.Context, req CreateWorkflowRunRequ
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if idempotencyKey != "" {
-		if cached, ok := s.idempotentOps[idempotencyKey]; ok {
-			return cached.(CreateWorkflowRunResponse), nil
+	payload := req
+	if cached, ok := s.idempotentResponse(idempotencyKey, "create_run", payload); ok {
+		return cached.(CreateWorkflowRunResponse), nil
+	} else if idempotencyKey != "" {
+		if _, exists := s.idempotentOps[idempotencyKey]; exists {
+			return CreateWorkflowRunResponse{}, ErrIdempotencyConflict
 		}
 	}
 
@@ -372,7 +398,7 @@ func (s *workflowService) CreateRun(_ context.Context, req CreateWorkflowRunRequ
 
 	resp := CreateWorkflowRunResponse{WorkflowRunID: id, Status: "pending"}
 	if idempotencyKey != "" {
-		s.idempotentOps[idempotencyKey] = resp
+		s.idempotentOps[idempotencyKey] = idempotentOperation{kind: "create_run", payload: payload, response: resp}
 	}
 	return resp, nil
 }
@@ -422,9 +448,15 @@ func (s *workflowService) CancelRun(_ context.Context, id string, req CancelRunR
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if idempotencyKey != "" {
-		if cached, ok := s.idempotentOps[idempotencyKey]; ok {
-			return cached.(CancelRunResponse), nil
+	payload := struct {
+		ID      string
+		Request CancelRunRequest
+	}{ID: id, Request: req}
+	if cached, ok := s.idempotentResponse(idempotencyKey, "cancel_run", payload); ok {
+		return cached.(CancelRunResponse), nil
+	} else if idempotencyKey != "" {
+		if _, exists := s.idempotentOps[idempotencyKey]; exists {
+			return CancelRunResponse{}, ErrIdempotencyConflict
 		}
 	}
 
@@ -442,9 +474,8 @@ func (s *workflowService) CancelRun(_ context.Context, id string, req CancelRunR
 				OperationLogID: s.nextOplogID(),
 			}
 			if idempotencyKey != "" {
-				s.idempotentOps[idempotencyKey] = resp
+				s.idempotentOps[idempotencyKey] = idempotentOperation{kind: "cancel_run", payload: payload, response: resp}
 			}
-			_ = req
 			return resp, nil
 		}
 	}
@@ -455,9 +486,15 @@ func (s *workflowService) RetryRun(_ context.Context, id string, req RetryRunReq
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if idempotencyKey != "" {
-		if cached, ok := s.idempotentOps[idempotencyKey]; ok {
-			return cached.(RetryRunResponse), nil
+	payload := struct {
+		ID      string
+		Request RetryRunRequest
+	}{ID: id, Request: req}
+	if cached, ok := s.idempotentResponse(idempotencyKey, "retry_run", payload); ok {
+		return cached.(RetryRunResponse), nil
+	} else if idempotencyKey != "" {
+		if _, exists := s.idempotentOps[idempotencyKey]; exists {
+			return RetryRunResponse{}, ErrIdempotencyConflict
 		}
 	}
 
@@ -504,9 +541,8 @@ func (s *workflowService) RetryRun(_ context.Context, id string, req RetryRunReq
 
 	resp := RetryRunResponse{NewWorkflowRunID: newID, Status: "pending"}
 	if idempotencyKey != "" {
-		s.idempotentOps[idempotencyKey] = resp
+		s.idempotentOps[idempotencyKey] = idempotentOperation{kind: "retry_run", payload: payload, response: resp}
 	}
-	_ = req
 	return resp, nil
 }
 

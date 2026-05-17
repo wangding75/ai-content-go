@@ -459,3 +459,108 @@ export async function fetchExternalBindings(): Promise<APIEnvelope<PagedResponse
 export async function createExternalBinding(input: { provider_id: string; trigger_event: string; webhook_url: string }): Promise<APIEnvelope<{ binding_id: string }>> {
   return request<{ binding_id: string }>('/api/v1/external-automation/bindings', { method: 'POST', body: JSON.stringify(input) });
 }
+
+export type PlanningRunResponse = {
+  id: string;
+  project_id: string;
+  workflow_run_id: string;
+  template_version_id: string;
+  status: string;
+  genre: string;
+  audience: string;
+  candidate_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TopicCandidateResponse = {
+  candidate_id: string;
+  planning_run_id: string;
+  snapshot_id: string;
+  title: string;
+  logline: string;
+  status: string;
+  score: number;
+  reason: string;
+  confirmed_topic_id?: string;
+};
+
+export type PlanningRunDetailResponse = PlanningRunResponse & {
+  topics: TopicCandidateResponse[];
+  step_runs: Array<{ id: string; status: string; error?: string }>;
+  agent_tasks: Array<{ id: string; agent_code: string; status: string; error?: string }>;
+  llm_call_logs: Array<{ id: string; model: string; status: string; cost: number }>;
+};
+
+export type WorldviewResponse = {
+  project_id: string;
+  version_id: string;
+  version: number;
+  worldview: Record<string, unknown>;
+  forbidden_rules: string[];
+  planning_run_id?: string;
+  snapshot_id?: string;
+};
+
+export type CharacterResponse = {
+  character_id: string;
+  project_id: string;
+  name: string;
+  role: string;
+  profile: Record<string, unknown>;
+  planning_run_id?: string;
+  snapshot_id?: string;
+};
+
+export type ArcResponse = {
+  arc_id: string;
+  project_id: string;
+  title: string;
+  summary: string;
+  order_index: number;
+  planning_run_id?: string;
+  snapshot_id?: string;
+};
+
+function idempotencyHeaders(idempotencyKey?: string): Record<string, string> {
+  return idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
+}
+
+export async function fetchPlanningRuns(projectID: string, params?: { status?: string; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<PlanningRunResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.status ? { status: params.status } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<PlanningRunResponse>>(`/api/v1/projects/${projectID}/novel/planning-runs?${q}`);
+}
+
+export async function createPlanningRun(projectID: string, input: { genre: string; audience: string; count: number; template_version_id: string; input_override?: Record<string, unknown> }, idempotencyKey?: string): Promise<APIEnvelope<{ planning_run_id: string; workflow_run_id: string; status: string }>> {
+  return request<{ planning_run_id: string; workflow_run_id: string; status: string }>(`/api/v1/projects/${projectID}/novel/planning-runs`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function fetchPlanningRun(projectID: string, runID: string): Promise<APIEnvelope<PlanningRunDetailResponse>> {
+  return request<PlanningRunDetailResponse>(`/api/v1/projects/${projectID}/novel/planning-runs/${runID}`);
+}
+
+export async function confirmTopic(projectID: string, topicID: string, input: { note: string }, idempotencyKey?: string): Promise<APIEnvelope<{ confirmed_topic_id: string; previous_status: string; current_status: string; operation_log_id: string }>> {
+  return request<{ confirmed_topic_id: string; previous_status: string; current_status: string; operation_log_id: string }>(`/api/v1/projects/${projectID}/novel/topics/${topicID}/confirm`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function fetchWorldview(projectID: string): Promise<APIEnvelope<WorldviewResponse>> {
+  return request<WorldviewResponse>(`/api/v1/projects/${projectID}/novel/worldview`);
+}
+
+export async function updateWorldview(projectID: string, input: { worldview: Record<string, unknown>; forbidden_rules: string[]; note: string }): Promise<APIEnvelope<{ version_id: string; operation_log_id: string }>> {
+  return request<{ version_id: string; operation_log_id: string }>(`/api/v1/projects/${projectID}/novel/worldview`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export async function fetchCharacters(projectID: string, params?: { role?: string; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<CharacterResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.role ? { role: params.role } : {}) }).toString();
+  return request<PagedResponse<CharacterResponse>>(`/api/v1/projects/${projectID}/novel/characters?${q}`);
+}
+
+export async function createCharacter(projectID: string, input: { name: string; role: string; profile: Record<string, unknown>; note: string }): Promise<APIEnvelope<{ character_id: string; operation_log_id: string }>> {
+  return request<{ character_id: string; operation_log_id: string }>(`/api/v1/projects/${projectID}/novel/characters`, { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function fetchArcs(projectID: string, params?: { page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<ArcResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<ArcResponse>>(`/api/v1/projects/${projectID}/novel/arcs?${q}`);
+}

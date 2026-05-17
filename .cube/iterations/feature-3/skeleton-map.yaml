@@ -1,0 +1,77 @@
+files:
+  - path: internal/modules/novel/dto.go
+    module: api-server
+    type: dto
+    tasks:
+      - "Task-01：定义 Novel Pack DTO 与 Service 契约"
+  - path: internal/modules/novel/service.go
+    module: api-server
+    type: interface
+    tasks:
+      - "Task-01：定义 Novel Pack DTO 与 Service 契约"
+      - "Task-02：实现 Novel Planning Service 状态与幂等规则"
+  - path: internal/http/handlers/novel.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-03：暴露 Novel Planning HTTP API"
+  - path: internal/http/router.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-03：暴露 Novel Planning HTTP API"
+  - path: migrations/00005_create_novel_planning_tables.sql
+    module: api-server
+    type: constant
+    tasks:
+      - "Task-04：补齐 Novel Planning 数据迁移与 OpenAPI 契约"
+  - path: openapi.yaml
+    module: openapi
+    type: constant
+    tasks:
+      - "Task-04：补齐 Novel Planning 数据迁移与 OpenAPI 契约"
+  - path: lib/api.ts
+    module: web-admin
+    type: interface
+    tasks:
+      - "Task-05：扩展 Web Admin API client 与项目工作区导航入口"
+  - path: app/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-05：扩展 Web Admin API client 与项目工作区导航入口"
+  - path: app/projects/[projectId]/workspace-nav.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-05：扩展 Web Admin API client 与项目工作区导航入口"
+  - path: app/projects/[projectId]/planning/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-06：实现内容规划页与候选确认弹窗"
+  - path: app/projects/[projectId]/planning/topics/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-06：实现内容规划页与候选确认弹窗"
+  - path: app/projects/[projectId]/novel/worldview/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-07：实现世界观编辑页"
+  - path: app/projects/[projectId]/novel/characters/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-08：实现人物管理页"
+  - path: app/projects/[projectId]/novel/arcs/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-09：实现大纲管理页"
+  - path: internal/http/handlers/novel.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-10：补齐 Novel Planning 自动化测试覆盖"

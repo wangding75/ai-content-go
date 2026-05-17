@@ -1,0 +1,82 @@
+# STATUS.yaml — Per-task TDD development progress
+# AI reads this file at session start to recover context
+# Update phase after completing each task
+#
+# phase values: locked | green | done
+# tracking fields (added during execution): started_at, completed_at, test_passed, test_total
+
+stage: 04-development
+project: ai-content-go
+branch: feature/3
+
+tasks:
+  - task: "Task-01：定义 Novel Pack DTO 与 Service 契约"
+    test_file: internal/modules/novel/task01_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-02：实现 Novel Planning Service 状态与幂等规则"
+    test_file: internal/modules/novel/task02_service_state_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-03：暴露 Novel Planning HTTP API"
+    test_file: internal/http/handlers/novel_handler_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 5
+    test_total: 5
+  - task: "Task-04：补齐 Novel Planning 数据迁移与 OpenAPI 契约"
+    test_file: internal/http/contract/iteration3_task04_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-05：扩展 Web Admin API client 与项目工作区导航入口"
+    test_file: internal/http/contract/iteration3_task05_web_client_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-06：实现内容规划页与候选确认弹窗"
+    test_file: internal/http/contract/iteration3_task06_planning_pages_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-07：实现世界观编辑页"
+    test_file: internal/http/contract/iteration3_task07_worldview_page_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-08：实现人物管理页"
+    test_file: internal/http/contract/iteration3_task08_characters_page_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-09：实现大纲管理页"
+    test_file: internal/http/contract/iteration3_task09_arcs_page_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-10：补齐 Novel Planning 自动化测试覆盖"
+    test_file: internal/http/contract/iteration3_task10_coverage_contract_red_test.go
+    phase: done
+    started_at: "2026-05-17 14:01"
+    completed_at: "2026-05-17 14:03"
+    test_passed: 2
+    test_total: 2
