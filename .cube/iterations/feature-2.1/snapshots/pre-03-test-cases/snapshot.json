@@ -1,0 +1,8 @@
+{
+  "created_at": "2026-05-17T06:07:03.137Z",
+  "project_root": "/mnt/d/git/ai-content-go",
+  "dirs": [
+    "apps/api-server",
+    "apps/web-admin/e2e"
+  ]
+}

@@ -28,6 +28,7 @@ type service struct {
 	mu               sync.RWMutex
 	contentTypes     []ContentTypeResponse
 	projects         []ProjectResponse
+	projectNext      int
 	operationLogNext int
 }
 
@@ -68,6 +69,7 @@ func NewService() Service {
 			Status:          "paused",
 			ProjectConfig:   map[string]any{"title": "paused briefing"},
 		}},
+		projectNext:      1,
 		operationLogNext: 1,
 	}
 }
@@ -154,7 +156,8 @@ func (s *service) CreateProject(ctx context.Context, req CreateProjectRequest) (
 	if !ok {
 		return CreateProjectResponse{}, ErrNotFound
 	}
-	id := "project-new"
+	id := "project-new-" + strconv.Itoa(s.projectNext)
+	s.projectNext++
 	s.projects = append(s.projects, ProjectResponse{ID: id, Name: req.Name, ContentTypeID: req.ContentTypeID, ContentTypeCode: contentType.Code, Status: "active", ProjectConfig: req.ProjectConfig})
 	return CreateProjectResponse{ProjectID: id, Status: "active"}, nil
 }

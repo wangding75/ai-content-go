@@ -1,7 +1,7 @@
 project:
   name: ai-content-go
   language: golang
-  structure: single-module
+  structure: multi-module
   features: []
 
 stages:
@@ -19,9 +19,18 @@ stages:
   - id: 05-testing
     name: Testing
 
+modules:
+  - name: api-server
+    source_dir: apps/api-server
+    test_dir: apps/api-server
+    test_resource_dir: apps/api-server/testdata
+  - name: web-admin
+    source_dir: apps/web-admin
+    test_dir: apps/web-admin/e2e
+  - name: openapi
+    source_dir: openapi
+
 paths:
-  source_dir: .
-  test_dir: .
   test_resource_dir: testdata
 
 language_config:

@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"sync"
+	"time"
 
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
 )
@@ -21,12 +23,13 @@ type Service interface {
 	CreateCallLog(ctx context.Context, req CreateLLMCallLogRequest) (LLMCallLogResponse, error)
 	ListCallLogs(ctx context.Context, req ListLLMCallLogsRequest) (PagedLLMCallLogsResponse, error)
 	GetCallLog(ctx context.Context, id string) (LLMCallLogDetailResponse, error)
+	SummaryCallLogs(ctx context.Context, req SummaryCallLogsRequest) (LLMCostSummaryResponse, error)
 }
 
 type service struct {
-	mu        sync.RWMutex
-	providers []ProviderResponse
-	callLogs  []LLMCallLogDetailResponse
+	mu          sync.RWMutex
+	providers   []ProviderResponse
+	callLogs    []LLMCallLogDetailResponse
 	callLogNext int
 }
 
@@ -141,6 +144,71 @@ func (s *service) GetCallLog(_ context.Context, id string) (LLMCallLogDetailResp
 	return LLMCallLogDetailResponse{}, ErrNotFound
 }
 
+func (s *service) SummaryCallLogs(_ context.Context, req SummaryCallLogsRequest) (LLMCostSummaryResponse, error) {
+	if req.DateFrom != "" || req.DateTo != "" {
+		from, err := parseSummaryDate(req.DateFrom)
+		if err != nil {
+			return LLMCostSummaryResponse{}, ErrValidation
+		}
+		to, err := parseSummaryDate(req.DateTo)
+		if err != nil {
+			return LLMCostSummaryResponse{}, ErrValidation
+		}
+		if !from.IsZero() && !to.IsZero() && from.After(to) {
+			return LLMCostSummaryResponse{}, ErrValidation
+		}
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	byModel := map[string]*LLMCostSummaryByModel{}
+	resp := LLMCostSummaryResponse{Currency: "USD", ByModel: []LLMCostSummaryByModel{}}
+	for _, log := range s.callLogs {
+		if req.Provider != "" && log.Provider != req.Provider {
+			continue
+		}
+		if req.Model != "" && log.Model != req.Model {
+			continue
+		}
+		resp.Calls++
+		resp.InputTokens += log.InputTokens
+		resp.OutputTokens += log.OutputTokens
+		resp.Cost += log.Cost
+		if log.Currency != "" {
+			resp.Currency = log.Currency
+		}
+		model := byModel[log.Model]
+		if model == nil {
+			model = &LLMCostSummaryByModel{Model: log.Model}
+			byModel[log.Model] = model
+		}
+		model.Calls++
+		model.InputTokens += log.InputTokens
+		model.OutputTokens += log.OutputTokens
+		model.Cost += log.Cost
+	}
+	resp.Tokens = resp.InputTokens + resp.OutputTokens
+	resp.Cost = roundCost(resp.Cost)
+	for _, item := range byModel {
+		item.Tokens = item.InputTokens + item.OutputTokens
+		item.Cost = roundCost(item.Cost)
+		resp.ByModel = append(resp.ByModel, *item)
+	}
+	return resp, nil
+}
+
+func parseSummaryDate(value string) (time.Time, error) {
+	if value == "" {
+		return time.Time{}, nil
+	}
+	return time.Parse("2006-01-02", value)
+}
+
+func roundCost(value float64) float64 {
+	return math.Round(value*1000000) / 1000000
+}
+
 func MaskAPIKey(apiKey string) string {
 	if len(apiKey) <= 8 {
 		return "****"
@@ -157,4 +225,3 @@ func normalizePage(page, pageSize int) (int, int) {
 	}
 	return page, pageSize
 }
-

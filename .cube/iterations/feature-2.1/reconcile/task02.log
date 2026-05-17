@@ -1,0 +1,7 @@
+--- FAIL: TestIteration21ScheduleRuntimeEnablesDisablesAndRejectsDuplicateTransitions (0.00s)
+    iteration_2_1_task02_runtime_test.go:20: create schedule: validation error
+--- FAIL: TestIteration21ScheduleRuntimePreparesTestRunAndLinksTriggerLogToWorkflowRun (0.00s)
+    iteration_2_1_task02_runtime_test.go:53: create schedule: validation error
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule	0.004s
+FAIL

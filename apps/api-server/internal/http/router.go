@@ -19,6 +19,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/agent"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/external"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule"
@@ -44,11 +45,14 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	agentSvc := agent.NewService()
 	llmSvc := llm.NewService()
 	eng := engine.New(wfSvc, agentSvc, llmSvc)
-	eng.Start(context.Background())
+	if shouldStartAsyncEngine() {
+		eng.Start(context.Background())
+	}
 	workflowHandler := handlers.NewWorkflowHandler(wfSvc, eng, logger)
 	agentHandler := handlers.NewAgentHandler(agentSvc, logger)
 	llmLogHandler := handlers.NewLLMLogHandler(llmSvc, logger)
-	scheduleHandler := handlers.NewScheduleHandler(schedule.NewService(), logger)
+	scheduleHandler := handlers.NewScheduleHandler(schedule.NewService(), wfSvc, eng, logger)
+	externalHandler := handlers.NewExternalHandler(external.NewService(), logger)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
@@ -91,10 +95,22 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 
 		// Iteration 2: LLM Call Logs
 		r.Get("/llm-call-logs", llmLogHandler.ListCallLogs)
+		r.Get("/llm-call-logs/summary", llmLogHandler.Summary)
 		r.Get("/llm-call-logs/{id}", llmLogHandler.GetCallLog)
 
-		// Iteration 2: Schedule (contract only)
+		// Iteration 2.1: Schedule baseline
+		r.Get("/workflow-schedules", scheduleHandler.ListSchedules)
 		r.Post("/workflow-schedules", scheduleHandler.CreateSchedule)
+		r.Post("/workflow-schedules/{id}/enable", scheduleHandler.EnableSchedule)
+		r.Post("/workflow-schedules/{id}/disable", scheduleHandler.DisableSchedule)
+		r.Post("/workflow-schedules/{id}/test-run", scheduleHandler.TestRun)
+		r.Get("/workflow-schedules/{id}/triggers", scheduleHandler.ListTriggers)
+
+		// Iteration 2.1: External automation
+		r.Get("/external-automation/providers", externalHandler.ListProviders)
+		r.Post("/external-automation/providers", externalHandler.CreateProvider)
+		r.Get("/external-automation/bindings", externalHandler.ListBindings)
+		r.Post("/external-automation/bindings", externalHandler.CreateBinding)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
@@ -133,6 +149,16 @@ func bearerAuth(next http.Handler) http.Handler {
 func validBearerToken(token string) bool {
 	expected := strings.TrimSpace(os.Getenv("API_BEARER_TOKEN"))
 	return expected == "" || token == expected
+}
+
+func shouldStartAsyncEngine() bool {
+	if strings.TrimSpace(os.Getenv("API_DISABLE_ASYNC_ENGINE")) != "" {
+		return false
+	}
+	if strings.HasSuffix(os.Args[0], ".test") {
+		return false
+	}
+	return true
 }
 
 func serveOpenAPI(w http.ResponseWriter, r *http.Request) {

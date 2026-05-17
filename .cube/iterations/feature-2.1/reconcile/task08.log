@@ -1,0 +1,9 @@
+--- FAIL: TestIteration21NewWebAdminSchedulePageRendersRealManagementControls (0.00s)
+    iteration_2_1_task08_pages_contract_test.go:18: schedule page must contain fetchWorkflowSchedules
+--- FAIL: TestIteration21NewWebAdminExternalAutomationPageRedactsProviderToken (0.00s)
+    iteration_2_1_task08_pages_contract_test.go:35: external automation page must contain fetchExternalProviders
+--- FAIL: TestIteration21NewWebAdminCostSummaryPageRendersAggregationStates (0.00s)
+    iteration_2_1_task08_pages_contract_test.go:52: cost summary page must contain fetchLLMCostSummary
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	0.020s
+FAIL

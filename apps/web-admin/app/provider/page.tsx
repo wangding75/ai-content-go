@@ -13,6 +13,10 @@ function errorFrom<T>(envelope: APIEnvelope<T>): ErrorState {
   return envelope.error ? { code: envelope.error.code, message: envelope.error.message, request_id: envelope.request_id } : null;
 }
 
+function delayLoading() {
+  return new Promise((resolve) => window.setTimeout(resolve, 500));
+}
+
 export default function ProviderPage() {
   const [items, setItems] = useState<LLMProviderResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +37,7 @@ export default function ProviderPage() {
       return;
     }
     const result = await fetchLLMProviders();
+    await delayLoading();
     if (result.success && result.data) {
       setItems(result.data.items);
       setError(null);

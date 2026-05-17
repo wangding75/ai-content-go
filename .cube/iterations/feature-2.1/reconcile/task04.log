@@ -1,0 +1,5 @@
+--- FAIL: TestIteration21LLMCostSummaryAggregatesCallsTokensCostAndByModel (0.00s)
+    iteration_2_1_task04_summary_test.go:24: summary call logs: validation error
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm	0.010s
+FAIL

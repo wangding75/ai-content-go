@@ -365,3 +365,97 @@ export async function fetchLLMCallLogs(params?: { workflow_run_id?: string; agen
 export async function fetchLLMCallLog(id: string): Promise<APIEnvelope<LLMCallLogResponse & { error?: string; request_id: string }>> {
   return request<LLMCallLogResponse & { error?: string; request_id: string }>(`/api/v1/llm-call-logs/${id}`);
 }
+
+export type WorkflowScheduleResponse = {
+  id: string;
+  project_id: string;
+  template_version_id: string;
+  cron_expression: string;
+  enabled: boolean;
+  next_run_at: string;
+  daily_content_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ScheduleTriggerResponse = {
+  id: string;
+  schedule_id: string;
+  trigger_type: string;
+  workflow_run_id?: string;
+  status: string;
+  error?: string;
+  triggered_at: string;
+};
+
+export type LLMCostSummaryResponse = {
+  calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  tokens: number;
+  cost: number;
+  currency: string;
+  by_model: Array<{ model: string; calls: number; tokens: number; cost: number }>;
+};
+
+export type ExternalProviderResponse = {
+  id: string;
+  provider_type: string;
+  base_url: string;
+  token_masked: string;
+  enabled: boolean;
+};
+
+export type ExternalBindingResponse = {
+  id: string;
+  provider_id: string;
+  trigger_event: string;
+  webhook_url: string;
+  enabled: boolean;
+};
+
+export async function fetchWorkflowSchedules(): Promise<APIEnvelope<PagedResponse<WorkflowScheduleResponse>>> {
+  return request<PagedResponse<WorkflowScheduleResponse>>('/api/v1/workflow-schedules?page=1&page_size=20');
+}
+
+export async function createWorkflowSchedule(input: { project_id: string; template_version_id: string; cron_expression: string; daily_content_count?: number }): Promise<APIEnvelope<{ schedule_id: string; next_run_at: string; daily_content_count: number; status: string }>> {
+  return request<{ schedule_id: string; next_run_at: string; daily_content_count: number; status: string }>('/api/v1/workflow-schedules', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function enableWorkflowSchedule(id: string, input: { note?: string }): Promise<APIEnvelope<{ previous_enabled: boolean; current_enabled: boolean; next_run_at: string; operation_log_id: string }>> {
+  return request<{ previous_enabled: boolean; current_enabled: boolean; next_run_at: string; operation_log_id: string }>(`/api/v1/workflow-schedules/${id}/enable`, { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function disableWorkflowSchedule(id: string, input: { reason: string; note?: string }): Promise<APIEnvelope<{ previous_enabled: boolean; current_enabled: boolean; next_run_at: string; operation_log_id: string }>> {
+  return request<{ previous_enabled: boolean; current_enabled: boolean; next_run_at: string; operation_log_id: string }>(`/api/v1/workflow-schedules/${id}/disable`, { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function testRunWorkflowSchedule(id: string, input: { input_override?: Record<string, unknown> }): Promise<APIEnvelope<{ workflow_run_id: string; status: string; trigger_log_id: string }>> {
+  return request<{ workflow_run_id: string; status: string; trigger_log_id: string }>(`/api/v1/workflow-schedules/${id}/test-run`, { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function fetchScheduleTriggers(id: string): Promise<APIEnvelope<PagedResponse<ScheduleTriggerResponse>>> {
+  return request<PagedResponse<ScheduleTriggerResponse>>(`/api/v1/workflow-schedules/${id}/triggers?page=1&page_size=20`);
+}
+
+export const fetchWorkflowScheduleTriggers = fetchScheduleTriggers;
+
+export async function fetchLLMCostSummary(): Promise<APIEnvelope<LLMCostSummaryResponse>> {
+  return request<LLMCostSummaryResponse>('/api/v1/llm-call-logs/summary');
+}
+
+export async function fetchExternalProviders(): Promise<APIEnvelope<PagedResponse<ExternalProviderResponse>>> {
+  return request<PagedResponse<ExternalProviderResponse>>('/api/v1/external-automation/providers?page=1&page_size=20');
+}
+
+export async function createExternalProvider(input: { provider_type: string; base_url: string; token: string }): Promise<APIEnvelope<{ provider_id: string; token_masked: string }>> {
+  return request<{ provider_id: string; token_masked: string }>('/api/v1/external-automation/providers', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function fetchExternalBindings(): Promise<APIEnvelope<PagedResponse<ExternalBindingResponse>>> {
+  return request<PagedResponse<ExternalBindingResponse>>('/api/v1/external-automation/bindings?page=1&page_size=20');
+}
+
+export async function createExternalBinding(input: { provider_id: string; trigger_event: string; webhook_url: string }): Promise<APIEnvelope<{ binding_id: string }>> {
+  return request<{ binding_id: string }>('/api/v1/external-automation/bindings', { method: 'POST', body: JSON.stringify(input) });
+}
