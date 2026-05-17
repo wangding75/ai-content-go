@@ -263,6 +263,7 @@ export default function HomePage() {
           <button type="button" onClick={() => setView('projects')}>返回系统</button>
           <h1>项目工作区：{selectedProjectID}</h1>
           <button role="tab" aria-selected="true" type="button">项目概览</button>
+          {selectedProjectID ? <a href={`/projects/${selectedProjectID}/planning`}>进入内容规划</a> : null}
           {loading.overview ? <p>加载态</p> : null}
           {overview ? <p>进度 {overview.progress}，待处理 {overview.pending_actions}，成本 {overview.cost}</p> : null}
           <label>暂停原因<input value={pauseReason} onChange={(event) => setPauseReason(event.target.value)} /></label>

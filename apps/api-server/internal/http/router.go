@@ -21,6 +21,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/external"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/novel"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
@@ -53,6 +54,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	llmLogHandler := handlers.NewLLMLogHandler(llmSvc, logger)
 	scheduleHandler := handlers.NewScheduleHandler(schedule.NewService(), wfSvc, eng, logger)
 	externalHandler := handlers.NewExternalHandler(external.NewService(), logger)
+	novelHandler := handlers.NewNovelHandler(novel.NewService(), wfSvc, eng, logger)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
@@ -111,6 +113,17 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Post("/external-automation/providers", externalHandler.CreateProvider)
 		r.Get("/external-automation/bindings", externalHandler.ListBindings)
 		r.Post("/external-automation/bindings", externalHandler.CreateBinding)
+
+		// Iteration 3: Novel Pack planning
+		r.Post("/projects/{projectId}/novel/planning-runs", novelHandler.CreatePlanningRun)
+		r.Get("/projects/{projectId}/novel/planning-runs", novelHandler.ListPlanningRuns)
+		r.Get("/projects/{projectId}/novel/planning-runs/{runId}", novelHandler.GetPlanningRun)
+		r.Post("/projects/{projectId}/novel/topics/{topicId}/confirm", novelHandler.ConfirmTopic)
+		r.Get("/projects/{projectId}/novel/worldview", novelHandler.GetWorldview)
+		r.Patch("/projects/{projectId}/novel/worldview", novelHandler.UpdateWorldview)
+		r.Get("/projects/{projectId}/novel/characters", novelHandler.ListCharacters)
+		r.Post("/projects/{projectId}/novel/characters", novelHandler.CreateCharacter)
+		r.Get("/projects/{projectId}/novel/arcs", novelHandler.ListArcs)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
