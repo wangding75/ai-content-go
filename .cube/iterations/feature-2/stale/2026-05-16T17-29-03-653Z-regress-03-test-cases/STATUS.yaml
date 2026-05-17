@@ -1,0 +1,129 @@
+# STATUS.yaml — Per-task TDD development progress
+# AI reads this file at session start to recover context
+# Update phase after completing each task
+#
+# phase values: locked | green | done
+# tracking fields (added during execution): started_at, completed_at, test_passed, test_total
+
+stage: 04-development
+project: ai-content-go
+branch: feature/2
+
+tasks:
+  - task: "Task-01：新增 API 错误码（api/response.go）"
+    test_file: error_codes_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:30"
+    completed_at: "2026-05-15 18:30"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-02：workflow 模块 — Template/Version/StepTemplate 服务层"
+    test_file: template_service_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:31"
+    completed_at: "2026-05-15 18:35"
+    test_passed: 9
+    test_total: 9
+  - task: "Task-03：workflow 模块 — Run/StepRun 服务层（状态机 + 幂等）"
+    test_file: run_service_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:35"
+    completed_at: "2026-05-15 18:36"
+    test_passed: 8
+    test_total: 8
+  - task: "Task-04：WorkflowTemplate + Version HTTP 端点（含路由注册）"
+    test_file: workflow_template_handler_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:37"
+    completed_at: "2026-05-15 18:40"
+    test_passed: 5
+    test_total: 5
+  - task: "Task-05：WorkflowRun HTTP 端点（触发 + 查询 + 取消 + 重试，含路由注册）"
+    test_file: workflow_run_handler_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:40"
+    completed_at: "2026-05-15 18:41"
+    test_passed: 5
+    test_total: 5
+  - task: "Task-06：agent 模块（Service 接口 + DTO + in-memory 实现）"
+    test_file: agent_service_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:42"
+    completed_at: "2026-05-15 18:44"
+    test_passed: 5
+    test_total: 5
+  - task: "Task-07：AgentTask HTTP 端点（含路由注册）"
+    test_file: agent_handler_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:44"
+    completed_at: "2026-05-15 18:45"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-08：LLMCallLog 服务扩展（llm 模块）"
+    test_file: llm_calllog_service_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:45"
+    completed_at: "2026-05-15 18:46"
+    test_passed: 4
+    test_total: 4
+  - task: "Task-09：LLMCallLog HTTP 端点（含路由注册）"
+    test_file: llmlog_handler_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:46"
+    completed_at: "2026-05-15 18:47"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-10：WorkflowSchedule 契约占位（模块 + 端点 + 路由注册）"
+    test_file: schedule_service_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:47"
+    completed_at: "2026-05-15 18:48"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-11：WorkflowEngine 异步执行链路"
+    test_file: engine_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:48"
+    completed_at: "2026-05-15 18:50"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-12：SQL migration（iteration 2 tables）"
+    test_file: workflow_tables_migration_red_test.go
+    phase: done
+    started_at: "2026-05-15 18:50"
+    completed_at: "2026-05-15 18:51"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-13：前端 API 类型扩展（apps/web-admin/lib/api.ts）"
+    test_file: web_admin_iteration2_api_contract_test.go
+    phase: done
+    started_at: "2026-05-15 18:51"
+    completed_at: "2026-05-15 18:53"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-14：工作流模板管理页（apps/web-admin/app/workflow/templates/）"
+    test_file: web_admin_workflow_template_pages_contract_test.go
+    phase: done
+    started_at: "2026-05-15 18:53"
+    completed_at: "2026-05-15 18:55"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-15：工作流运行记录页（apps/web-admin/app/workflow/runs/）"
+    test_file: web_admin_workflow_runs_pages_contract_test.go
+    phase: done
+    started_at: "2026-05-15 18:55"
+    completed_at: "2026-05-15 18:57"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-16：AgentTask 列表与详情页（apps/web-admin/app/agent/tasks/）"
+    test_file: web_admin_agent_tasks_pages_contract_test.go
+    phase: done
+    completed_at: "2026-05-17 00:10"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-17：LLM 调用日志页（apps/web-admin/app/llm/logs/）"
+    test_file: web_admin_llm_logs_page_contract_test.go
+    phase: green
+    started_at: "2026-05-17 00:10"
+    test_passed: 1
+    test_total: 1

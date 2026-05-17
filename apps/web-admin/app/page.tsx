@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import {
   APIEnvelope,
@@ -37,6 +38,8 @@ function errorFrom<T>(envelope: APIEnvelope<T>): ErrorState {
 }
 
 export default function HomePage() {
+  const searchParams = useSearchParams();
+  const requestedView = searchParams.get('view');
   const [view, setView] = useState<View>('dashboard');
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [projects, setProjects] = useState<ProjectResponse[]>([]);
@@ -120,6 +123,18 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (requestedView === 'projects') {
+      setView('projects');
+      return;
+    }
+    if (requestedView === 'content-types') {
+      setView('content-types');
+      return;
+    }
+    setView('dashboard');
+  }, [requestedView]);
+
+  useEffect(() => {
     if (view === 'projects') {
       void loadProjects();
     }
@@ -172,12 +187,6 @@ export default function HomePage() {
   return (
     <main>
       <style>{'#__next-route-announcer__{display:none!important}'}</style>
-      <nav aria-label="系统导航">
-        <button type="button" onClick={() => setView('dashboard')}>首页 / 系统大盘</button>
-        <button type="button" onClick={() => { void loadProjects(); }}>项目管理</button>
-        <button type="button" onClick={() => setView('content-types')}>项目模板管理</button>
-      </nav>
-
       {error ? (
         <div role="alert">
           {error.code}：{error.message}（request_id: {error.request_id}）

@@ -1,0 +1,111 @@
+?   	github.com/wangding75/ai-content-go/apps/api-server/cmd/api	[no test files]
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/app	(cached)
+?   	github.com/wangding75/ai-content-go/apps/api-server/internal/config	[no test files]
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/cube	(cached)
+==================
+WARNING: DATA RACE
+Write at 0x00c00019a030 by goroutine 11:
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine_test.(*mockEnginePort).UpdateRunStatus()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine_red_test.go:18 +0xf4
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).processRun()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:72 +0x1a1
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).worker()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:57 +0x68
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).Start.gowrap1()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:38 +0x4f
+
+Previous read at 0x00c00019a030 by goroutine 10:
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine_test.TestEngineWorkerTransitionsRunToRunningStatus()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine_red_test.go:80 +0x2b5
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1689 +0x21e
+  testing.(*T).Run.gowrap1()
+      /usr/local/go/src/testing/testing.go:1742 +0x44
+
+Goroutine 11 (running) created at:
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).Start()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:38 +0xe4
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine_test.TestEngineWorkerTransitionsRunToRunningStatus()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine_red_test.go:74 +0x204
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1689 +0x21e
+  testing.(*T).Run.gowrap1()
+      /usr/local/go/src/testing/testing.go:1742 +0x44
+
+Goroutine 10 (running) created at:
+  testing.(*T).Run()
+      /usr/local/go/src/testing/testing.go:1742 +0x825
+  testing.runTests.func1()
+      /usr/local/go/src/testing/testing.go:2161 +0x85
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1689 +0x21e
+  testing.runTests()
+      /usr/local/go/src/testing/testing.go:2159 +0x8be
+  testing.(*M).Run()
+      /usr/local/go/src/testing/testing.go:2027 +0xf17
+  main.main()
+      _testmain.go:53 +0x2bd
+==================
+==================
+WARNING: DATA RACE
+Read at 0x00c00019a030 by goroutine 10:
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine_test.TestEngineWorkerTransitionsRunToRunningStatus()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine_red_test.go:80 +0x2b5
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1689 +0x21e
+  testing.(*T).Run.gowrap1()
+      /usr/local/go/src/testing/testing.go:1742 +0x44
+
+Previous write at 0x00c00019a030 by goroutine 11:
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine_test.(*mockEnginePort).UpdateRunStatus()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine_red_test.go:18 +0xf4
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).processRun()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:108 +0x9f6
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).worker()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:57 +0x68
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).Start.gowrap1()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:38 +0x4f
+
+Goroutine 10 (running) created at:
+  testing.(*T).Run()
+      /usr/local/go/src/testing/testing.go:1742 +0x825
+  testing.runTests.func1()
+      /usr/local/go/src/testing/testing.go:2161 +0x85
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1689 +0x21e
+  testing.runTests()
+      /usr/local/go/src/testing/testing.go:2159 +0x8be
+  testing.(*M).Run()
+      /usr/local/go/src/testing/testing.go:2027 +0xf17
+  main.main()
+      _testmain.go:53 +0x2bd
+
+Goroutine 11 (running) created at:
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine.(*Engine).Start()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine.go:38 +0xe4
+  github.com/wangding75/ai-content-go/apps/api-server/internal/engine_test.TestEngineWorkerTransitionsRunToRunningStatus()
+      /mnt/d/git/ai-content-go/apps/api-server/internal/engine/engine_red_test.go:74 +0x204
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1689 +0x21e
+  testing.(*T).Run.gowrap1()
+      /usr/local/go/src/testing/testing.go:1742 +0x44
+==================
+--- FAIL: TestEngineWorkerTransitionsRunToRunningStatus (0.01s)
+    testing.go:1398: race detected during execution of test
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/engine	0.027s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/api	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	1.077s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/agent	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/store	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/worker	(cached)
+FAIL

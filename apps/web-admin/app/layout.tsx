@@ -1,3 +1,6 @@
+import { Suspense } from 'react';
+import GlobalNav from './global-nav';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -5,7 +8,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Suspense fallback={null}>
+          <GlobalNav />
+        </Suspense>
+        <Suspense fallback={null}>
+          {children}
+        </Suspense>
+      </body>
     </html>
   );
 }

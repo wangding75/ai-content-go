@@ -3,6 +3,7 @@ package llm
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
@@ -10,17 +11,23 @@ import (
 
 var (
 	ErrValidation = errors.New("validation error")
+	ErrNotFound   = errors.New("not found")
 	ErrConflict   = errors.New("conflict")
 )
 
 type Service interface {
 	ListProviders(ctx context.Context, req ListProvidersRequest) (PagedProvidersResponse, error)
 	CreateProvider(ctx context.Context, req CreateProviderRequest) (CreateProviderResponse, error)
+	CreateCallLog(ctx context.Context, req CreateLLMCallLogRequest) (LLMCallLogResponse, error)
+	ListCallLogs(ctx context.Context, req ListLLMCallLogsRequest) (PagedLLMCallLogsResponse, error)
+	GetCallLog(ctx context.Context, id string) (LLMCallLogDetailResponse, error)
 }
 
 type service struct {
 	mu        sync.RWMutex
 	providers []ProviderResponse
+	callLogs  []LLMCallLogDetailResponse
+	callLogNext int
 }
 
 func NewService() Service {
@@ -61,6 +68,79 @@ func (s *service) CreateProvider(ctx context.Context, req CreateProviderRequest)
 	return CreateProviderResponse{ProviderID: id, APIKeyMasked: masked}, nil
 }
 
+func (s *service) CreateCallLog(_ context.Context, req CreateLLMCallLogRequest) (LLMCallLogResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.callLogNext++
+	id := fmt.Sprintf("llmlog-%d", s.callLogNext)
+	detail := LLMCallLogDetailResponse{
+		LLMCallLogResponse: LLMCallLogResponse{
+			ID:            id,
+			WorkflowRunID: req.WorkflowRunID,
+			StepRunID:     req.StepRunID,
+			AgentTaskID:   req.AgentTaskID,
+			Provider:      req.Provider,
+			Model:         req.Model,
+			InputTokens:   req.InputTokens,
+			OutputTokens:  req.OutputTokens,
+			Cost:          req.Cost,
+			Currency:      req.Currency,
+			LatencyMS:     req.LatencyMS,
+			Status:        req.Status,
+		},
+		Error:     req.Error,
+		RequestID: req.RequestID,
+	}
+	s.callLogs = append(s.callLogs, detail)
+	return detail.LLMCallLogResponse, nil
+}
+
+func (s *service) ListCallLogs(_ context.Context, req ListLLMCallLogsRequest) (PagedLLMCallLogsResponse, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var items []LLMCallLogResponse
+	for _, log := range s.callLogs {
+		if req.WorkflowRunID != "" && log.WorkflowRunID != req.WorkflowRunID {
+			continue
+		}
+		if req.AgentTaskID != "" && log.AgentTaskID != req.AgentTaskID {
+			continue
+		}
+		if req.Provider != "" && log.Provider != req.Provider {
+			continue
+		}
+		if req.Model != "" && log.Model != req.Model {
+			continue
+		}
+		if req.Status != "" && log.Status != req.Status {
+			continue
+		}
+		items = append(items, log.LLMCallLogResponse)
+	}
+	if items == nil {
+		items = []LLMCallLogResponse{}
+	}
+	page, pageSize := normalizePage(req.Page, req.PageSize)
+	total := len(items)
+	return PagedLLMCallLogsResponse{
+		Items:      items,
+		Pagination: content.PaginationResponse{Page: page, PageSize: pageSize, Total: total, HasNext: false},
+	}, nil
+}
+
+func (s *service) GetCallLog(_ context.Context, id string) (LLMCallLogDetailResponse, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, log := range s.callLogs {
+		if log.ID == id {
+			return log, nil
+		}
+	}
+	return LLMCallLogDetailResponse{}, ErrNotFound
+}
+
 func MaskAPIKey(apiKey string) string {
 	if len(apiKey) <= 8 {
 		return "****"
@@ -77,3 +157,4 @@ func normalizePage(page, pageSize int) (int, int) {
 	}
 	return page, pageSize
 }
+

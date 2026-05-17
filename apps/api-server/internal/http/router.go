@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -12,13 +13,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/engine"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/http/api"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/agent"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow"
 )
 
 func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
@@ -34,6 +39,17 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	contentHandler := handlers.NewContentHandler(content.NewService(), logger)
 	promptHandler := handlers.NewPromptHandler(prompt.NewService(), logger)
 	llmHandler := handlers.NewLLMHandler(llm.NewService(), logger)
+
+	wfSvc := workflow.NewService()
+	agentSvc := agent.NewService()
+	llmSvc := llm.NewService()
+	eng := engine.New(wfSvc, agentSvc, llmSvc)
+	eng.Start(context.Background())
+	workflowHandler := handlers.NewWorkflowHandler(wfSvc, eng, logger)
+	agentHandler := handlers.NewAgentHandler(agentSvc, logger)
+	llmLogHandler := handlers.NewLLMLogHandler(llmSvc, logger)
+	scheduleHandler := handlers.NewScheduleHandler(schedule.NewService(), logger)
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
 		r.Get("/health", systemHandler.Health)
@@ -53,6 +69,32 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Post("/prompt-templates", promptHandler.CreateTemplate)
 		r.Get("/llm-providers", llmHandler.ListProviders)
 		r.Post("/llm-providers", llmHandler.CreateProvider)
+
+		// Iteration 2: Workflow
+		r.Get("/workflow-templates", workflowHandler.ListTemplates)
+		r.Post("/workflow-templates", workflowHandler.CreateTemplate)
+		r.Get("/workflow-templates/{id}", workflowHandler.GetTemplate)
+		r.Get("/workflow-templates/{id}/versions", workflowHandler.ListVersions)
+		r.Post("/workflow-templates/{id}/versions", workflowHandler.CreateVersion)
+		r.Get("/workflow-template-versions/{id}", workflowHandler.GetVersionDetail)
+		r.Post("/workflow-template-versions/{id}/publish", workflowHandler.PublishVersion)
+		r.Get("/workflow-runs", workflowHandler.ListRuns)
+		r.Post("/workflow-runs", workflowHandler.CreateRun)
+		r.Get("/workflow-runs/{id}", workflowHandler.GetRun)
+		r.Get("/workflow-runs/{id}/steps", workflowHandler.GetRunSteps)
+		r.Post("/workflow-runs/{id}/cancel", workflowHandler.CancelRun)
+		r.Post("/workflow-runs/{id}/retry", workflowHandler.RetryRun)
+
+		// Iteration 2: Agent
+		r.Get("/agent-tasks", agentHandler.ListTasks)
+		r.Get("/agent-tasks/{id}", agentHandler.GetTask)
+
+		// Iteration 2: LLM Call Logs
+		r.Get("/llm-call-logs", llmLogHandler.ListCallLogs)
+		r.Get("/llm-call-logs/{id}", llmLogHandler.GetCallLog)
+
+		// Iteration 2: Schedule (contract only)
+		r.Post("/workflow-schedules", scheduleHandler.CreateSchedule)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
@@ -62,7 +104,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-Id")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-Id, Idempotency-Key")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

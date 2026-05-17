@@ -29,7 +29,7 @@ export default defineConfig({
       command: `npm run dev -- --port ${new URL(webBaseURL).port}`,
       url: webBaseURL,
       cwd: '.',
-      env: { NEXT_PUBLIC_API_BASE_URL: apiBaseURL, NEXT_PUBLIC_API_TOKEN: 'dev' },
+      env: { API_PROXY_TARGET: apiBaseURL },
       reuseExistingServer: true,
       timeout: 20_000,
     },
