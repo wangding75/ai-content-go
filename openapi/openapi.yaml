@@ -526,6 +526,116 @@ paths:
           $ref: '#/components/responses/InternalError'
       security:
         - bearerAuth: []
+  /api/v1/workflow-schedules:
+    get:
+      summary: List workflow schedules
+      tags: [workflow-schedules]
+      responses:
+        '200': { description: Workflow schedule list }
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create workflow schedule
+      tags: [workflow-schedules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduleRequest'
+      responses:
+        '201': { description: Workflow schedule created }
+      security:
+        - bearerAuth: []
+  /api/v1/workflow-schedules/{id}/enable:
+    post:
+      summary: Enable workflow schedule
+      tags: [workflow-schedules]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200': { description: Schedule enabled }
+      security:
+        - bearerAuth: []
+  /api/v1/workflow-schedules/{id}/disable:
+    post:
+      summary: Disable workflow schedule
+      tags: [workflow-schedules]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200': { description: Schedule disabled }
+      security:
+        - bearerAuth: []
+  /api/v1/workflow-schedules/{id}/test-run:
+    post:
+      summary: Test run workflow schedule
+      tags: [workflow-schedules]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '202': { description: Schedule test run accepted }
+      security:
+        - bearerAuth: []
+  /api/v1/workflow-schedules/{id}/triggers:
+    get:
+      summary: List workflow schedule triggers
+      tags: [workflow-schedules]
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200': { description: Schedule trigger list }
+      security:
+        - bearerAuth: []
+  /api/v1/llm-call-logs/summary:
+    get:
+      summary: LLM cost summary
+      tags: [llm]
+      responses:
+        '200':
+          description: LLM cost summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LLMCostSummaryResponse'
+      security:
+        - bearerAuth: []
+  /api/v1/external-automation/providers:
+    get:
+      summary: List external automation providers
+      tags: [external-automation]
+      responses:
+        '200': { description: External provider list }
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create external automation provider
+      tags: [external-automation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExternalProviderRequest'
+      responses:
+        '201': { description: External provider created }
+      security:
+        - bearerAuth: []
+  /api/v1/external-automation/bindings:
+    get:
+      summary: List external automation bindings
+      tags: [external-automation]
+      responses:
+        '200': { description: External binding list }
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create external automation binding
+      tags: [external-automation]
+      responses:
+        '201': { description: External binding created }
+      security:
+        - bearerAuth: []
 components:
   parameters:
     RequestIdHeader:
@@ -609,6 +719,33 @@ components:
       type: http
       scheme: bearer
   schemas:
+    CreateScheduleRequest:
+      type: object
+      properties:
+        project_id: { type: string }
+        template_version_id: { type: string }
+        cron_expression: { type: string }
+        daily_content_count: { type: integer }
+        input_template: { type: object }
+    LLMCostSummaryResponse:
+      type: object
+      properties:
+        calls: { type: integer }
+        input_tokens: { type: integer }
+        output_tokens: { type: integer }
+        tokens: { type: integer }
+        cost: { type: number }
+        currency: { type: string }
+        by_model:
+          type: array
+          items:
+            type: object
+    CreateExternalProviderRequest:
+      type: object
+      properties:
+        provider_type: { type: string }
+        base_url: { type: string }
+        token: { type: string }
     ErrorDetail:
       type: object
       properties:

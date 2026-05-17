@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import './globals.css';
 import GlobalNav from './global-nav';
 
 export default function RootLayout({
@@ -9,12 +10,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Suspense fallback={null}>
-          <GlobalNav />
-        </Suspense>
-        <Suspense fallback={null}>
-          {children}
-        </Suspense>
+        <div className="app-shell">
+          <Suspense fallback={null}>
+            <GlobalNav />
+          </Suspense>
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
+        </div>
       </body>
     </html>
   );

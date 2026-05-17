@@ -1,0 +1,5 @@
+--- FAIL: TestIteration21HistoricalPagesUseStyledAdminRenderingInsteadOfSkeletonOrBareHTML (0.01s)
+    iteration_2_1_task09_historical_pages_contract_test.go:31: ../../../../../apps/web-admin/app/swagger-openapi/page.tsx must render request_id/requestId in error states
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	0.017s
+FAIL

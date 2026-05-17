@@ -1,0 +1,84 @@
+tasks:
+  - task: "Task-01：扩展 Schedule DTO 与 Service 接口骨架"
+    module: schedule
+    test_file: iteration_2_1_task01_contract_test.go
+    test_cases: 2
+  - task: "Task-02：实现 Schedule Service 手动触发运行时"
+    module: schedule
+    test_file: iteration_2_1_task02_runtime_test.go
+    test_cases: 2
+  - task: "Task-03：暴露 WorkflowSchedule HTTP API"
+    module: http/handlers
+    test_file: iteration_2_1_task03_schedule_handler_test.go
+    test_cases: 3
+  - task: "Task-04：补齐 LLM 成本汇总接口"
+    module: llm
+    test_file: iteration_2_1_task04_summary_test.go
+    test_cases: 2
+  - task: "Task-05：新增 External Automation 后端 API"
+    module: external
+    test_file: iteration_2_1_task05_service_test.go
+    test_cases: 2
+  - task: "Task-06：补齐 OpenAPI 与数据库迁移契约"
+    module: store
+    test_file: iteration_2_1_task06_contract_test.go
+    test_cases: 3
+  - task: "Task-07：扩展 Web Admin API client 与导航入口"
+    module: http/contract
+    test_file: iteration_2_1_task07_web_admin_contract_test.go
+    test_cases: 2
+  - task: "Task-08：实现 Iteration 2.1 新增 Web Admin 页面"
+    module: http/contract
+    test_file: iteration_2_1_task08_pages_contract_test.go
+    test_cases: 3
+  - task: "Task-09：补齐历史页面真实渲染"
+    module: http/contract
+    test_file: iteration_2_1_task09_historical_pages_contract_test.go
+    test_cases: 2
+  - task: "Task-10：修复 Iteration 1 E2E 重复运行稳定性"
+    module: http/contract
+    test_file: iteration_2_1_task10_e2e_stability_contract_test.go
+    test_cases: 2
+type_tests:
+  - type: library
+    standard: standards/testing/library.md
+    test_file: iteration_2_1_task01_contract_test.go
+    covers:
+      - "Task-01：扩展 Schedule DTO 与 Service 接口骨架"
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: iteration_2_1_task02_runtime_test.go
+    covers:
+      - "Task-02：实现 Schedule Service 手动触发运行时"
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: iteration_2_1_task03_schedule_handler_test.go
+    covers:
+      - "Task-03：暴露 WorkflowSchedule HTTP API"
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: iteration_2_1_task04_summary_test.go
+    covers:
+      - "Task-04：补齐 LLM 成本汇总接口"
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: iteration_2_1_task05_service_test.go
+    covers:
+      - "Task-05：新增 External Automation 后端 API"
+  - type: sql-query
+    standard: standards/testing/sql-query.md
+    test_file: iteration_2_1_task06_contract_test.go
+    covers:
+      - "Task-06：补齐 OpenAPI 与数据库迁移契约"
+  - type: library
+    standard: standards/testing/library.md
+    test_file: iteration_2_1_task07_web_admin_contract_test.go
+    covers:
+      - "Task-07：扩展 Web Admin API client 与导航入口"
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: iteration2_1-pages.spec.ts
+    covers:
+      - "Task-08：实现 Iteration 2.1 新增 Web Admin 页面"
+      - "Task-09：补齐历史页面真实渲染"
+      - "Task-10：修复 Iteration 1 E2E 重复运行稳定性"

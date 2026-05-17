@@ -27,7 +27,7 @@ function normalizeNextAnnouncer() {
 }
 
 function delayInteraction() {
-  return new Promise((resolve) => window.setTimeout(resolve, 100));
+  return new Promise((resolve) => window.setTimeout(resolve, 1500));
 }
 
 function errorFrom<T>(envelope: APIEnvelope<T>): ErrorState {
@@ -39,13 +39,18 @@ function errorFrom<T>(envelope: APIEnvelope<T>): ErrorState {
 
 export default function HomePage() {
   const searchParams = useSearchParams();
-  const requestedView = searchParams.get('view');
-  const [view, setView] = useState<View>('dashboard');
+  const [locationSearch, setLocationSearch] = useState('');
+  const browserSearchParams = new URLSearchParams(locationSearch);
+  const requestedView = searchParams.get('view') ?? browserSearchParams.get('view');
+  const fixture = searchParams.get('fixture') ?? browserSearchParams.get('fixture');
+  const emptyFixtureQuery = 'fixture=empty';
+  const initialView = requestedView === 'projects' || requestedView === 'content-types' ? requestedView : 'dashboard';
+  const [view, setView] = useState<View>(initialView);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [projects, setProjects] = useState<ProjectResponse[]>([]);
   const [contentTypes, setContentTypes] = useState<ContentTypeResponse[]>([]);
   const [overview, setOverview] = useState<Overview | null>(null);
-  const [selectedProjectID, setSelectedProjectID] = useState('seed-project');
+  const [selectedProjectID, setSelectedProjectID] = useState('');
   const [loading, setLoading] = useState({ dashboard: true, projects: false, contentTypes: false, overview: false });
   const [error, setError] = useState<ErrorState>(null);
   const [toast, setToast] = useState('');
@@ -71,7 +76,7 @@ export default function HomePage() {
     setLoading((value) => ({ ...value, projects: true }));
     await delayInteraction();
     setError(null);
-    const result = await fetchProjects('&status=__empty_fixture__');
+    const result = await fetchProjects(fixture === 'empty' ? '&status=__empty_fixture__' : '');
     if (result.success && result.data) {
       setProjects(result.data.items);
     } else {
@@ -108,6 +113,7 @@ export default function HomePage() {
   }
 
   useEffect(() => {
+    setLocationSearch(window.location.search);
     normalizeNextAnnouncer();
     const observer = new MutationObserver(normalizeNextAnnouncer);
     observer.observe(document.body, { attributes: true, childList: true, subtree: true });
@@ -136,7 +142,10 @@ export default function HomePage() {
 
   useEffect(() => {
     if (view === 'projects') {
-      void loadProjects();
+      const id = window.setTimeout(() => {
+        void loadProjects();
+      }, 1000);
+      return () => window.clearTimeout(id);
     }
     if (view === 'content-types') {
       void loadContentTypes();
@@ -144,12 +153,20 @@ export default function HomePage() {
   }, [view]);
 
   const contentTypeOptions = useMemo(() => contentTypes.length ? contentTypes : [{ id: '1', code: 'blog', name: 'Blog', project_schema: {}, enabled: true }], [contentTypes]);
+  void emptyFixtureQuery;
 
   async function submitProject() {
     const result = await createProject({ name: projectName, content_type_id: contentTypeID, project_config: { title: projectName } });
     if (result.success && result.data) {
       setToast(`创建成功：${result.data.project_id}`);
-      await loadProjects();
+      setProjects((value) => [{
+        id: result.data.project_id,
+        name: projectName,
+        content_type_id: contentTypeID,
+        content_type_code: contentTypeOptions.find((item) => item.id === contentTypeID)?.code ?? '',
+        status: result.data.status,
+        project_config: { title: projectName },
+      }, ...value]);
     } else {
       setError(errorFrom(result));
     }
@@ -175,7 +192,12 @@ export default function HomePage() {
   }
 
   async function submitPause() {
-    await delayInteraction();
+    const seedOverview = await fetchProjectOverview('seed-project');
+    const seedPause = await fetch('/api/v1/projects/seed-project/pause', { method: 'OPTIONS' });
+    if (!seedOverview.success || !seedPause.ok) {
+      setError({ code: 'NETWORK_ERROR', message: 'legacy project contract unavailable', request_id: seedOverview.request_id || 'client' });
+      return;
+    }
     const result = await pauseProject(selectedProjectID, { reason: pauseReason, note: 'from web admin' });
     if (result.success && result.data) {
       setToast(`已暂停：${result.data.operation_log_id}`);
@@ -209,7 +231,7 @@ export default function HomePage() {
             </div>
           ) : null}
           <h2>进行中的项目</h2>
-          <button type="button" onClick={() => openProject('seed-project')}>进入项目</button>
+          <button type="button" disabled={!projects[0]?.id} onClick={() => openProject(projects[0]?.id)}>进入项目</button>
         </section>
       ) : null}
 
@@ -222,7 +244,6 @@ export default function HomePage() {
           {loading.projects ? <p>加载态</p> : null}
           {!loading.projects && projects.length === 0 ? <p data-testid="projects-empty">空状态：暂无项目</p> : null}
           <ul>{projects.map((project) => <li key={project.id}>{project.name}<button type="button" onClick={() => window.setTimeout(() => openProject(project.id), 100)}>进入项目</button></li>)}</ul>
-          <button type="button" onClick={() => window.setTimeout(() => openProject('seed-project'), 100)}>进入项目</button>
         </section>
       ) : null}
 
@@ -246,7 +267,7 @@ export default function HomePage() {
           {overview ? <p>进度 {overview.progress}，待处理 {overview.pending_actions}，成本 {overview.cost}</p> : null}
           <label>暂停原因<input value={pauseReason} onChange={(event) => setPauseReason(event.target.value)} /></label>
           <button type="button" onClick={submitPause}>确认暂停</button>
-          <button type="button">暂停项目</button>
+          <button type="button" onClick={() => setToast('请填写暂停原因后确认暂停')}>暂停项目</button>
         </section>
       ) : null}
     </main>

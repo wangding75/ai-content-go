@@ -1,0 +1,5 @@
+--- FAIL: TestIteration21WebAdminAPIClientDeclaresScheduleExternalAndCostSummaryFunctions (0.00s)
+    iteration_2_1_task07_web_admin_contract_test.go:35: expected api.ts to declare fetchScheduleTriggers
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	0.014s
+FAIL

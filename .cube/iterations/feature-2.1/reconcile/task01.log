@@ -1,0 +1,5 @@
+--- FAIL: TestIteration21ScheduleServiceContractCreatesDefaultProductionPlanCount (0.00s)
+    iteration_2_1_task01_contract_test.go:21: create schedule: validation error
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule	0.004s
+FAIL

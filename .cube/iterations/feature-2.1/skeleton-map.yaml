@@ -1,0 +1,106 @@
+files:
+  - path: internal/modules/schedule/dto.go
+    type: dto
+    tasks:
+      - "Task-01：扩展 Schedule DTO 与 Service 接口骨架"
+  - path: internal/modules/schedule/service.go
+    type: interface
+    tasks:
+      - "Task-01：扩展 Schedule DTO 与 Service 接口骨架"
+      - "Task-02：实现 Schedule Service 手动触发运行时"
+  - path: internal/http/handlers/schedule.go
+    type: class
+    tasks:
+      - "Task-03：暴露 WorkflowSchedule HTTP API"
+  - path: internal/modules/llm/dto.go
+    type: dto
+    tasks:
+      - "Task-04：补齐 LLM 成本汇总接口"
+  - path: internal/modules/llm/service.go
+    type: interface
+    tasks:
+      - "Task-04：补齐 LLM 成本汇总接口"
+  - path: internal/http/handlers/llmlog.go
+    type: class
+    tasks:
+      - "Task-04：补齐 LLM 成本汇总接口"
+  - path: internal/modules/external/dto.go
+    type: dto
+    tasks:
+      - "Task-05：新增 External Automation 后端 API"
+  - path: internal/modules/external/service.go
+    type: interface
+    tasks:
+      - "Task-05：新增 External Automation 后端 API"
+  - path: internal/http/handlers/external.go
+    type: class
+    tasks:
+      - "Task-05：新增 External Automation 后端 API"
+  - path: internal/http/router.go
+    type: class
+    tasks:
+      - "Task-03：暴露 WorkflowSchedule HTTP API"
+      - "Task-04：补齐 LLM 成本汇总接口"
+      - "Task-05：新增 External Automation 后端 API"
+  - path: migrations/00004_create_iteration_2_1_tables.sql
+    type: constant
+    tasks:
+      - "Task-06：补齐 OpenAPI 与数据库迁移契约"
+  - path: openapi.yaml
+    type: constant
+    tasks:
+      - "Task-06：补齐 OpenAPI 与数据库迁移契约"
+  - path: lib/api.ts
+    type: interface
+    tasks:
+      - "Task-07：扩展 Web Admin API client 与导航入口"
+  - path: app/global-nav.tsx
+    type: class
+    tasks:
+      - "Task-07：扩展 Web Admin API client 与导航入口"
+  - path: app/workflow/schedules/page.tsx
+    type: class
+    tasks:
+      - "Task-08：实现 Iteration 2.1 新增 Web Admin 页面"
+  - path: app/external-automation/n8n/page.tsx
+    type: class
+    tasks:
+      - "Task-08：实现 Iteration 2.1 新增 Web Admin 页面"
+  - path: app/llm/cost-summary/page.tsx
+    type: class
+    tasks:
+      - "Task-08：实现 Iteration 2.1 新增 Web Admin 页面"
+  - path: app/page.tsx
+    type: class
+    tasks:
+      - "Task-09：补齐历史页面真实渲染"
+      - "Task-10：修复 Iteration 1 E2E 重复运行稳定性"
+  - path: app/swagger-openapi/page.tsx
+    type: class
+    tasks:
+      - "Task-09：补齐历史页面真实渲染"
+  - path: app/workflow/templates/page.tsx
+    type: class
+    tasks:
+      - "Task-09：补齐历史页面真实渲染"
+  - path: app/workflow/runs/page.tsx
+    type: class
+    tasks:
+      - "Task-09：补齐历史页面真实渲染"
+  - path: app/agent/tasks/page.tsx
+    type: class
+    tasks:
+      - "Task-09：补齐历史页面真实渲染"
+  - path: app/llm/logs/page.tsx
+    type: class
+    tasks:
+      - "Task-09：补齐历史页面真实渲染"
+  - path: e2e/iteration1-ui.spec.ts
+    type: class
+    tasks:
+      - "Task-10：修复 Iteration 1 E2E 重复运行稳定性"
+  - path: e2e/iteration2-navigation.spec.ts
+    type: class
+    tasks:
+      - "Task-08：实现 Iteration 2.1 新增 Web Admin 页面"
+      - "Task-09：补齐历史页面真实渲染"
