@@ -1149,6 +1149,79 @@ components:
       type: http
       scheme: bearer
   schemas:
+    CreateGenerationRunRequest:
+      type: object
+      properties:
+        confirmed_topic_id: { type: string }
+        worldview_version_id: { type: string }
+        arc_id: { type: string }
+        target_count: { type: integer, minimum: 1 }
+        start_sequence_no: { type: integer, minimum: 1 }
+        template_version_id: { type: string }
+        generation_config: { type: object }
+      required: [confirmed_topic_id, worldview_version_id, arc_id, target_count, start_sequence_no, template_version_id]
+    CreateGenerationRunResponse:
+      type: object
+      properties:
+        generation_run_id: { type: string }
+        workflow_run_id: { type: string }
+        status: { type: string }
+      required: [generation_run_id, workflow_run_id, status]
+    GenerationRunResponse:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        workflow_run_id: { type: string }
+        template_version_id: { type: string }
+        status: { type: string }
+        trigger_type: { type: string }
+        retry_of_generation_run_id: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, project_id, workflow_run_id, template_version_id, status, trigger_type, created_at, updated_at]
+    ContentItemResponse:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        generation_run_id: { type: string }
+        content_type_code: { type: string }
+        status: { type: string }
+        sequence_no: { type: integer }
+        title: { type: string }
+        version: { type: integer }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, project_id, generation_run_id, content_type_code, status, sequence_no, title, version]
+    GenerationRunDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenerationRunResponse'
+        - type: object
+          properties:
+            step_runs:
+              type: array
+              items: { type: object }
+            agent_tasks:
+              type: array
+              items: { type: object }
+            llm_call_logs:
+              type: array
+              items: { type: object }
+            content_items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ContentItemResponse'
+            error: { type: string }
+    ContentItemDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContentItemResponse'
+        - type: object
+          properties:
+            body: { type: string }
+            metadata: { type: object }
+            extension: { type: object }
+          required: [body, metadata, extension]
     CreateScheduleRequest:
       type: object
       properties:
@@ -1189,7 +1262,7 @@ components:
       properties:
         code:
           type: string
-          enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, IDEMPOTENCY_CONFLICT, WORKFLOW_RUN_FAILED, INTERNAL_ERROR]
+          enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, IDEMPOTENCY_CONFLICT, WORKFLOW_RUN_FAILED, AGENT_OUTPUT_INVALID, LLM_PROVIDER_ERROR, INTERNAL_ERROR]
         message:
           type: string
         details:

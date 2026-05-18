@@ -46,6 +46,7 @@ CREATE INDEX IF NOT EXISTS idx_content_item_project_id ON content_item(project_i
 CREATE INDEX IF NOT EXISTS idx_content_item_generation_run_id ON content_item(generation_run_id);
 CREATE INDEX IF NOT EXISTS idx_content_item_status ON content_item(status);
 CREATE INDEX IF NOT EXISTS idx_content_item_project_sequence ON content_item(project_id, sequence_no);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_content_item_project_type_sequence_version ON content_item(project_id, content_type_code, sequence_no, version);
 
 CREATE TABLE IF NOT EXISTS novel_chapter_extension (
     content_item_id TEXT PRIMARY KEY REFERENCES content_item(id),

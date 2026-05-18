@@ -68,4 +68,6 @@ files:
     module: web-admin
     type: class
     tasks:
-      - Task-09：覆盖 Iteration 4 e2e 与联调路径
+      - Task-09：覆盖 Iteration 4 后端契约与异步联调路径
+      - Task-10：覆盖 Iteration 4 前端 e2e 与页面联调路径
+      - Task-11：维护设计骨架映射

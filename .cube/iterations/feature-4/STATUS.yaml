@@ -1,0 +1,89 @@
+# STATUS.yaml — Per-task TDD development progress
+# AI reads this file at session start to recover context
+# Update phase after completing each task
+#
+# phase values: locked | green | done
+# tracking fields (added during execution): started_at, completed_at, test_passed, test_total
+
+stage: 04-development
+project: ai-content-go
+branch: feature/4
+
+tasks:
+  - task: "Task-01：定义生成运行与内容单元 DTO 契约"
+    test_file: task01_dto_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 09:58"
+    completed_at: "2026-05-18 09:59"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-02：实现生成服务接口与状态规则骨架"
+    test_file: task02_service_state_red_test.go
+    phase: done
+    started_at: "2026-05-18 09:59"
+    completed_at: "2026-05-18 10:16"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-03：暴露生成运行和 ContentItem HTTP API"
+    test_file: generation_handler_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:16"
+    completed_at: "2026-05-18 10:19"
+    test_passed: 4
+    test_total: 4
+  - task: "Task-04：补充数据库迁移和 OpenAPI 契约"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:19"
+    completed_at: "2026-05-18 10:21"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-05：补充前端 API client 契约"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:22"
+    completed_at: "2026-05-18 10:22"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-06：实现内容生产页与项目导航入口"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:23"
+    completed_at: "2026-05-18 10:24"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-07：实现生成运行详情和失败重试路由"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:25"
+    completed_at: "2026-05-18 10:26"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-08：实现 ContentItem 列表和详情页面"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:41"
+    completed_at: "2026-05-18 10:43"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-09：覆盖 Iteration 4 后端契约与异步联调路径"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:45"
+    completed_at: "2026-05-18 10:45"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-10：覆盖 Iteration 4 前端 e2e 与页面联调路径"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:46"
+    completed_at: "2026-05-18 10:47"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-11：维护设计骨架映射"
+    test_file: iteration4_generation_contract_red_test.go
+    phase: done
+    started_at: "2026-05-18 10:48"
+    completed_at: "2026-05-18 10:48"
+    test_passed: 1
+    test_total: 1
