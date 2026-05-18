@@ -1,0 +1,85 @@
+files:
+  - path: apps/api-server/internal/http/api/response.go
+    type: constant
+    tasks:
+      - "Task-01：补充 API 错误码与分页契约"
+  - path: apps/api-server/migrations/00002_create_content_entry_tables.sql
+    type: sql
+    tasks:
+      - "Task-02：新增数据库迁移契约"
+  - path: apps/api-server/internal/modules/dashboard/dto.go
+    type: dto
+    tasks:
+      - "Task-03：实现系统大盘摘要 API"
+  - path: apps/api-server/internal/modules/dashboard/service.go
+    type: interface
+    tasks:
+      - "Task-03：实现系统大盘摘要 API"
+  - path: apps/api-server/internal/http/handlers/dashboard.go
+    type: class
+    tasks:
+      - "Task-03：实现系统大盘摘要 API"
+  - path: apps/api-server/internal/modules/content/dto.go
+    type: dto
+    tasks:
+      - "Task-04：实现内容类型管理 API"
+      - "Task-05：实现内容项目管理 API"
+  - path: apps/api-server/internal/modules/content/service.go
+    type: interface
+    tasks:
+      - "Task-04：实现内容类型管理 API"
+      - "Task-05：实现内容项目管理 API"
+  - path: apps/api-server/internal/http/handlers/content.go
+    type: class
+    tasks:
+      - "Task-04：实现内容类型管理 API"
+      - "Task-05：实现内容项目管理 API"
+  - path: apps/api-server/internal/modules/prompt/dto.go
+    type: dto
+    tasks:
+      - "Task-06：实现 Prompt 模板管理 API"
+  - path: apps/api-server/internal/modules/prompt/service.go
+    type: interface
+    tasks:
+      - "Task-06：实现 Prompt 模板管理 API"
+  - path: apps/api-server/internal/http/handlers/prompt.go
+    type: class
+    tasks:
+      - "Task-06：实现 Prompt 模板管理 API"
+  - path: apps/api-server/internal/modules/llm/dto.go
+    type: dto
+    tasks:
+      - "Task-07：实现 LLM Provider 管理 API 与 API Key 脱敏"
+  - path: apps/api-server/internal/modules/llm/service.go
+    type: interface
+    tasks:
+      - "Task-07：实现 LLM Provider 管理 API 与 API Key 脱敏"
+  - path: apps/api-server/internal/http/handlers/llm.go
+    type: class
+    tasks:
+      - "Task-07：实现 LLM Provider 管理 API 与 API Key 脱敏"
+  - path: openapi/openapi.yaml
+    type: schema
+    tasks:
+      - "Task-08：补充 OpenAPI 契约"
+  - path: apps/web-admin/lib/api.ts
+    type: interface
+    tasks:
+      - "Task-09：实现 Web Admin 首页、项目管理与项目模板交互入口"
+      - "Task-10：实现 Prompt 与 Provider 管理页面交互入口"
+  - path: apps/web-admin/app/page.tsx
+    type: class
+    tasks:
+      - "Task-09：实现 Web Admin 首页、项目管理与项目模板交互入口"
+  - path: apps/web-admin/app/prompt/page.tsx
+    type: class
+    tasks:
+      - "Task-10：实现 Prompt 与 Provider 管理页面交互入口"
+  - path: apps/web-admin/app/provider/page.tsx
+    type: class
+    tasks:
+      - "Task-10：实现 Prompt 与 Provider 管理页面交互入口"
+  - path: .cube/iterations/feature-1/skeleton-map.yaml
+    type: config
+    tasks:
+      - "Task-11：生成骨架映射与阶段追踪文件"
