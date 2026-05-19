@@ -1,16 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { fetchGenerationRun, pageErrorFromEnvelope, type GenerationRunDetailResponse, type PageError } from '../../../lib/api';
 
-export default function GenerationRunDetailPage({ params }: { params: { runId: string } }) {
+export default function GenerationRunDetailPage({ params }: { params: Promise<{ runId: string }> }) {
+  const { runId } = use(params);
   const [run, setRun] = useState<GenerationRunDetailResponse | null>(null);
   const [error, setError] = useState<PageError | null>(null);
 
   useEffect(() => {
     async function loadRun() {
-      const envelope = await fetchGenerationRun(params.runId);
+      const envelope = await fetchGenerationRun(runId);
       if (!envelope.success || !envelope.data) {
         setError(pageErrorFromEnvelope(envelope, '加载生成运行详情失败'));
         return;
@@ -19,7 +20,7 @@ export default function GenerationRunDetailPage({ params }: { params: { runId: s
       setError(null);
     }
     void loadRun();
-  }, [params.runId]);
+  }, [runId]);
 
   return (
     <main className="page-shell">

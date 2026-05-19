@@ -11,6 +11,7 @@ const items = [
   { href: 'novel/arcs', label: '大纲' },
   { href: 'production', label: '内容生产' },
   { href: 'content-items', label: '内容单元' },
+  { href: 'reviews', label: '审稿中心' },
 ];
 
 export default function ProjectWorkspaceNav({ projectId }: { projectId: string }) {

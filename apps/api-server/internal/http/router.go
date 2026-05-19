@@ -24,6 +24,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/novel"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/review"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow"
@@ -57,6 +58,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	externalHandler := handlers.NewExternalHandler(external.NewService(), logger)
 	novelHandler := handlers.NewNovelHandler(novel.NewService(), wfSvc, eng, logger)
 	generationHandler := handlers.NewGenerationHandler(generation.NewService(), wfSvc, eng, logger)
+	reviewHandler := handlers.NewReviewHandler(review.NewService(), wfSvc, eng, logger)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
@@ -135,6 +137,17 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Post("/generation-runs/{id}/retry", generationHandler.RetryGenerationRun)
 		r.Get("/projects/{projectId}/content-items", generationHandler.ListContentItems)
 		r.Get("/content-items/{id}", generationHandler.GetContentItem)
+
+		// Iteration 5: Review and quality control
+		r.Get("/content-reviews", reviewHandler.ListReviews)
+		r.Post("/content-items/{id}/reviews", reviewHandler.CreateReview)
+		r.Get("/content-reviews/{id}", reviewHandler.GetReview)
+		r.Post("/content-reviews/{id}/ai-report", reviewHandler.TriggerAIReport)
+		r.Get("/content-reviews/{id}/ai-report", reviewHandler.GetAIReport)
+		r.Post("/content-reviews/{id}/approve", reviewHandler.ApproveReview)
+		r.Post("/content-reviews/{id}/reject", reviewHandler.RejectReview)
+		r.Post("/content-reviews/{id}/approve-with-edit", reviewHandler.ApproveWithEdit)
+		r.Get("/content-items/{id}/versions", reviewHandler.ListContentVersions)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
