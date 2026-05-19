@@ -1,0 +1,66 @@
+files:
+  - path: internal/modules/memory/dto.go
+    module: api-server
+    type: dto
+    tasks:
+      - "Task-01：定义记忆领域 DTO 与状态常量"
+  - path: migrations/00008_create_knowledge_memory_tables.sql
+    module: api-server
+    type: migration
+    tasks:
+      - "Task-02：设计并新增记忆数据库迁移"
+  - path: internal/modules/memory/service.go
+    module: api-server
+    type: interface
+    tasks:
+      - "Task-03：实现 Memory Service 骨架与状态接口"
+  - path: internal/modules/memory/executor.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-04：实现一致性报告执行器骨架"
+  - path: internal/http/handlers/memory.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-05：实现记忆 HTTP API 骨架与路由注册"
+  - path: internal/http/router.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-05：实现记忆 HTTP API 骨架与路由注册"
+  - path: openapi.yaml
+    module: openapi
+    type: contract
+    tasks:
+      - "Task-06：补充 OpenAPI 记忆接口契约"
+  - path: lib/api.ts
+    module: web-admin
+    type: interface
+    tasks:
+      - "Task-07：扩展 Web Admin Memory API client"
+  - path: app/projects/[projectId]/workspace-nav.tsx
+    module: web-admin
+    type: component
+    tasks:
+      - "Task-08：实现项目记忆上下文页面与导航入口"
+  - path: app/projects/[projectId]/memory/page.tsx
+    module: web-admin
+    type: component
+    tasks:
+      - "Task-08：实现项目记忆上下文页面与导航入口"
+  - path: app/projects/[projectId]/memory/context-preview/page.tsx
+    module: web-admin
+    type: component
+    tasks:
+      - "Task-09：实现上下文预览页面"
+  - path: app/projects/[projectId]/consistency-reports/page.tsx
+    module: web-admin
+    type: component
+    tasks:
+      - "Task-10：实现一致性报告列表页面"
+  - path: app/projects/[projectId]/consistency-reports/[reportId]/page.tsx
+    module: web-admin
+    type: component
+    tasks:
+      - "Task-11：实现一致性报告详情页面"

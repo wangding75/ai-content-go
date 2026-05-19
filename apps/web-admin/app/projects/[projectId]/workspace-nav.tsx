@@ -12,6 +12,9 @@ const items = [
   { href: 'production', label: '内容生产' },
   { href: 'content-items', label: '内容单元' },
   { href: 'reviews', label: '审稿中心' },
+  { href: 'memory', label: '记忆上下文' },
+  { href: 'memory/context-preview', label: '上下文预览' },
+  { href: 'consistency-reports', label: '一致性报告' },
 ];
 
 export default function ProjectWorkspaceNav({ projectId }: { projectId: string }) {
