@@ -1,0 +1,12 @@
+branch: feature/6
+current_stage: 01-prd
+created: 2026-05-19
+
+stages:
+  01-prd: IN_PROGRESS
+  02-design: PENDING
+  03-test-cases: PENDING
+  04-development: PENDING
+  05-testing: PENDING
+
+history: []
