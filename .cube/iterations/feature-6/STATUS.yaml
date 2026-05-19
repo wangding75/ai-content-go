@@ -19,7 +19,11 @@ tasks:
     test_total: 3
   - task: "Task-02：设计并新增记忆数据库迁移"
     test_file: apps/api-server/internal/store/knowledge_memory_migration_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:31"
+    completed_at: "2026-05-19 18:32"
+    test_passed: 3
+    test_total: 3
   - task: "Task-03：实现 Memory Service 骨架与状态接口"
     test_file: apps/api-server/internal/modules/memory/task03_service_state_red_test.go
     phase: locked
