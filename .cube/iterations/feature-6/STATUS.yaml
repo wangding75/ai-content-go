@@ -40,7 +40,11 @@ tasks:
     test_total: 3
   - task: "Task-05：实现记忆 HTTP API 骨架与路由注册"
     test_file: apps/api-server/internal/http/contract/iteration6_memory_api_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:39"
+    completed_at: "2026-05-19 18:41"
+    test_passed: 4
+    test_total: 4
   - task: "Task-06：补充 OpenAPI 记忆接口契约"
     test_file: apps/api-server/internal/http/contract/iteration6_openapi_contract_red_test.go
     phase: locked

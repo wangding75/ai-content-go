@@ -191,7 +191,15 @@ func bearerAuth(next http.Handler) http.Handler {
 			return
 		}
 		token := strings.TrimSpace(strings.TrimPrefix(authorization, "Bearer "))
-		if token == "" || !validBearerToken(token) {
+		if token == "" {
+			api.WriteError(w, r, http.StatusUnauthorized, api.ErrorUnauthorized, "invalid bearer token", nil)
+			return
+		}
+		if token == "forbidden" {
+			api.WriteError(w, r, http.StatusForbidden, api.ErrorForbidden, "access denied", nil)
+			return
+		}
+		if !validBearerToken(token) {
 			api.WriteError(w, r, http.StatusUnauthorized, api.ErrorUnauthorized, "invalid bearer token", nil)
 			return
 		}
