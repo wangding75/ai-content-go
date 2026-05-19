@@ -1042,6 +1042,255 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
       security:
         - bearerAuth: []
+  /api/v1/content-reviews:
+    get:
+      summary: List content reviews
+      tags: [review]
+      operationId: listContentReviews
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+        - name: project_id
+          in: query
+          required: true
+          schema: { type: string }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Content review list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReviewsEnvelope'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-items/{id}/reviews:
+    post:
+      summary: Create content review
+      tags: [review]
+      operationId: createContentReview
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReviewRequest'
+      responses:
+        '201':
+          description: Content review created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateReviewEnvelope'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-reviews/{id}:
+    get:
+      summary: Get content review
+      tags: [review]
+      operationId: getContentReview
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Content review detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReviewDetailEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-reviews/{id}/ai-report:
+    post:
+      summary: Trigger AI review report
+      tags: [review]
+      operationId: triggerAIReviewReport
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerAIReportRequest'
+      responses:
+        '202':
+          description: AI report generation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerAIReportEnvelope'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { description: Workflow run failed, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+        '502': { description: LLM provider error, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+    get:
+      summary: Get AI review report
+      tags: [review]
+      operationId: getAIReviewReport
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: AI review report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewReportEnvelope'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-reviews/{id}/approve:
+    post:
+      summary: Approve content review
+      tags: [review]
+      operationId: approveContentReview
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveReviewRequest'
+      responses:
+        '200':
+          description: Content review approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveReviewEnvelope'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-reviews/{id}/reject:
+    post:
+      summary: Reject content review
+      tags: [review]
+      operationId: rejectContentReview
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectReviewRequest'
+      responses:
+        '202':
+          description: Content review rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RejectReviewEnvelope'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { description: Workflow run failed, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-reviews/{id}/approve-with-edit:
+    post:
+      summary: Approve content review with edits
+      tags: [review]
+      operationId: approveContentReviewWithEdit
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveWithEditRequest'
+      responses:
+        '200':
+          description: Content review approved with edit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveWithEditEnvelope'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-items/{id}/versions:
+    get:
+      summary: List content versions
+      tags: [review]
+      operationId: listContentVersions
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+      responses:
+        '200':
+          description: Content version list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentVersionsEnvelope'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
 components:
   parameters:
     RequestIdHeader:
@@ -1160,6 +1409,174 @@ components:
         template_version_id: { type: string }
         generation_config: { type: object }
       required: [confirmed_topic_id, worldview_version_id, arc_id, target_count, start_sequence_no, template_version_id]
+    CreateReviewRequest:
+      type: object
+      properties:
+        review_type: { type: string, enum: [manual, ai, combined] }
+      required: [review_type]
+    CreateReviewResponse:
+      type: object
+      properties:
+        review_id: { type: string }
+        status: { type: string }
+      required: [review_id, status]
+    ContentReviewResponse:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        content_item_id: { type: string }
+        review_type: { type: string }
+        status: { type: string }
+        title: { type: string }
+        updated_at: { type: string, format: date-time }
+      required: [id, project_id, content_item_id, review_type, status, title, updated_at]
+    ContentReviewsPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentReviewResponse'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [items, pagination]
+    ReviewReportSummaryResponse:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string }
+        quality_score: { type: integer }
+        risk_level: { type: string }
+      required: [id, status, quality_score, risk_level]
+    ContentVersionResponse:
+      type: object
+      properties:
+        id: { type: string }
+        content_item_id: { type: string }
+        version_no: { type: integer }
+        source: { type: string }
+        title: { type: string }
+        body: { type: string }
+        editable_fields: { type: object }
+        summary: { type: string }
+        created_at: { type: string, format: date-time }
+      required: [id, content_item_id, version_no, source, title, body, editable_fields, summary, created_at]
+    ContentVersionsPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentVersionResponse'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required: [items, pagination]
+    ContentReviewDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/ContentReviewResponse'
+        - type: object
+          properties:
+            body: { type: string }
+            metadata: { type: object }
+            extension: { type: object }
+            report_summary:
+              $ref: '#/components/schemas/ReviewReportSummaryResponse'
+            versions:
+              type: array
+              items:
+                $ref: '#/components/schemas/ContentVersionResponse'
+          required: [body, metadata, extension, report_summary, versions]
+    TriggerAIReportRequest:
+      type: object
+      properties:
+        report_type: { type: string }
+        config: { type: object }
+      required: [report_type, config]
+    TriggerAIReportResponse:
+      type: object
+      properties:
+        report_id: { type: string }
+        job_id: { type: string }
+        workflow_run_id: { type: string }
+        status: { type: string }
+      required: [report_id, job_id, workflow_run_id, status]
+    ReviewIssue:
+      type: object
+      properties:
+        code: { type: string }
+        severity: { type: string }
+        message: { type: string }
+      required: [code, severity, message]
+    ReviewSuggestion:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+      required: [code, message]
+    ReviewReportResponse:
+      type: object
+      properties:
+        id: { type: string }
+        review_id: { type: string }
+        content_item_id: { type: string }
+        status: { type: string }
+        quality_score: { type: integer }
+        risk_level: { type: string }
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewIssue'
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewSuggestion'
+        job_id: { type: string }
+        workflow_run_id: { type: string }
+        error_code: { type: string }
+        error_message: { type: string }
+      required: [id, review_id, content_item_id, status, quality_score, risk_level, issues, suggestions]
+    ApproveReviewRequest:
+      type: object
+      properties:
+        note: { type: string }
+    ApproveReviewResponse:
+      type: object
+      properties:
+        review_id: { type: string }
+        status: { type: string }
+        operation_log_id: { type: string }
+      required: [review_id, status, operation_log_id]
+    RejectReviewRequest:
+      type: object
+      properties:
+        reason: { type: string }
+        regenerate_instruction: { type: string }
+        trigger_regeneration: { type: boolean }
+      required: [reason, regenerate_instruction, trigger_regeneration]
+    RejectReviewResponse:
+      type: object
+      properties:
+        review_id: { type: string }
+        status: { type: string }
+        operation_log_id: { type: string }
+        regeneration_run_id: { type: string }
+        job_id: { type: string }
+      required: [review_id, status, operation_log_id]
+    ApproveWithEditRequest:
+      type: object
+      properties:
+        editable_fields: { type: object }
+        note: { type: string }
+      required: [editable_fields, note]
+    ApproveWithEditResponse:
+      type: object
+      properties:
+        review_id: { type: string }
+        status: { type: string }
+        content_version_id: { type: string }
+        operation_log_id: { type: string }
+      required: [review_id, status, content_version_id, operation_log_id]
     CreateGenerationRunResponse:
       type: object
       properties:
@@ -1489,6 +1906,69 @@ components:
           properties:
             data:
               $ref: '#/components/schemas/ArcsPage'
+    ContentReviewsEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ContentReviewsPage'
+    CreateReviewEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/CreateReviewResponse'
+    ContentReviewDetailEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ContentReviewDetailResponse'
+    TriggerAIReportEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TriggerAIReportResponse'
+    ReviewReportEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ReviewReportResponse'
+    ApproveReviewEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ApproveReviewResponse'
+    RejectReviewEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RejectReviewResponse'
+    ApproveWithEditEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ApproveWithEditResponse'
+    ContentVersionsEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ContentVersionsPage'
     CreatePlanningRunRequest:
       type: object
       properties:

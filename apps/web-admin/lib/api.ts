@@ -633,3 +633,94 @@ export async function fetchContentItems(projectID: string, params?: { status?: s
 export async function fetchContentItem(itemID: string): Promise<APIEnvelope<ContentItemDetailResponse>> {
   return request<ContentItemDetailResponse>(`/api/v1/content-items/${itemID}`);
 }
+
+// ---- Iteration 5: Review and Quality Control Types ----
+
+export type ContentReviewResponse = {
+  id: string;
+  project_id: string;
+  content_item_id: string;
+  review_type: string;
+  status: string;
+  title: string;
+  updated_at: string;
+};
+
+export type ContentVersionResponse = {
+  id: string;
+  content_item_id: string;
+  version_no: number;
+  source: string;
+  title: string;
+  body: string;
+  editable_fields: Record<string, unknown>;
+  summary: string;
+  created_at: string;
+};
+
+export type ReviewReportSummaryResponse = {
+  id: string;
+  status: string;
+  quality_score: number;
+  risk_level: string;
+};
+
+export type ContentReviewDetailResponse = ContentReviewResponse & {
+  body: string;
+  metadata: Record<string, unknown>;
+  extension: Record<string, unknown>;
+  report_summary: ReviewReportSummaryResponse;
+  versions: ContentVersionResponse[];
+};
+
+export type ReviewReportResponse = {
+  id: string;
+  review_id: string;
+  content_item_id: string;
+  status: string;
+  quality_score: number;
+  risk_level: string;
+  issues: Array<{ code: string; severity: string; message: string }>;
+  suggestions: Array<{ code: string; message: string }>;
+  job_id?: string;
+  workflow_run_id?: string;
+  error_code?: string;
+  error_message?: string;
+};
+
+export async function fetchContentReviews(projectID: string, params?: { status?: string; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<ContentReviewResponse>>> {
+  const q = new URLSearchParams({ project_id: projectID, page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.status ? { status: params.status } : {}) }).toString();
+  return request<PagedResponse<ContentReviewResponse>>(`/api/v1/content-reviews?${q}`);
+}
+
+export async function createContentReview(contentItemID: string, input: { review_type: string }, idempotencyKey: string): Promise<APIEnvelope<{ review_id: string; status: string }>> {
+  return request<{ review_id: string; status: string }>(`/api/v1/content-items/${contentItemID}/reviews`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function fetchContentReview(reviewID: string): Promise<APIEnvelope<ContentReviewDetailResponse>> {
+  return request<ContentReviewDetailResponse>(`/api/v1/content-reviews/${reviewID}`);
+}
+
+export async function triggerAIReport(reviewID: string, input: { report_type: string; config: Record<string, unknown> }, idempotencyKey: string): Promise<APIEnvelope<{ report_id: string; job_id: string; workflow_run_id: string; status: string }>> {
+  return request<{ report_id: string; job_id: string; workflow_run_id: string; status: string }>(`/api/v1/content-reviews/${reviewID}/ai-report`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function fetchAIReport(reviewID: string): Promise<APIEnvelope<ReviewReportResponse>> {
+  return request<ReviewReportResponse>(`/api/v1/content-reviews/${reviewID}/ai-report`);
+}
+
+export async function approveReview(reviewID: string, input: { note: string }): Promise<APIEnvelope<{ review_id: string; status: string; operation_log_id: string }>> {
+  return request<{ review_id: string; status: string; operation_log_id: string }>(`/api/v1/content-reviews/${reviewID}/approve`, { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function rejectReview(reviewID: string, input: { reason: string; regenerate_instruction: string; trigger_regeneration: boolean }): Promise<APIEnvelope<{ review_id: string; status: string; operation_log_id: string; regeneration_run_id?: string; job_id?: string }>> {
+  return request<{ review_id: string; status: string; operation_log_id: string; regeneration_run_id?: string; job_id?: string }>(`/api/v1/content-reviews/${reviewID}/reject`, { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function approveWithEdit(reviewID: string, input: { editable_fields: Record<string, unknown>; note: string }): Promise<APIEnvelope<{ review_id: string; status: string; content_version_id: string; operation_log_id: string }>> {
+  return request<{ review_id: string; status: string; content_version_id: string; operation_log_id: string }>(`/api/v1/content-reviews/${reviewID}/approve-with-edit`, { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function fetchContentVersions(contentItemID: string): Promise<APIEnvelope<PagedResponse<ContentVersionResponse>>> {
+  return request<PagedResponse<ContentVersionResponse>>(`/api/v1/content-items/${contentItemID}/versions?page=1&page_size=20`);
+}

@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { fetchContentItem, pageErrorFromEnvelope, type ContentItemDetailResponse, type PageError } from '../../../lib/api';
 
-export default function ContentItemDetailPage({ params }: { params: { itemId: string } }) {
+export default function ContentItemDetailPage({ params }: { params: Promise<{ itemId: string }> }) {
+  const { itemId } = use(params);
   const [item, setItem] = useState<ContentItemDetailResponse | null>(null);
   const [error, setError] = useState<PageError | null>(null);
 
   useEffect(() => {
     async function loadItem() {
-      const envelope = await fetchContentItem(params.itemId);
+      const envelope = await fetchContentItem(itemId);
       if (!envelope.success || !envelope.data) {
         setError(pageErrorFromEnvelope(envelope, '加载内容详情失败'));
         return;
@@ -18,7 +19,7 @@ export default function ContentItemDetailPage({ params }: { params: { itemId: st
       setError(null);
     }
     void loadItem();
-  }, [params.itemId]);
+  }, [itemId]);
 
   return (
     <main className="page-shell">
