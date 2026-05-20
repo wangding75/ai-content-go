@@ -1,0 +1,14 @@
+{
+  "archived_at": "2026-05-20T08:16:23.629Z",
+  "reason": "regress-03-test-cases",
+  "files": [
+    {
+      "name": "STATUS.yaml",
+      "archived_as": "stale/2026-05-20T08-16-23-627Z-regress-03-test-cases/STATUS.yaml"
+    },
+    {
+      "name": "dev-log.md",
+      "archived_as": "stale/2026-05-20T08-16-23-627Z-regress-03-test-cases/dev-log.md"
+    }
+  ]
+}
