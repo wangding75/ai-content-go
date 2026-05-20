@@ -1334,6 +1334,7 @@ paths:
                 $ref: '#/components/schemas/MemoryUpdateEnvelope'
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -1360,6 +1361,7 @@ paths:
                 $ref: '#/components/schemas/MemoryUpdateEnvelope'
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -1387,6 +1389,7 @@ paths:
                 $ref: '#/components/schemas/DynamicStateCorrectionEnvelope'
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:
@@ -1414,6 +1417,7 @@ paths:
                 $ref: '#/components/schemas/RecentWindowPolicyEnvelope'
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -1438,6 +1442,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MemorySnapshotsEnvelope'
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -1469,6 +1474,7 @@ paths:
                 $ref: '#/components/schemas/ContextPreviewEnvelope'
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -1496,6 +1502,7 @@ paths:
                 $ref: '#/components/schemas/AssembleContextEnvelope'
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:
@@ -1553,6 +1560,7 @@ paths:
                 $ref: '#/components/schemas/CreateConsistencyReportEnvelope'
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '500': { $ref: '#/components/responses/InternalError' }
       security:

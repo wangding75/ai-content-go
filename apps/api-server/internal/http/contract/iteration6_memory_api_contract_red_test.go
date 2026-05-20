@@ -51,6 +51,25 @@ func iteration6Request(t *testing.T, method, path string, body []byte) *httptest
 	return rr
 }
 
+func decodeEnvelope(t *testing.T, body []byte) struct {
+	Success   bool
+	Data      map[string]any
+	Error     *struct{ Code string `json:"code"` }
+	RequestID string `json:"request_id"`
+} {
+	t.Helper()
+	var env struct {
+		Success   bool
+		Data      map[string]any
+		Error     *struct{ Code string `json:"code"` }
+		RequestID string `json:"request_id"`
+	}
+	if err := json.Unmarshal(body, &env); err != nil {
+		t.Fatalf("decode envelope: %v", err)
+	}
+	return env
+}
+
 // @Test
 func TestTask05MemoryAPIRequiresBearerTokenForReadEndpoints(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/projects/project-1/knowledge-memory", nil)
@@ -73,14 +92,7 @@ func TestTask05MemoryAPIHandlesHappyPathValidationFailureAndDomainFailureThrough
 	if rr.Code != http.StatusOK {
 		t.Fatalf("GET knowledge-memory = %d body=%s", rr.Code, rr.Body.String())
 	}
-	var envelope struct {
-		Success   bool
-		Data      map[string]any
-		RequestID string `json:"request_id"`
-	}
-	if err := json.Unmarshal(rr.Body.Bytes(), &envelope); err != nil {
-		t.Fatalf("decode success envelope: %v", err)
-	}
+	envelope := decodeEnvelope(t, rr.Body.Bytes())
 	if !envelope.Success || envelope.Data["recent_snapshot_summary"] == nil || envelope.RequestID == "" {
 		t.Fatalf("success envelope must include data.recent_snapshot_summary and request_id: %s", rr.Body.String())
 	}
@@ -89,10 +101,17 @@ func TestTask05MemoryAPIHandlesHappyPathValidationFailureAndDomainFailureThrough
 	if rr.Code != http.StatusBadRequest {
 		t.Fatalf("missing source_refs = %d body=%s", rr.Code, rr.Body.String())
 	}
+}
 
-	rr = iteration6Request(t, http.MethodGet, "/api/v1/projects//knowledge-memory", nil)
+// @Test
+func TestTask05MemoryAPIReturns404EnvelopeForUnknownProject(t *testing.T) {
+	rr := iteration6Request(t, http.MethodGet, "/api/v1/projects/unknown-project/knowledge-memory", nil)
 	if rr.Code != http.StatusNotFound {
-		t.Fatalf("domain failure for missing project must be 404, got %d body=%s", rr.Code, rr.Body.String())
+		t.Fatalf("GET knowledge-memory for unknown project = %d, want 404", rr.Code)
+	}
+	env := decodeEnvelope(t, rr.Body.Bytes())
+	if env.Success || env.Error == nil || env.Error.Code != "NOT_FOUND" {
+		t.Fatalf("unknown project must return NOT_FOUND envelope, got %s", rr.Body.String())
 	}
 }
 
@@ -133,5 +152,52 @@ func TestTask05MemoryAPIRejectsForbiddenAccessWith403(t *testing.T) {
 	iteration6Router().ServeHTTP(rr, req)
 	if rr.Code != http.StatusForbidden {
 		t.Fatalf("GET knowledge-memory with forbidden token = %d, want 403", rr.Code)
+	}
+}
+
+// @Test
+func TestTask05MemoryAPIReturns404EnvelopeForUnknownReportAndContentItem(t *testing.T) {
+	rr := iteration6Request(t, http.MethodGet, "/api/v1/projects/project-1/consistency-reports/unknown-report", nil)
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("GET unknown report = %d, want 404", rr.Code)
+	}
+	env := decodeEnvelope(t, rr.Body.Bytes())
+	if env.Success || env.Error == nil || env.Error.Code != "NOT_FOUND" {
+		t.Fatalf("unknown report must return NOT_FOUND envelope, got %s", rr.Body.String())
+	}
+
+	rr = iteration6Request(t, http.MethodPost, "/api/v1/content-items/unknown-content-item/update-dynamic-state", []byte(`{"summary":"summary","changes":{"status":"changed"},"source_version_id":"version-1"}`))
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("POST unknown content item dynamic state = %d, want 404", rr.Code)
+	}
+	env = decodeEnvelope(t, rr.Body.Bytes())
+	if env.Success || env.Error == nil || env.Error.Code != "NOT_FOUND" {
+		t.Fatalf("unknown content item must return NOT_FOUND envelope, got %s", rr.Body.String())
+	}
+}
+
+// @Test
+func TestTask05MemoryAPIReturns409IdempotencyConflictEnvelope(t *testing.T) {
+	router := iteration6Router()
+	doRequest := func(body []byte) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/projects/project-1/consistency-reports", bytes.NewReader(body))
+		req.Header.Set("Authorization", "Bearer dev")
+		req.Header.Set("Idempotency-Key", "idem-test-conflict")
+		req.Header.Set("Content-Type", "application/json")
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+		return rr
+	}
+	rr1 := doRequest([]byte(`{"range":{"latest":true},"scope":"project","severity_threshold":"low"}`))
+	if rr1.Code != http.StatusAccepted {
+		t.Fatalf("first create report = %d, want 202 body=%s", rr1.Code, rr1.Body.String())
+	}
+	rr2 := doRequest([]byte(`{"range":{"latest":true},"scope":"project","severity_threshold":"high"}`))
+	if rr2.Code != http.StatusConflict {
+		t.Fatalf("same idempotency key different payload = %d, want 409 body=%s", rr2.Code, rr2.Body.String())
+	}
+	env := decodeEnvelope(t, rr2.Body.Bytes())
+	if env.Success || env.Error == nil || env.Error.Code != "IDEMPOTENCY_CONFLICT" {
+		t.Fatalf("idempotency conflict must return IDEMPOTENCY_CONFLICT envelope, got %s", rr2.Body.String())
 	}
 }

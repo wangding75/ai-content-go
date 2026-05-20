@@ -55,6 +55,31 @@ func TestTask06OpenAPIUsesSynchronousSnapshotAndAcceptedReportStatusCodes(t *tes
 	}
 }
 
+// @Test
+func TestTask06OpenAPIDeclaresNotFoundForProjectScopedEndpoints(t *testing.T) {
+	openapi := readIteration6OpenAPI(t)
+	for _, op := range []string{
+		"operationId: updateStaticContext",
+		"operationId: updateStyleGuide",
+		"operationId: correctDynamicState",
+		"operationId: updateRecentWindowPolicy",
+		"operationId: listMemorySnapshots",
+		"operationId: previewContext",
+		"operationId: assembleContext",
+		"operationId: createConsistencyReport",
+		"operationId: listConsistencyReports",
+	} {
+		idx := strings.Index(openapi, op)
+		if idx < 0 {
+			t.Fatalf("openapi missing %s", op)
+		}
+		window := openapi[idx:min(len(openapi), idx+1500)]
+		if !strings.Contains(window, "'404':") && !strings.Contains(window, "'404' :") {
+			t.Fatalf("%s must declare 404 not found response", op)
+		}
+	}
+}
+
 func min(a, b int) int {
 	if a < b {
 		return a

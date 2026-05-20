@@ -48,3 +48,33 @@ func TestTask02MigrationDeclaresStateChecksIndexesAndPersistentIdempotency(t *te
 		}
 	}
 }
+
+// @Test
+func TestTask02MigrationDeclaresAllColumnsRequiredForPersistence(t *testing.T) {
+	migration := readKnowledgeMemoryMigration(t)
+	for _, want := range []string{
+		"project_id TEXT NOT NULL UNIQUE",
+		"version INTEGER NOT NULL DEFAULT 1",
+		"operation_log_id TEXT",
+		"content_item_id TEXT",
+		"source_type TEXT NOT NULL",
+		"source_id TEXT NOT NULL",
+		"assembled_context JSONB",
+		"token_budget INTEGER NOT NULL DEFAULT 0",
+		"estimated_tokens INTEGER NOT NULL DEFAULT 0",
+		"truncation_policy TEXT NOT NULL DEFAULT",
+		"triggered_by TEXT NOT NULL DEFAULT",
+		"range JSONB NOT NULL DEFAULT",
+		"scope TEXT NOT NULL DEFAULT",
+		"severity_threshold TEXT NOT NULL DEFAULT",
+		"issue_count INTEGER NOT NULL DEFAULT 0",
+		"source_snapshot_id TEXT",
+		"error_code TEXT",
+		"error_message TEXT",
+		"completed_at TIMESTAMPTZ",
+	} {
+		if !strings.Contains(migration, want) {
+			t.Fatalf("migration missing column contract %q", want)
+		}
+	}
+}

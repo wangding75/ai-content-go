@@ -727,7 +727,7 @@ export async function fetchContentVersions(contentItemID: string): Promise<APIEn
 
 // ---- Iteration 6: Knowledge Memory Types ----
 
-export type RecentWindowPolicy = { item_count: number; token_limit: number; truncation_policy: string };
+export type RecentWindowPolicy = { item_count: number; token_limit: number; truncation_policy: string; note?: string };
 export type SnapshotSummaryResponse = { id: string; source_type: string; estimated_tokens: number; truncation_policy: string; created_at: string };
 export type KnowledgeMemoryResponse = { id: string; project_id: string; static_context: Record<string, unknown>; dynamic_state: Record<string, unknown>; recent_window_policy: RecentWindowPolicy; style_guide: Record<string, unknown>; version: number; updated_at: string; recent_snapshot_summary: SnapshotSummaryResponse };
 export type MemorySnapshotResponse = { id: string; project_id: string; content_item_id?: string; source_type: string; token_budget: number; estimated_tokens: number; truncation_policy: string; created_at: string };

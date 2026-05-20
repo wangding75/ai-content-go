@@ -7,16 +7,25 @@ import (
 )
 
 // @Test
-func TestTask04ReportExecutorRejectsEmptyReportID(t *testing.T) {
+func TestTask04ReportExecutorRejectsEmptyAndUnknownReportID(t *testing.T) {
 	_, err := NewReportExecutor(NewService()).RunConsistencyReport(context.Background(), "")
 	if !errors.Is(err, ErrNotFound) {
 		t.Fatalf("empty report id must return ErrNotFound, got %v", err)
+	}
+	_, err = NewReportExecutor(NewService()).RunConsistencyReport(context.Background(), "nonexistent-report")
+	if !errors.Is(err, ErrNotFound) {
+		t.Fatalf("unknown report id must return ErrNotFound, got %v", err)
 	}
 }
 
 // @Test
 func TestTask04ReportExecutorProducesCompletedReportWithStructuredIssues(t *testing.T) {
-	detail, err := NewReportExecutor(NewService()).RunConsistencyReport(context.Background(), "report-1")
+	svc := NewService()
+	report, err := svc.CreateConsistencyReport(context.Background(), "project-1", CreateConsistencyReportRequest{Range: map[string]any{"latest": true}, Scope: "project", SeverityThreshold: "low"}, "idem-exec-completed-1")
+	if err != nil {
+		t.Fatalf("CreateConsistencyReport returned error: %v", err)
+	}
+	detail, err := NewReportExecutor(svc).RunConsistencyReport(context.Background(), report.ReportID)
 	if err != nil {
 		t.Fatalf("RunConsistencyReport returned error: %v", err)
 	}
@@ -34,11 +43,40 @@ func TestTask04ReportExecutorProducesCompletedReportWithStructuredIssues(t *test
 
 // @Test
 func TestTask04ReportExecutorPersistsFailureReasonForFailedReport(t *testing.T) {
-	detail, err := NewReportExecutor(NewService()).RunConsistencyReport(context.Background(), "report-fail-fixture")
+	svc := NewService()
+	report, err := svc.CreateConsistencyReport(context.Background(), "project-1", CreateConsistencyReportRequest{Range: map[string]any{"latest": true}, Scope: "project", SeverityThreshold: "low"}, "idem-exec-fail-1")
+	if err != nil {
+		t.Fatalf("CreateConsistencyReport returned error: %v", err)
+	}
+	// Mark as failure fixture to trigger failed path
+	if setter, ok := svc.(interface{ SetReportFailureFixture(string) }); ok {
+		setter.SetReportFailureFixture(report.ReportID)
+	}
+	detail, err := NewReportExecutor(svc).RunConsistencyReport(context.Background(), report.ReportID)
 	if err != nil {
 		t.Fatalf("failed report state should be queryable without returning transport error: %v", err)
 	}
 	if detail.Status != string(ReportStatusFailed) || detail.ErrorCode == "" || detail.ErrorMessage == "" {
 		t.Fatalf("executor must persist failed status with error_code and error_message: %+v", detail)
+	}
+}
+
+// @Test
+func TestTask04ReportExecutorLifecycleIsQueryableAfterExecution(t *testing.T) {
+	svc := NewService()
+	report, err := svc.CreateConsistencyReport(context.Background(), "project-1", CreateConsistencyReportRequest{Range: map[string]any{"latest": true}, Scope: "project", SeverityThreshold: "low"}, "idem-lifecycle-exec-1")
+	if err != nil {
+		t.Fatalf("CreateConsistencyReport returned error: %v", err)
+	}
+	_, err = NewReportExecutor(svc).RunConsistencyReport(context.Background(), report.ReportID)
+	if err != nil {
+		t.Fatalf("RunConsistencyReport returned error: %v", err)
+	}
+	got, err := svc.GetConsistencyReport(context.Background(), "project-1", report.ReportID)
+	if err != nil {
+		t.Fatalf("GetConsistencyReport after execution returned error: %v", err)
+	}
+	if got.Status != string(ReportStatusCompleted) {
+		t.Fatalf("report must reflect completed status after executor runs, got %s", got.Status)
 	}
 }

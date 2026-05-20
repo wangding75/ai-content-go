@@ -16,6 +16,22 @@ func TestTask10ConsistencyReportsPageSupportsCreateListStatusSummaryAndDetailLin
 }
 
 // @Test
+func TestTask10ConsistencyReportsPageExposesEditableCreateForm(t *testing.T) {
+	page := readIteration6WebPage(t, "app", "projects", "[projectId]", "consistency-reports", "page.tsx")
+	for _, want := range []string{
+		"reportRange",
+		"reportScope",
+		"severityThreshold",
+		"severity_threshold",
+		"scope",
+	} {
+		if !strings.Contains(page, want) {
+			t.Fatalf("consistency reports page missing editable create form field %q", want)
+		}
+	}
+}
+
+// @Test
 func TestTask10ConsistencyReportsPageShowsEmptyErrorAndSuccessFeedback(t *testing.T) {
 	page := readIteration6WebPage(t, "app", "projects", "[projectId]", "consistency-reports", "page.tsx")
 	for _, want := range []string{"暂无一致性报告", "role=\"alert\"", "role=\"status\"", "报告已创建", "错误码", "错误信息", "request_id"} {

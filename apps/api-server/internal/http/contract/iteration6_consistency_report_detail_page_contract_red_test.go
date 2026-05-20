@@ -24,3 +24,13 @@ func TestTask11ConsistencyReportDetailPageRendersStructuredIssuesAndStates(t *te
 		}
 	}
 }
+
+// @Test
+func TestTask11ConsistencyReportDetailPageShowsErrorCodeAndMessageForFailedReports(t *testing.T) {
+	page := readIteration6WebPage(t, "app", "projects", "[projectId]", "consistency-reports", "[reportId]", "page.tsx")
+	for _, want := range []string{"error_code", "error_message"} {
+		if !strings.Contains(page, want) {
+			t.Fatalf("consistency report detail page missing failed report field %q", want)
+		}
+	}
+}

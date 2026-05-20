@@ -33,6 +33,23 @@ func TestTask08MemoryPageAndNavigationExposeProjectMemoryWorkspace(t *testing.T)
 }
 
 // @Test
+func TestTask08MemoryPageExposesEditableFormsForStaticContextStyleGuideAndPolicy(t *testing.T) {
+	page := readIteration6WebPage(t, "app", "projects", "[projectId]", "memory", "page.tsx")
+	for _, want := range []string{
+		"staticContext",
+		"styleGuide",
+		"item_count",
+		"token_limit",
+		"truncation_policy",
+		"note",
+	} {
+		if !strings.Contains(page, want) {
+			t.Fatalf("memory page missing editable form field %q", want)
+		}
+	}
+}
+
+// @Test
 func TestTask08MemoryPageRendersSnapshotListLoadingEmptyErrorAndSuccessStates(t *testing.T) {
 	page := readIteration6WebPage(t, "app", "projects", "[projectId]", "memory", "page.tsx")
 	for _, want := range []string{"加载中", "暂无记忆快照", "role=\"alert\"", "role=\"status\"", "来源", "Token 预算", "预估 Token", "截断策略", "创建时间", "内容单元筛选", "排序字段", "排序方向", "上一页", "下一页", "页码"} {

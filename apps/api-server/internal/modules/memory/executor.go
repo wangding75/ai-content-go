@@ -7,36 +7,32 @@ type ReportExecutor interface {
 }
 
 type deterministicReportExecutor struct {
-	service Service
+	service *service
 }
 
-func NewReportExecutor(service Service) ReportExecutor {
-	return &deterministicReportExecutor{service: service}
+func NewReportExecutor(svc Service) ReportExecutor {
+	return &deterministicReportExecutor{service: svc.(*service)}
 }
 
 func (e *deterministicReportExecutor) RunConsistencyReport(ctx context.Context, reportID string) (ConsistencyReportDetailResponse, error) {
 	if reportID == "" {
 		return ConsistencyReportDetailResponse{}, ErrNotFound
 	}
-	if reportID == "report-fail-fixture" {
-		return ConsistencyReportDetailResponse{
-			ConsistencyReportResponse: ConsistencyReportResponse{
-				ID:     reportID,
-				Status: string(ReportStatusFailed),
-			},
-			ErrorCode:    "EXECUTOR_ERROR",
-			ErrorMessage: "deterministic rule execution failed: fixture error",
-		}, nil
+
+	rep, err := e.service.GetReportRecord(reportID)
+	if err != nil {
+		return ConsistencyReportDetailResponse{}, ErrNotFound
 	}
-	return ConsistencyReportDetailResponse{
-		ConsistencyReportResponse: ConsistencyReportResponse{
-			ID:              reportID,
-			Status:          string(ReportStatusCompleted),
-			IssueCount:      1,
-			SeveritySummary: map[string]int{"high": 1},
-		},
-		SourceSnapshotID: "snapshot-1",
-		Issues: []ConsistencyIssue{{
+
+	// Check if this is a failure fixture
+	if rep.ErrorCode == "FIXTURE_FAILURE" {
+		err := e.service.UpdateReportStatus(reportID, string(ReportStatusFailed), nil, 0, nil, "", "EXECUTOR_ERROR", "deterministic rule execution failed: fixture error")
+		if err != nil {
+			return ConsistencyReportDetailResponse{}, err
+		}
+	} else {
+		// Completed path: deterministic structured issues
+		issues := []ConsistencyIssue{{
 			IssueID:              "issue_001",
 			Severity:             "high",
 			Type:                 "character_inconsistency",
@@ -44,6 +40,17 @@ func (e *deterministicReportExecutor) RunConsistencyReport(ctx context.Context, 
 			Description:          "主角年龄在不同内容单元中不一致",
 			AffectedContentItems: []string{"item_001", "item_003"},
 			Suggestion:           "以最新设定为准修正内容。",
-		}},
-	}, nil
+		}}
+		err := e.service.UpdateReportStatus(reportID, string(ReportStatusCompleted), issues, len(issues), map[string]int{"high": 1}, "snapshot-1", "", "")
+		if err != nil {
+			return ConsistencyReportDetailResponse{}, err
+		}
+	}
+
+	// Return updated report detail
+	detail, err := e.service.GetConsistencyReport(ctx, rep.ProjectID, reportID)
+	if err != nil {
+		return ConsistencyReportDetailResponse{}, err
+	}
+	return detail, nil
 }
