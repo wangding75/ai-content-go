@@ -25,11 +25,21 @@ type Service interface {
 }
 
 var supportedTruncationPolicies = map[string]bool{"time": true}
+var supportedReportStatuses = map[string]bool{
+	"":                            true,
+	string(ReportStatusPending):   true,
+	string(ReportStatusRunning):   true,
+	string(ReportStatusCompleted): true,
+	string(ReportStatusFailed):    true,
+}
+var supportedListSorts = map[string]bool{"": true, "created_at": true}
+var supportedListOrders = map[string]bool{"": true, "asc": true, "desc": true}
 
 const maxContextBudget = 100000
+const maxPageSize = 100
 
 type service struct {
-	mu         sync.Mutex
+	mu          sync.Mutex
 	idempotency map[string]idempotencyEntry
 }
 
@@ -45,7 +55,7 @@ func NewService() Service {
 
 func (s *service) GetKnowledgeMemory(ctx context.Context, projectID string) (KnowledgeMemoryResponse, error) {
 	if projectID == "project-forbidden" {
-		return KnowledgeMemoryResponse{}, ErrValidation
+		return KnowledgeMemoryResponse{}, ErrForbidden
 	}
 	if projectID == "" {
 		return KnowledgeMemoryResponse{}, ErrNotFound
@@ -78,7 +88,7 @@ func (s *service) CorrectDynamicState(ctx context.Context, projectID string, req
 	if projectID == "" || req.Reason == "" || len(req.Changes) == 0 || len(req.SourceRefs) == 0 || idempotencyKey == "" {
 		return DynamicStateCorrectionResponse{}, ErrValidation
 	}
-	return withIdempotency(s.idempotency, &s.mu, "correction", idempotencyKey, req, func() (string, string, error) {
+	return withIdempotency(s.idempotency, &s.mu, "project:"+projectID, "correction", idempotencyKey, req, func() (string, string, error) {
 		snapshotID := "snapshot-corr-" + projectID
 		return "memory_snapshot", snapshotID, nil
 	}, func(refID string) (DynamicStateCorrectionResponse, error) {
@@ -103,7 +113,7 @@ func (s *service) UpdateRecentWindowPolicy(ctx context.Context, projectID string
 }
 
 func (s *service) ListSnapshots(ctx context.Context, projectID string, req ListSnapshotsRequest) (PagedMemorySnapshotsResponse, error) {
-	if projectID == "" {
+	if projectID == "" || !validPagination(req.Page, req.PageSize) || !supportedListSorts[req.Sort] || !supportedListOrders[req.Order] {
 		return PagedMemorySnapshotsResponse{}, ErrValidation
 	}
 	return PagedMemorySnapshotsResponse{Items: []MemorySnapshotResponse{{ID: "snapshot-1", ProjectID: projectID, SourceType: string(SnapshotSourceAssembleContext), TokenBudget: 2000, EstimatedTokens: 1200, TruncationPolicy: "time", CreatedAt: time.Now().UTC()}}, Pagination: pagination(req.Page, req.PageSize)}, nil
@@ -126,7 +136,7 @@ func (s *service) AssembleContext(ctx context.Context, projectID string, req Ass
 	if projectID == "" || req.Purpose == "" || req.Budget <= 0 || idempotencyKey == "" {
 		return AssembleContextResponse{}, ErrValidation
 	}
-	return withIdempotency(s.idempotency, &s.mu, "assemble", idempotencyKey, req, func() (string, string, error) {
+	return withIdempotency(s.idempotency, &s.mu, "project:"+projectID, "assemble", idempotencyKey, req, func() (string, string, error) {
 		snapshotID := "snapshot-asm-" + projectID
 		return "memory_snapshot", snapshotID, nil
 	}, func(refID string) (AssembleContextResponse, error) {
@@ -138,7 +148,7 @@ func (s *service) UpdateDynamicState(ctx context.Context, contentItemID string, 
 	if contentItemID == "" || req.Summary == "" || len(req.Changes) == 0 || req.SourceVersionID == "" || idempotencyKey == "" {
 		return UpdateDynamicStateResponse{}, ErrValidation
 	}
-	return withIdempotency(s.idempotency, &s.mu, "dynamic_state", idempotencyKey, req, func() (string, string, error) {
+	return withIdempotency(s.idempotency, &s.mu, "content_item:"+contentItemID, "dynamic_state", idempotencyKey, req, func() (string, string, error) {
 		snapshotID := "snapshot-ds-" + contentItemID
 		return "memory_snapshot", snapshotID, nil
 	}, func(refID string) (UpdateDynamicStateResponse, error) {
@@ -150,7 +160,7 @@ func (s *service) CreateConsistencyReport(ctx context.Context, projectID string,
 	if projectID == "" || len(req.Range) == 0 || req.Scope == "" || req.SeverityThreshold == "" || idempotencyKey == "" {
 		return CreateConsistencyReportResponse{}, ErrValidation
 	}
-	return withIdempotency(s.idempotency, &s.mu, "report", idempotencyKey, req, func() (string, string, error) {
+	return withIdempotency(s.idempotency, &s.mu, "project:"+projectID, "report", idempotencyKey, req, func() (string, string, error) {
 		reportID := "report-" + projectID
 		return "consistency_report", reportID, nil
 	}, func(refID string) (CreateConsistencyReportResponse, error) {
@@ -159,7 +169,7 @@ func (s *service) CreateConsistencyReport(ctx context.Context, projectID string,
 }
 
 func (s *service) ListConsistencyReports(ctx context.Context, projectID string, req ListConsistencyReportsRequest) (PagedConsistencyReportsResponse, error) {
-	if projectID == "" {
+	if projectID == "" || !validPagination(req.Page, req.PageSize) || !supportedReportStatuses[req.Status] || !supportedListSorts[req.Sort] || !supportedListOrders[req.Order] {
 		return PagedConsistencyReportsResponse{}, ErrValidation
 	}
 	return PagedConsistencyReportsResponse{Items: []ConsistencyReportResponse{{ID: "report-1", ProjectID: projectID, Status: string(ReportStatusCompleted), IssueCount: 1, SeveritySummary: map[string]int{"high": 1}, CreatedAt: time.Now().UTC()}}, Pagination: pagination(req.Page, req.PageSize)}, nil
@@ -172,12 +182,12 @@ func (s *service) GetConsistencyReport(ctx context.Context, projectID string, re
 	return ConsistencyReportDetailResponse{ConsistencyReportResponse: ConsistencyReportResponse{ID: reportID, ProjectID: projectID, Status: string(ReportStatusCompleted), IssueCount: 1, SeveritySummary: map[string]int{"high": 1}, CreatedAt: time.Now().UTC()}, SourceSnapshotID: "snapshot-1", Issues: []ConsistencyIssue{{IssueID: "issue_001", Severity: "high", Type: "character_inconsistency", Title: "角色设定前后不一致", Description: "主角年龄在不同内容单元中不一致", AffectedContentItems: []string{"item_001", "item_003"}, Suggestion: "以最新设定为准修正内容。"}}}, nil
 }
 
-func withIdempotency[T any](store map[string]idempotencyEntry, mu *sync.Mutex, endpoint, key string, req any, create func() (string, string, error), respond func(string) (T, error)) (T, error) {
+func withIdempotency[T any](store map[string]idempotencyEntry, mu *sync.Mutex, scope, endpoint, key string, req any, create func() (string, string, error), respond func(string) (T, error)) (T, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	hash := hashRequest(req)
-	cacheKey := endpoint + ":" + key
+	cacheKey := scope + ":" + endpoint + ":" + key
 
 	if entry, ok := store[cacheKey]; ok {
 		if entry.requestHash != hash {
@@ -205,6 +215,10 @@ func withIdempotency[T any](store map[string]idempotencyEntry, mu *sync.Mutex, e
 func hashRequest(v any) string {
 	b, _ := json.Marshal(v)
 	return fmt.Sprintf("%x", sha256.Sum256(b))
+}
+
+func validPagination(page int, pageSize int) bool {
+	return page >= 0 && pageSize >= 0 && pageSize <= maxPageSize
 }
 
 func pagination(page int, pageSize int) PaginationResponse {

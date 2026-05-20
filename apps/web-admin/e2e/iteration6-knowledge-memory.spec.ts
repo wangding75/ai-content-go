@@ -79,7 +79,14 @@ test('consistency report list and detail expose structured issues and error stat
     });
   });
   await page.goto(`${webBaseURL}/projects/error-project/memory`);
-  await expect(page.getByRole('alert')).toContainText('错误码');
-  await expect(page.getByRole('alert')).toContainText('错误信息');
-  await expect(page.getByRole('alert')).toContainText('req-error-1');
+  const errorAlert = page.getByRole('alert').filter({ hasText: '错误码' });
+  await expect(errorAlert).toContainText('错误码');
+  await expect(errorAlert).toContainText('错误信息');
+  await expect(errorAlert).toContainText('req-error-1');
+
+  await page.route('**/api/v1/projects/bad-json-project/knowledge-memory', async route => {
+    await route.fulfill({ status: 502, contentType: 'text/html', body: '<html>bad gateway</html>' });
+  });
+  await page.goto(`${webBaseURL}/projects/bad-json-project/memory`);
+  await expect(page.getByRole('alert').filter({ hasText: 'NETWORK_ERROR' })).toContainText('加载记忆上下文失败');
 });

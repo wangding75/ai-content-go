@@ -47,19 +47,43 @@ tasks:
     test_total: 4
   - task: "Task-06：补充 OpenAPI 记忆接口契约"
     test_file: apps/api-server/internal/http/contract/iteration6_openapi_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:42"
+    completed_at: "2026-05-19 18:45"
+    test_passed: 3
+    test_total: 3
   - task: "Task-07：扩展 Web Admin Memory API client"
     test_file: apps/api-server/internal/http/contract/iteration6_web_client_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:46"
+    completed_at: "2026-05-19 18:47"
+    test_passed: 3
+    test_total: 3
   - task: "Task-08：实现项目记忆上下文页面与导航入口"
     test_file: apps/api-server/internal/http/contract/iteration6_memory_page_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:48"
+    completed_at: "2026-05-19 18:52"
+    test_passed: 3
+    test_total: 3
   - task: "Task-09：实现上下文预览页面"
     test_file: apps/api-server/internal/http/contract/iteration6_context_preview_page_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:53"
+    completed_at: "2026-05-19 18:55"
+    test_passed: 2
+    test_total: 2
   - task: "Task-10：实现一致性报告列表页面"
     test_file: apps/api-server/internal/http/contract/iteration6_consistency_reports_page_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:56"
+    completed_at: "2026-05-19 18:58"
+    test_passed: 2
+    test_total: 2
   - task: "Task-11：实现一致性报告详情页面"
     test_file: apps/api-server/internal/http/contract/iteration6_consistency_report_detail_page_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-19 18:59"
+    completed_at: "2026-05-19 19:01"
+    test_passed: 2
+    test_total: 2

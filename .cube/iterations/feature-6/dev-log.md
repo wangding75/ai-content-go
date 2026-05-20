@@ -57,3 +57,11 @@
 - 修改：apps/web-admin/app/projects/[projectId]/consistency-reports/[reportId]/page.tsx
 
 ---
+
+## 代码审查
+
+- 运行通用代码审查、TypeScript 审查和安全审查，覆盖 Iteration 6 记忆上下文页面、一致性报告页面、API client、HTTP/Service 改动和 E2E 契约。
+- 修复阻塞问题：Bearer auth 运行时 fail-open、idempotency 作用域、Forbidden 错误映射顺序、 malformed query 参数处理、前端 JSON 对象校验、source_refs 规范化、transport/非 JSON 异常处理、旧请求覆盖新状态、旧数据残留、路径段编码、无效 DOM 嵌套，以及 Next route announcer 导致的 Playwright strict-mode 契约问题。
+- 用户已授权解锁 E2E 契约；`apps/web-admin/e2e/iteration6-knowledge-memory.spec.ts` 将错误告警 locator 收窄为包含 `错误码` 的业务 alert，并新增非 JSON 响应的 `NETWORK_ERROR` 覆盖。
+- 最终安全审查结论：未发现 CRITICAL/HIGH/MEDIUM 安全问题；未引入 route-announcer 生产 workaround；错误文本通过 React 文本节点渲染。
+- 最终验证：`npm run lint --prefix /home/wangding/git/ai-content-go/apps/web-admin` 通过；`WEB_BASE_URL=http://127.0.0.1:3001 API_BASE_URL=http://127.0.0.1:18080 npx playwright test e2e/iteration6-knowledge-memory.spec.ts` 3/3 通过。

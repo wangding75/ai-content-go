@@ -86,7 +86,15 @@ func (h *MemoryHandler) UpdateRecentWindowPolicy(w http.ResponseWriter, r *http.
 }
 
 func (h *MemoryHandler) ListSnapshots(w http.ResponseWriter, r *http.Request) {
-	result, err := h.service.ListSnapshots(r.Context(), chi.URLParam(r, "projectId"), memory.ListSnapshotsRequest{ContentItemID: r.URL.Query().Get("content_item_id"), Page: queryInt(r, "page"), PageSize: queryInt(r, "page_size")})
+	page, ok := queryInt(w, r, "page")
+	if !ok {
+		return
+	}
+	pageSize, ok := queryInt(w, r, "page_size")
+	if !ok {
+		return
+	}
+	result, err := h.service.ListSnapshots(r.Context(), chi.URLParam(r, "projectId"), memory.ListSnapshotsRequest{ContentItemID: r.URL.Query().Get("content_item_id"), Page: page, PageSize: pageSize, Sort: r.URL.Query().Get("sort"), Order: r.URL.Query().Get("order")})
 	if err != nil {
 		writeMemoryError(w, r, err, "list memory snapshots failed")
 		return
@@ -95,7 +103,11 @@ func (h *MemoryHandler) ListSnapshots(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MemoryHandler) PreviewContext(w http.ResponseWriter, r *http.Request) {
-	result, err := h.service.PreviewContext(r.Context(), chi.URLParam(r, "projectId"), memory.ContextPreviewRequest{Purpose: r.URL.Query().Get("purpose"), Budget: queryInt(r, "budget"), ContentItemID: r.URL.Query().Get("content_item_id")})
+	budget, ok := queryInt(w, r, "budget")
+	if !ok {
+		return
+	}
+	result, err := h.service.PreviewContext(r.Context(), chi.URLParam(r, "projectId"), memory.ContextPreviewRequest{Purpose: r.URL.Query().Get("purpose"), Budget: budget, ContentItemID: r.URL.Query().Get("content_item_id")})
 	if err != nil {
 		writeMemoryError(w, r, err, "preview context failed")
 		return
@@ -146,7 +158,15 @@ func (h *MemoryHandler) CreateConsistencyReport(w http.ResponseWriter, r *http.R
 }
 
 func (h *MemoryHandler) ListConsistencyReports(w http.ResponseWriter, r *http.Request) {
-	result, err := h.service.ListConsistencyReports(r.Context(), chi.URLParam(r, "projectId"), memory.ListConsistencyReportsRequest{Status: r.URL.Query().Get("status"), Page: queryInt(r, "page"), PageSize: queryInt(r, "page_size")})
+	page, ok := queryInt(w, r, "page")
+	if !ok {
+		return
+	}
+	pageSize, ok := queryInt(w, r, "page_size")
+	if !ok {
+		return
+	}
+	result, err := h.service.ListConsistencyReports(r.Context(), chi.URLParam(r, "projectId"), memory.ListConsistencyReportsRequest{Status: r.URL.Query().Get("status"), Page: page, PageSize: pageSize, Sort: r.URL.Query().Get("sort"), Order: r.URL.Query().Get("order")})
 	if err != nil {
 		writeMemoryError(w, r, err, "list consistency reports failed")
 		return
@@ -163,13 +183,23 @@ func (h *MemoryHandler) GetConsistencyReport(w http.ResponseWriter, r *http.Requ
 	api.WriteSuccess(w, r, http.StatusOK, result)
 }
 
-func queryInt(r *http.Request, name string) int {
-	value, _ := strconv.Atoi(r.URL.Query().Get(name))
-	return value
+func queryInt(w http.ResponseWriter, r *http.Request, name string) (int, bool) {
+	value := r.URL.Query().Get(name)
+	if value == "" {
+		return 0, true
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		writeMemoryError(w, r, memory.ErrValidation, "invalid query parameter")
+		return 0, false
+	}
+	return parsed, true
 }
 
 func writeMemoryError(w http.ResponseWriter, r *http.Request, err error, message string) {
 	switch {
+	case errors.Is(err, memory.ErrForbidden):
+		api.WriteError(w, r, http.StatusForbidden, api.ErrorForbidden, message, nil)
 	case errors.Is(err, memory.ErrValidation):
 		api.WriteError(w, r, http.StatusBadRequest, api.ErrorValidation, message, nil)
 	case errors.Is(err, memory.ErrNotFound):
