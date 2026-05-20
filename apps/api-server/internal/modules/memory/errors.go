@@ -1,14 +1,11 @@
 package memory
 
-import (
-	"errors"
-	"fmt"
-)
+import "errors"
 
 var (
 	ErrValidation          = errors.New("validation error")
 	ErrNotFound            = errors.New("not found")
-	ErrForbidden           = fmt.Errorf("%w: forbidden", ErrValidation)
+	ErrForbidden           = errors.New("forbidden")
 	ErrConflict            = errors.New("conflict")
 	ErrIdempotencyConflict = errors.New("idempotency conflict")
 )

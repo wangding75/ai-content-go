@@ -24,7 +24,7 @@ type Service interface {
 	GetConsistencyReport(ctx context.Context, projectID string, reportID string) (ConsistencyReportDetailResponse, error)
 }
 
-var supportedTruncationPolicies = map[string]bool{"time": true}
+var supportedTruncationPolicies = map[string]bool{"time": true, "token": true}
 var supportedReportStatuses = map[string]bool{
 	"":                            true,
 	string(ReportStatusPending):   true,
