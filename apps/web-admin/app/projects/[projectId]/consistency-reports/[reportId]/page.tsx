@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useEffect, useRef, useState } from 'react';
+import ProjectWorkspaceNav from '../../workspace-nav';
 import { fetchConsistencyReport, pageErrorFromEnvelope, type ConsistencyReportDetailResponse, type PageError } from '../../../../../lib/api';
 
 export default function ConsistencyReportDetailPage({ params }: { params: Promise<{ projectId: string; reportId: string }> }) {
@@ -36,6 +37,7 @@ export default function ConsistencyReportDetailPage({ params }: { params: Promis
 
   return (
     <main className="page-shell">
+      <ProjectWorkspaceNav projectId={projectId} />
       <section className="page-hero"><h1>一致性报告详情</h1><p>查看结构化一致性问题和关联快照信息。</p></section>
       {error && <section className="card" role="alert">错误码: {error.code} 错误信息: {error.message} request_id={error.request_id}</section>}
       {loading ? <section className="card" role="status">加载中</section> : !report ? null : <>

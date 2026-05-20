@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useState } from 'react';
+import ProjectWorkspaceNav from '../../workspace-nav';
 import { assembleContext, pageErrorFromEnvelope, previewContext, type ContextPreviewResponse, type PageError } from '../../../../../lib/api';
 
 export default function ContextPreviewPage({ params }: { params: Promise<{ projectId: string }> }) {
@@ -30,6 +31,7 @@ export default function ContextPreviewPage({ params }: { params: Promise<{ proje
 
   return (
     <main className="page-shell">
+      <ProjectWorkspaceNav projectId={projectId} />
       <section className="page-hero"><h1>预览上下文</h1><p>预览组装上下文或生成可追踪的记忆快照。</p></section>
       {notice && <section className="card" role="status">{notice}</section>}
       {error && <section className="card" role="alert">错误码: {error.code} 错误信息: {error.message} request_id={error.request_id}</section>}

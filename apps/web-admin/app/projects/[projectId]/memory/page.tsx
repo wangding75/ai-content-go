@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useEffect, useRef, useState } from 'react';
+import ProjectWorkspaceNav from '../workspace-nav';
 import { correctDynamicState, fetchKnowledgeMemory, fetchMemorySnapshots, pageErrorFromEnvelope, updateRecentWindowPolicy, updateStaticContext, updateStyleGuide, type KnowledgeMemoryResponse, type MemorySnapshotResponse, type PageError } from '../../../../lib/api';
 
 export default function MemoryPage({ params }: { params: Promise<{ projectId: string }> }) {
@@ -165,13 +166,14 @@ export default function MemoryPage({ params }: { params: Promise<{ projectId: st
 
   return (
     <main className="page-shell">
+      <ProjectWorkspaceNav projectId={projectId} />
       <section className="page-hero"><h1>记忆上下文</h1><p>维护项目级上下文、动态状态、窗口策略和风格指南。</p></section>
       {notice && <section className="card" role="status">{notice}</section>}
       {error && <section className="card" role="alert">错误码: {error.code} 错误信息: {error.message} request_id={error.request_id}</section>}
       {loading ? <section className="card" role="status">加载中</section> : !memory ? null : <>
         <section className="card"><h2>上下文概览</h2><p>version={memory.version} updated_at={memory.updated_at}</p><pre>{JSON.stringify({ StaticContext: memory.static_context, DynamicState: memory.dynamic_state, StyleGuide: memory.style_guide }, null, 2)}</pre>{memory.recent_snapshot_summary && <p>最近快照摘要: id={memory.recent_snapshot_summary.id} source={memory.recent_snapshot_summary.source_type} tokens={memory.recent_snapshot_summary.estimated_tokens} policy={memory.recent_snapshot_summary.truncation_policy}</p>}</section>
         <section className="card"><h2>RecentContentWindow</h2><p>{memory.recent_window_policy.item_count} items · {memory.recent_window_policy.token_limit} tokens · {memory.recent_window_policy.truncation_policy}</p>
-          <div><label>item_count <input type="number" value={policyItemCount} onChange={e => setPolicyItemCount(e.target.value)} /></label><label>token_limit <input type="number" value={policyTokenLimit} onChange={e => setPolicyTokenLimit(e.target.value)} /></label><label>truncation_policy <select value={policyTruncationPolicy} onChange={e => setPolicyTruncationPolicy(e.target.value)}><option value="time">time</option><option value="token">token</option><option value="priority">priority</option></select></label><label>note <input value={policyNote} onChange={e => setPolicyNote(e.target.value)} /></label><button type="button" onClick={() => void submitPolicy()}>保存最小策略</button></div></section>
+          <div><label>item_count <input type="number" value={policyItemCount} onChange={e => setPolicyItemCount(e.target.value)} /></label><label>token_limit <input type="number" value={policyTokenLimit} onChange={e => setPolicyTokenLimit(e.target.value)} /></label><label>truncation_policy <select value={policyTruncationPolicy} onChange={e => setPolicyTruncationPolicy(e.target.value)}><option value="time">time</option><option value="token">token</option></select></label><label>note <input value={policyNote} onChange={e => setPolicyNote(e.target.value)} /></label><button type="button" onClick={() => void submitPolicy()}>保存最小策略</button></div></section>
         <section className="card"><h2>人工修正</h2>
           <div><h3>修正 StaticContext</h3><textarea value={staticContextInput} onChange={e => setStaticContextInput(e.target.value)} rows={4} cols={60} /><label>note <input value={staticContextNote} onChange={e => setStaticContextNote(e.target.value)} /></label><button type="button" onClick={() => void submitStaticContext()}>修正 StaticContext</button></div>
           <div><h3>修正 StyleGuide</h3><textarea value={styleGuideInput} onChange={e => setStyleGuideInput(e.target.value)} rows={4} cols={60} /><label>note <input value={styleGuideNote} onChange={e => setStyleGuideNote(e.target.value)} /></label><button type="button" onClick={() => void submitStyleGuide()}>修正 StyleGuide</button></div>

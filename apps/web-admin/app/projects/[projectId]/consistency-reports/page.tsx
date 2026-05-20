@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { use, useEffect, useRef, useState } from 'react';
+import ProjectWorkspaceNav from '../workspace-nav';
 import { createConsistencyReport, fetchConsistencyReports, pageErrorFromEnvelope, type ConsistencyReportResponse, type PageError } from '../../../../lib/api';
 
 export default function ConsistencyReportsPage({ params }: { params: Promise<{ projectId: string }> }) {
@@ -67,6 +68,7 @@ export default function ConsistencyReportsPage({ params }: { params: Promise<{ p
 
   return (
     <main className="page-shell">
+      <ProjectWorkspaceNav projectId={projectId} />
       <section className="page-hero"><h1>一致性报告</h1><p>创建并查看项目级一致性检查报告。</p></section>
       {notice && <section className="card" role="status">{notice}</section>}
       {error && <section className="card" role="alert">错误码: {error.code} 错误信息: {error.message} request_id={error.request_id}</section>}

@@ -62,8 +62,17 @@
 
 ### Go 代码审查（code-reviewer agent）
 
-[待审查结果返回后补充]
+| Finding | Severity | Resolution |
+|---------|----------|------------|
+| C-1: ErrForbidden wraps ErrValidation | CRITICAL | Fixed: `errors.New("forbidden")` standalone |
+| C-2: OpenAPI missing 403/409 on memory endpoints | CRITICAL | Fixed: added 403 Forbidden + 409 Conflict to all project-scoped endpoints |
+| C-3: truncation_policy enum mismatch | HIGH | Fixed: added "token" to backend; removed "priority" from frontend |
+| H-1: ProjectWorkspaceNav missing on 4 pages | HIGH | Fixed: added import + render to memory, context-preview, consistency-reports, report-detail |
+| H-2: No structured logging (NFR-004) | HIGH | Known Risk |
+| H-3: No ErrForbidden test for mutation methods | HIGH | Known Risk (live curl verified) |
+| H-4: note field sent but ignored | MEDIUM | Known Risk |
+| H-5: Executor skips running intermediate | MEDIUM | Known Risk |
 
-### 安全审查（security-reviewer agent）
+### 安全审查（security-reviewer）
 
-[待审查结果返回后补充]
+No CRITICAL or HIGH security findings. Bearer token auth enforced. No injection vectors.
