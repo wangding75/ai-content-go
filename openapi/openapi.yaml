@@ -41,12 +41,31 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePublishTargetRequest'
+            examples:
+              default:
+                value:
+                  platform: wechat
+                  account_name: official
+                  display_name: 微信公众号
+                  config: { section: news }
+                  enabled: true
       responses:
         '201': { description: Publish target created, content: { application/json: { schema: { $ref: '#/components/schemas/PublishTargetMutationEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -67,13 +86,33 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdatePublishTargetRequest'
+            examples:
+              default:
+                value:
+                  platform: wechat
+                  account_name: official
+                  display_name: 微信公众号
+                  config: { section: news }
+                  enabled: true
+                  note: update display config
       responses:
         '200': { description: Publish target updated, content: { application/json: { schema: { $ref: '#/components/schemas/PublishTargetMutationEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -125,13 +164,30 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePublishJobRequest'
+            examples:
+              default:
+                value:
+                  content_item_id: content-item-1
+                  content_version_id: content-version-approved-1
+                  target_id: publish-target-1
       responses:
         '201': { description: Publish job created, content: { application/json: { schema: { $ref: '#/components/schemas/CreatePublishJobEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -189,13 +245,29 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CopyPublishPayloadRequest'
+            examples:
+              default:
+                value:
+                  copy_scope: full
+                  note: manual copy
       responses:
         '200': { description: Publish payload copied, content: { application/json: { schema: { $ref: '#/components/schemas/CopyPublishPayloadEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -216,13 +288,31 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MarkPublishedRequest'
+            examples:
+              default:
+                value:
+                  external_url: https://example.com/post/1
+                  published_at: '2026-05-21T09:00:00Z'
+                  reason: ''
+                  note: manually published
       responses:
         '200': { description: Publish job marked published, content: { application/json: { schema: { $ref: '#/components/schemas/MarkPublishedEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -243,13 +333,30 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MarkFailedRequest'
+            examples:
+              default:
+                value:
+                  reason: platform rejected
+                  retryable: true
+                  note: retry later
       responses:
         '200': { description: Publish job marked failed, content: { application/json: { schema: { $ref: '#/components/schemas/MarkFailedEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
@@ -270,13 +377,30 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RequeuePublishJobRequest'
+            examples:
+              default:
+                value:
+                  reason: retry after manual fix
+                  scheduled_at: '2026-05-21T10:00:00Z'
+                  note: corrected payload
       responses:
         '200': { description: Publish job requeued, content: { application/json: { schema: { $ref: '#/components/schemas/RequeuePublishJobEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/Conflict' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []

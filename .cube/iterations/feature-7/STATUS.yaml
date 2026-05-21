@@ -61,7 +61,10 @@ tasks:
     completed_at: "2026-05-21 17:30"
   - task: "Task-08：补充 OpenAPI 发布接口契约"
     test_file: iteration7_publish_contract_test.go
-    phase: locked
+    phase: green
+    started_at: "2026-05-21 17:33"
+    test_passed: 1
+    test_total: 1
   - task: "Task-09：实现前端发布 API client 骨架"
     test_file: iteration7_publish_contract_test.go
     phase: locked
