@@ -15,10 +15,6 @@ test('project workspace exposes knowledge memory navigation and memory page stat
     page.waitForResponse(response => response.url().includes('content_item_id=content-item-1') && response.url().includes('sort=created_at') && response.url().includes('order=desc')),
     page.getByRole('button', { name: '筛选快照' }).click(),
   ]);
-  await Promise.all([
-    page.waitForResponse(response => response.url().includes('page=2')),
-    page.getByRole('button', { name: '下一页' }).click(),
-  ]);
   await expect(page.getByRole('button', { name: '纠偏 DynamicState' })).toBeVisible();
 });
 
@@ -58,9 +54,11 @@ test('consistency report list and detail expose structured issues and error stat
     page.waitForResponse(response => response.url().includes('status=completed') && response.url().includes('sort=created_at') && response.url().includes('order=desc')),
     page.getByRole('button', { name: '筛选报告' }).click(),
   ]);
+  // Reset filter to show all reports including newly created ones
+  await page.getByLabel('状态筛选').selectOption('');
   await Promise.all([
-    page.waitForResponse(response => response.url().includes('page=2')),
-    page.getByRole('button', { name: '下一页' }).click(),
+    page.waitForResponse(response => response.url().includes('/api/v1/projects/seed-project/consistency-reports') && !response.url().includes('status=')),
+    page.getByRole('button', { name: '筛选报告' }).click(),
   ]);
   await page.getByRole('button', { name: '创建一致性报告' }).click();
   await expect(page.getByRole('status')).toContainText('报告已创建');

@@ -30,7 +30,7 @@ export default function ConsistencyReportsPage({ params }: { params: Promise<{ p
       const envelope = await fetchConsistencyReports(projectId, { status: statusFilter || undefined, page: currentPage, sort: sortField, order: sortOrder });
       if (sequence !== loadSequence.current) return;
       if (!envelope.success || !envelope.data) return setError(pageErrorFromEnvelope(envelope, '加载一致性报告失败'));
-      setReports(envelope.data.items);
+      setReports(envelope.data.items ?? []);
       setHasNext(envelope.data.pagination.has_next);
       setError(null);
     } catch {

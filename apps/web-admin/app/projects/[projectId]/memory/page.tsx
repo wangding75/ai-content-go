@@ -69,7 +69,7 @@ export default function MemoryPage({ params }: { params: Promise<{ projectId: st
       setLoading(false);
       return;
     }
-    setSnapshots(snapshotEnvelope.data.items);
+    setSnapshots(snapshotEnvelope.data.items ?? []);
     setSnapshotHasNext(snapshotEnvelope.data.pagination.has_next);
     setError(null);
     setLoading(false);
