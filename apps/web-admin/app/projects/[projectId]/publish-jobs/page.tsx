@@ -30,8 +30,8 @@ export default function PublishJobsPage({ params }: { params: Promise<{ projectI
     }
     setJobs(jobsEnvelope.data.items);
     setTargets(targetsEnvelope.data.items);
-    setPage(nextPage);
-    setHasNext(jobsEnvelope.data.page * jobsEnvelope.data.page_size < jobsEnvelope.data.total);
+    setPage(jobsEnvelope.data.pagination.page);
+    setHasNext(jobsEnvelope.data.pagination.has_next);
     setError(null);
   }
 
