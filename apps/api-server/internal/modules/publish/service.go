@@ -28,13 +28,19 @@ type Service interface {
 }
 
 type service struct {
+	state *memoryState
+}
+
+type memoryState struct {
 	mu          sync.Mutex
 	idempotent map[string]string
 	jobs        map[string]PublishJobResponse
 }
 
+var defaultState = &memoryState{idempotent: map[string]string{}, jobs: map[string]PublishJobResponse{}}
+
 func NewService() Service {
-	return &service{idempotent: map[string]string{}, jobs: map[string]PublishJobResponse{}}
+	return &service{state: defaultState}
 }
 
 const publishQueueListSQLTemplate = `
@@ -107,9 +113,9 @@ func (s *service) CreateJob(ctx context.Context, projectID string, req CreatePub
 	job.ContentVersionID = req.ContentVersionID
 	job.TargetID = req.TargetID
 	job.PayloadHash = payloadHash(job.Title, "draft body", req.ContentVersionID, req.TargetID)
-	s.mu.Lock()
-	s.jobs[job.ID] = job
-	s.mu.Unlock()
+	s.state.mu.Lock()
+	s.state.jobs[job.ID] = job
+	s.state.mu.Unlock()
 	return CreatePublishJobResponse{PublishJobID: job.ID, Status: JobStatusQueued, PayloadHash: job.PayloadHash, OperationLogID: "oplog-publish-job-" + req.ContentVersionID}, nil
 }
 
@@ -211,13 +217,13 @@ func (s *service) Requeue(ctx context.Context, projectID string, id string, req 
 
 func (s *service) reserveIdempotency(scope string, key string, req any) error {
 	hash := requestHash(req)
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.state.mu.Lock()
+	defer s.state.mu.Unlock()
 	id := scope + ":" + key
-	if previous, ok := s.idempotent[id]; ok && previous != hash {
+	if previous, ok := s.state.idempotent[id]; ok && previous != hash {
 		return ErrIdempotencyConflict
 	}
-	s.idempotent[id] = hash
+	s.state.idempotent[id] = hash
 	return nil
 }
 
