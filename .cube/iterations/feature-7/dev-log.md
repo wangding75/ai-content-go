@@ -73,6 +73,16 @@
 
 ---
 
+## 任务 11：Task-11：实现发布详情、复制与回填页面骨架（完成时间：2026-05-21 17:49）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：1/1 通过（`go test -race -run TestTask11PublishDetailCopyBackfillPagesExposeLogsPayloadAndErrors ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 [apps/web-admin/app/publish-jobs/[jobId]/backfill/page.tsx]（与计划一致；详情页与复制页已有契约字段无需修改）
+- phase：locked → green → done
+- 包级回归：待所有任务完成后统一执行。
+
+---
+
 ## 任务 10：Task-10：实现发布队列导航与列表页面骨架（完成时间：2026-05-21 17:48）
 
 - 测试文件：iteration7_publish_contract_test.go
