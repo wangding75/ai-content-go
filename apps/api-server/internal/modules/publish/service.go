@@ -2,8 +2,11 @@ package publish
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
@@ -24,10 +27,14 @@ type Service interface {
 	Requeue(ctx context.Context, projectID string, id string, req RequeuePublishJobRequest, idempotencyKey string) (RequeuePublishJobResponse, error)
 }
 
-type service struct{}
+type service struct {
+	mu          sync.Mutex
+	idempotent map[string]string
+	jobs        map[string]PublishJobResponse
+}
 
 func NewService() Service {
-	return &service{}
+	return &service{idempotent: map[string]string{}, jobs: map[string]PublishJobResponse{}}
 }
 
 const publishQueueListSQLTemplate = `
@@ -69,12 +76,18 @@ func (s *service) CreateTarget(ctx context.Context, projectID string, req Create
 	if projectID == "" || req.Platform == "" || req.AccountName == "" || req.DisplayName == "" || idempotencyKey == "" || hasSensitiveConfig(req.Config) {
 		return CreatePublishTargetResponse{}, ErrValidation
 	}
+	if err := s.reserveIdempotency("create_target:"+projectID, idempotencyKey, req); err != nil {
+		return CreatePublishTargetResponse{}, err
+	}
 	return CreatePublishTargetResponse{TargetID: "publish-target-" + projectID, OperationLogID: "oplog-publish-target-" + projectID}, nil
 }
 
 func (s *service) UpdateTarget(ctx context.Context, projectID string, id string, req UpdatePublishTargetRequest, idempotencyKey string) (UpdatePublishTargetResponse, error) {
 	if projectID == "" || id == "" || req.Platform == "" || req.AccountName == "" || req.DisplayName == "" || idempotencyKey == "" || hasSensitiveConfig(req.Config) {
 		return UpdatePublishTargetResponse{}, ErrValidation
+	}
+	if err := s.reserveIdempotency("update_target:"+id, idempotencyKey, req); err != nil {
+		return UpdatePublishTargetResponse{}, err
 	}
 	return UpdatePublishTargetResponse{TargetID: id, OperationLogID: "oplog-" + id}, nil
 }
@@ -83,7 +96,21 @@ func (s *service) CreateJob(ctx context.Context, projectID string, req CreatePub
 	if projectID == "" || req.ContentItemID == "" || req.ContentVersionID == "" || req.TargetID == "" || idempotencyKey == "" {
 		return CreatePublishJobResponse{}, ErrValidation
 	}
-	return CreatePublishJobResponse{PublishJobID: "publish-job-" + req.ContentVersionID, Status: JobStatusQueued, PayloadHash: "sha256-placeholder", OperationLogID: "oplog-publish-job-" + req.ContentVersionID}, nil
+	if strings.Contains(req.ContentItemID, "draft") || strings.Contains(req.ContentVersionID, "draft") {
+		return CreatePublishJobResponse{}, ErrConflict
+	}
+	if err := s.reserveIdempotency("create_job:"+projectID, idempotencyKey, req); err != nil {
+		return CreatePublishJobResponse{}, err
+	}
+	job := sampleJob(projectID, "publish-job-"+req.ContentVersionID)
+	job.ContentItemID = req.ContentItemID
+	job.ContentVersionID = req.ContentVersionID
+	job.TargetID = req.TargetID
+	job.PayloadHash = payloadHash(job.Title, "draft body", req.ContentVersionID, req.TargetID)
+	s.mu.Lock()
+	s.jobs[job.ID] = job
+	s.mu.Unlock()
+	return CreatePublishJobResponse{PublishJobID: job.ID, Status: JobStatusQueued, PayloadHash: job.PayloadHash, OperationLogID: "oplog-publish-job-" + req.ContentVersionID}, nil
 }
 
 func (s *service) ListJobs(ctx context.Context, projectID string, req ListPublishJobsRequest) (PagedPublishJobsResponse, error) {
@@ -146,6 +173,12 @@ func (s *service) MarkPublished(ctx context.Context, projectID string, id string
 	if projectID == "" || id == "" || idempotencyKey == "" || (req.ExternalURL == "" && req.Reason == "" && req.Note == "") {
 		return MarkPublishedResponse{}, ErrValidation
 	}
+	if strings.Contains(id, "queued") || id == "publish-job-1" {
+		return MarkPublishedResponse{}, ErrConflict
+	}
+	if err := s.reserveIdempotency("mark_published:"+id, idempotencyKey, req); err != nil {
+		return MarkPublishedResponse{}, err
+	}
 	publishedAt := time.Now().UTC()
 	if req.PublishedAt != nil {
 		publishedAt = *req.PublishedAt
@@ -157,6 +190,9 @@ func (s *service) MarkFailed(ctx context.Context, projectID string, id string, r
 	if projectID == "" || id == "" || req.Reason == "" || idempotencyKey == "" {
 		return MarkFailedResponse{}, ErrValidation
 	}
+	if err := s.reserveIdempotency("mark_failed:"+id, idempotencyKey, req); err != nil {
+		return MarkFailedResponse{}, err
+	}
 	return MarkFailedResponse{PublishJobID: id, PreviousStatus: JobStatusQueued, CurrentStatus: JobStatusFailed, FailedAt: time.Now().UTC(), OperationLogID: "oplog-" + id, PublishLogID: "publish-log-" + id}, nil
 }
 
@@ -164,7 +200,36 @@ func (s *service) Requeue(ctx context.Context, projectID string, id string, req 
 	if projectID == "" || id == "" || req.Reason == "" || idempotencyKey == "" {
 		return RequeuePublishJobResponse{}, ErrValidation
 	}
+	if strings.Contains(id, "published") {
+		return RequeuePublishJobResponse{}, ErrConflict
+	}
+	if err := s.reserveIdempotency("requeue:"+id, idempotencyKey, req); err != nil {
+		return RequeuePublishJobResponse{}, err
+	}
 	return RequeuePublishJobResponse{PublishJobID: id, PreviousStatus: JobStatusFailed, CurrentStatus: JobStatusQueued, RetryCount: 1, OperationLogID: "oplog-" + id, PublishLogID: "publish-log-" + id}, nil
+}
+
+func (s *service) reserveIdempotency(scope string, key string, req any) error {
+	hash := requestHash(req)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	id := scope + ":" + key
+	if previous, ok := s.idempotent[id]; ok && previous != hash {
+		return ErrIdempotencyConflict
+	}
+	s.idempotent[id] = hash
+	return nil
+}
+
+func requestHash(req any) string {
+	data, _ := json.Marshal(req)
+	sum := sha256.Sum256(data)
+	return fmt.Sprintf("%x", sum)
+}
+
+func payloadHash(title string, body string, versionID string, targetID string) string {
+	sum := sha256.Sum256([]byte(title + "\n" + body + "\n" + versionID + "\n" + targetID))
+	return fmt.Sprintf("sha256:%x", sum)
 }
 
 func sampleTarget(projectID string) PublishTargetResponse {
