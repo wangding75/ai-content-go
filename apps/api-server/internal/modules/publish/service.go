@@ -168,12 +168,19 @@ func (s *service) GetCopyPayload(ctx context.Context, projectID string, id strin
 	if projectID == "" || id == "" {
 		return PublishCopyPayloadResponse{}, ErrNotFound
 	}
-	return PublishCopyPayloadResponse{PublishJobID: id, Title: "Draft", Body: "draft body", Format: "plain_text", Platform: "manual", TargetID: "publish-target-1", ContentVersionID: "version-1", PayloadHash: "sha256-placeholder"}, nil
+	versionID := "content-version-approved-1"
+	targetID := "publish-target-1"
+	title := "Draft"
+	body := "draft body"
+	return PublishCopyPayloadResponse{PublishJobID: id, Title: title, Body: body, Format: "plain_text", Platform: "manual", TargetID: targetID, ContentVersionID: versionID, PayloadHash: payloadHash(title, body, versionID, targetID)}, nil
 }
 
 func (s *service) CopyPayload(ctx context.Context, projectID string, id string, req CopyPublishPayloadRequest, idempotencyKey string) (CopyPublishPayloadResponse, error) {
 	if projectID == "" || id == "" || req.CopyScope == "" || idempotencyKey == "" {
 		return CopyPublishPayloadResponse{}, ErrValidation
+	}
+	if err := s.reserveIdempotency("copy_payload:"+id, idempotencyKey, req); err != nil {
+		return CopyPublishPayloadResponse{}, err
 	}
 	return CopyPublishPayloadResponse{PublishJobID: id, PreviousStatus: JobStatusQueued, CurrentStatus: JobStatusCopied, CopiedAt: time.Now().UTC(), PublishLogID: "publish-log-" + id}, nil
 }
