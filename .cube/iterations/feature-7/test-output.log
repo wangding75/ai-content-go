@@ -1,1 +1,13 @@
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	1.025s
+--- FAIL: TestTask06CopyPayloadHTTPSeparatesPreviewFromCopyMutation (0.00s)
+    iteration7_publish_contract_test.go:245: copy payload must bind a real content_version_id and stable payload_hash: {"success":true,"data":{"publish_job_id":"publish-job-1","title":"Draft","body":"draft body","format":"plain_text","platform":"manual","target_id":"publish-target-1","content_version_id":"version-1","payload_hash":"sha256-placeholder"},"error":null,"request_id":"req-iteration-7"}
+--- FAIL: TestTask08OpenAPIDeclaresCompletePublishContract (0.00s)
+    iteration7_publish_contract_test.go:301: operationId: createPublishTarget must declare IDEMPOTENCY_CONFLICT response
+--- FAIL: TestTask09WebClientDeclaresPublishFunctionsWithIdempotencyAndFiltering (0.00s)
+    iteration7_publish_contract_test.go:335: fetchPublishTargets must expose sort/order query support
+--- FAIL: TestTask10PublishQueuePageExposesFiltersPaginationTargetManagementAndCreateFlow (0.00s)
+    iteration7_publish_contract_test.go:345: publish queue page missing "目标筛选"
+--- FAIL: TestTask11PublishDetailCopyBackfillPagesExposeLogsPayloadAndErrors (0.00s)
+    iteration7_publish_contract_test.go:370: publish backfill page missing "published_at"
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	0.072s
+FAIL
