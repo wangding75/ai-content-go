@@ -1,6 +1,6 @@
-branch: feature/7
+branch: feature/1
 current_stage: 03-test-cases
-created: 2026-05-21
+created: 2026-05-15
 
 stages:
   01-prd: PASS
@@ -10,9 +10,9 @@ stages:
   05-testing: PENDING
 
 history:
-  - time: "2026-05-21 03:13:49"
+  - time: "2026-05-15 02:35:35"
     action: advance
     detail: "01-prd → 02-design"
-  - time: "2026-05-21 08:42:57"
+  - time: "2026-05-15 02:57:32"
     action: advance
     detail: "02-design → 03-test-cases"
