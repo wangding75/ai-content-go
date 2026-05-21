@@ -26,10 +26,11 @@ tasks:
     completed_at: "2026-05-21 17:15"
   - task: "Task-03：实现发布服务业务规则与幂等契约"
     test_file: iteration7_publish_contract_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-21 17:16"
     test_passed: 2
     test_total: 2
+    completed_at: "2026-05-21 17:18"
   - task: "Task-04：实现发布目标 API 骨架"
     test_file: iteration7_publish_contract_test.go
     phase: locked

@@ -63,6 +63,16 @@
 
 ---
 
+## 任务 3：Task-03：实现发布服务业务规则与幂等契约（完成时间：2026-05-21 17:18）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：2/2 通过（`go test -race -run 'TestTask03' ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/publish/service.go]（与计划一致）
+- phase：locked → green → done
+- 包级回归：`go test -race ./apps/api-server/internal/http/contract` 当前仍因后续 Task-04 至 Task-11 的锁定红测失败；Task-03 未回归。
+
+---
+
 ## 任务 2：Task-02：定义发布模块 DTO、状态常量与服务接口（完成时间：2026-05-21 17:15）
 
 - 测试文件：iteration7_publish_contract_test.go
