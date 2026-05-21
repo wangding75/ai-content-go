@@ -63,6 +63,16 @@
 
 ---
 
+## 任务 8：Task-08：补充 OpenAPI 发布接口契约（完成时间：2026-05-21 17:36）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：1/1 通过（`go test -race -run TestTask08OpenAPIDeclaresCompletePublishContract ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 [openapi/openapi.yaml]（与计划一致）
+- phase：locked → green → done
+- 包级回归：`go test -race ./apps/api-server/internal/http/contract` 当前仍因后续 Task-09 至 Task-11 的锁定红测失败；Task-08 未回归。
+
+---
+
 ## 任务 7：Task-07：实现发布回填、失败与重新入队 API 骨架（完成时间：2026-05-21 17:30）
 
 - 测试文件：iteration7_publish_contract_test.go
