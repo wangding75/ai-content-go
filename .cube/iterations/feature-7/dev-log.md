@@ -63,6 +63,16 @@
 
 ---
 
+## 任务 6：Task-06：实现复制发布载荷 API 骨架（完成时间：2026-05-21 17:28）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：1/1 通过（`go test -race -run TestTask06CopyPayloadHTTPSeparatesPreviewFromCopyMutation ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/publish/service.go]（计划内；`handlers/publish.go` 无需修改）
+- phase：locked → green → done
+- 包级回归：`go test -race ./apps/api-server/internal/http/contract` 当前仍因后续 Task-08 至 Task-11 的锁定红测失败；Task-06 未回归。
+
+---
+
 ## 任务 5：Task-05：实现发布任务创建与队列 API 骨架（完成时间：2026-05-21 17:25）
 
 - 测试文件：iteration7_publish_contract_test.go
