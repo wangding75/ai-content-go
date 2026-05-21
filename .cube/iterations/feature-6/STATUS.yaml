@@ -1,0 +1,89 @@
+# STATUS.yaml — Per-task TDD development progress
+# AI reads this file at session start to recover context
+# Update phase after completing each task
+#
+# phase values: locked | green | done
+# tracking fields (added during execution): started_at, completed_at, test_passed, test_total
+
+stage: 04-development
+project: ai-content-go
+branch: feature/6
+
+tasks:
+  - task: "Task-01：定义记忆领域 DTO 与状态常量"
+    test_file: apps/api-server/internal/modules/memory/task01_dto_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-02：设计并新增记忆数据库迁移"
+    test_file: apps/api-server/internal/store/knowledge_memory_migration_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 4
+    test_total: 4
+  - task: "Task-03：实现 Memory Service 骨架与状态接口"
+    test_file: apps/api-server/internal/modules/memory/task03_service_state_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 11
+    test_total: 11
+  - task: "Task-04：实现一致性报告执行器骨架"
+    test_file: apps/api-server/internal/modules/memory/task04_report_executor_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 4
+    test_total: 4
+  - task: "Task-05：实现记忆 HTTP API 骨架与路由注册"
+    test_file: apps/api-server/internal/http/contract/iteration6_memory_api_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 7
+    test_total: 7
+  - task: "Task-06：补充 OpenAPI 记忆接口契约"
+    test_file: apps/api-server/internal/http/contract/iteration6_openapi_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 4
+    test_total: 4
+  - task: "Task-07：扩展 Web Admin Memory API client"
+    test_file: apps/api-server/internal/http/contract/iteration6_web_client_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-08：实现项目记忆上下文页面与导航入口"
+    test_file: apps/api-server/internal/http/contract/iteration6_memory_page_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 4
+    test_total: 4
+  - task: "Task-09：实现上下文预览页面"
+    test_file: apps/api-server/internal/http/contract/iteration6_context_preview_page_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 2
+    test_total: 2
+  - task: "Task-10：实现一致性报告列表页面"
+    test_file: apps/api-server/internal/http/contract/iteration6_consistency_reports_page_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-11：实现一致性报告详情页面"
+    test_file: apps/api-server/internal/http/contract/iteration6_consistency_report_detail_page_contract_red_test.go
+    phase: done
+    started_at: "2026-05-20"
+    completed_at: "2026-05-20"
+    test_passed: 3
+    test_total: 3

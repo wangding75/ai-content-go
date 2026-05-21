@@ -724,3 +724,80 @@ export async function approveWithEdit(reviewID: string, input: { editable_fields
 export async function fetchContentVersions(contentItemID: string): Promise<APIEnvelope<PagedResponse<ContentVersionResponse>>> {
   return request<PagedResponse<ContentVersionResponse>>(`/api/v1/content-items/${contentItemID}/versions?page=1&page_size=20`);
 }
+
+// ---- Iteration 6: Knowledge Memory Types ----
+
+export type RecentWindowPolicy = { item_count: number; token_limit: number; truncation_policy: string; note?: string };
+export type SnapshotSummaryResponse = { id: string; source_type: string; estimated_tokens: number; truncation_policy: string; created_at: string };
+export type KnowledgeMemoryResponse = { id: string; project_id: string; static_context: Record<string, unknown>; dynamic_state: Record<string, unknown>; recent_window_policy: RecentWindowPolicy; style_guide: Record<string, unknown>; version: number; updated_at: string; recent_snapshot_summary: SnapshotSummaryResponse };
+export type MemorySnapshotResponse = { id: string; project_id: string; content_item_id?: string; source_type: string; token_budget: number; estimated_tokens: number; truncation_policy: string; created_at: string };
+export type ContextPreviewResponse = { sources: string[]; token_budget: number; estimated_tokens: number; truncation_policy: string; preview_text: string };
+export type ConsistencyIssue = { issue_id: string; severity: string; type: string; title: string; description: string; affected_content_items: string[]; suggestion: string };
+export type ConsistencyReportResponse = { id: string; project_id: string; status: string; issue_count: number; severity_summary: Record<string, number>; created_at: string };
+export type ConsistencyReportDetailResponse = ConsistencyReportResponse & { source_snapshot_id: string; issues: ConsistencyIssue[]; error_code?: string; error_message?: string };
+
+const pathSegment = (value: string) => encodeURIComponent(value);
+
+export async function fetchKnowledgeMemory(projectID: string): Promise<APIEnvelope<KnowledgeMemoryResponse>> {
+  const projectPath = pathSegment(projectID);
+  return request<KnowledgeMemoryResponse>(`/api/v1/projects/${projectPath}/knowledge-memory`);
+}
+
+export async function updateStaticContext(projectID: string, input: { static_context: Record<string, unknown>; note: string }): Promise<APIEnvelope<{ version: number; operation_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<{ version: number; operation_log_id: string }>(`/api/v1/projects/${projectPath}/knowledge-memory/static-context`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export async function updateStyleGuide(projectID: string, input: { style_guide: Record<string, unknown>; note: string }): Promise<APIEnvelope<{ version: number; operation_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<{ version: number; operation_log_id: string }>(`/api/v1/projects/${projectPath}/knowledge-memory/style-guide`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export async function correctDynamicState(projectID: string, input: { reason: string; changes: Record<string, unknown>; source_refs: string[] }, idempotencyKey: string): Promise<APIEnvelope<{ memory_snapshot_id: string; dynamic_state_version: number; operation_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<{ memory_snapshot_id: string; dynamic_state_version: number; operation_log_id: string }>(`/api/v1/projects/${projectPath}/knowledge-memory/dynamic-state-correction`, { method: 'PATCH', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function updateRecentWindowPolicy(projectID: string, input: RecentWindowPolicy): Promise<APIEnvelope<RecentWindowPolicy & { version: number; operation_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<RecentWindowPolicy & { version: number; operation_log_id: string }>(`/api/v1/projects/${projectPath}/knowledge-memory/recent-window-policy`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export async function fetchMemorySnapshots(projectID: string, params?: { page?: number; page_size?: number; content_item_id?: string; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<MemorySnapshotResponse>>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.content_item_id ? { content_item_id: params.content_item_id } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<MemorySnapshotResponse>>(`/api/v1/projects/${projectPath}/knowledge-memory/snapshots?${q}`);
+}
+
+export async function previewContext(projectID: string, params: { purpose: string; budget: number; content_item_id?: string }): Promise<APIEnvelope<ContextPreviewResponse>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ purpose: params.purpose, budget: String(params.budget), ...(params.content_item_id ? { content_item_id: params.content_item_id } : {}) }).toString();
+  return request<ContextPreviewResponse>(`/api/v1/projects/${projectPath}/knowledge-memory/context-preview?${q}`);
+}
+
+export async function assembleContext(projectID: string, input: { purpose: string; budget: number; content_item_id?: string }, idempotencyKey: string): Promise<APIEnvelope<{ context_snapshot_id: string; estimated_tokens: number; truncation_policy: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<{ context_snapshot_id: string; estimated_tokens: number; truncation_policy: string }>(`/api/v1/projects/${projectPath}/knowledge-memory/assemble-context`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function updateDynamicState(contentItemID: string, input: { summary: string; changes: Record<string, unknown>; source_version_id: string }, idempotencyKey: string): Promise<APIEnvelope<{ memory_snapshot_id: string; dynamic_state_version: number }>> {
+  const contentItemPath = pathSegment(contentItemID);
+  return request<{ memory_snapshot_id: string; dynamic_state_version: number }>(`/api/v1/content-items/${contentItemPath}/update-dynamic-state`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function createConsistencyReport(projectID: string, input: { range: Record<string, unknown>; scope: string; severity_threshold: string }, idempotencyKey: string): Promise<APIEnvelope<{ report_id: string; status: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<{ report_id: string; status: string }>(`/api/v1/projects/${projectPath}/consistency-reports`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function fetchConsistencyReports(projectID: string, params?: { status?: string; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<ConsistencyReportResponse>>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.status ? { status: params.status } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<ConsistencyReportResponse>>(`/api/v1/projects/${projectPath}/consistency-reports?${q}`);
+}
+
+export async function fetchConsistencyReport(projectID: string, reportID: string): Promise<APIEnvelope<ConsistencyReportDetailResponse>> {
+  const projectPath = pathSegment(projectID);
+  const reportPath = pathSegment(reportID);
+  return request<ConsistencyReportDetailResponse>(`/api/v1/projects/${projectPath}/consistency-reports/${reportPath}`);
+}
