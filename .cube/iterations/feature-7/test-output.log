@@ -1,1 +1,49 @@
-ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/store	1.018s
+?   	github.com/wangding75/ai-content-go/apps/api-server/cmd/api	[no test files]
+?   	github.com/wangding75/ai-content-go/apps/api-server/internal/config	[no test files]
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/app	1.021s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/cube	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/engine	(cached)
+?   	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/publish	[no test files]
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http	1.043s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/api	(cached)
+--- FAIL: TestTask02PublishDTOAndErrorConstantsDeclareStableContracts (0.00s)
+    iteration7_publish_contract_test.go:134: PublishJobDetailResponse missing json field "content_version_id"
+--- FAIL: TestTask03ServiceRejectsSensitiveConfigAndDetectsIdempotencyConflict (0.00s)
+    iteration7_publish_contract_test.go:163: same idempotency key with different body must return ErrIdempotencyConflict, got <nil>
+--- FAIL: TestTask03ServiceRequiresApprovedContentAndEnforcesStateMachine (0.00s)
+    iteration7_publish_contract_test.go:174: unapproved content version must return ErrConflict, got <nil>
+--- FAIL: TestTask04PublishTargetHTTPCoversSuccessValidationAndIdempotencyConflict (0.00s)
+    iteration7_publish_contract_test.go:207: same Idempotency-Key with changed target body = 201, want 409 body={"success":true,"data":{"target_id":"publish-target-project-1","operation_log_id":"oplog-publish-target-project-1"},"error":null,"request_id":"req-iteration-7"}
+--- FAIL: TestTask05PublishJobHTTPReturnsQueueDetailAndNotFoundContracts (0.00s)
+    iteration7_publish_contract_test.go:233: unknown publish job detail = 200, want 404 body={"success":true,"data":{"id":"unknown-job","project_id":"project-1","content_item_id":"content-item-1","content_version_id":"version-1","target_id":"publish-target-1","title":"Draft","target_platform":"manual","target_display":"Manual channel","status":"queued","payload_hash":"sha256-placeholder","last_error":"","retry_count":0,"actions":["copy","mark_failed"],"created_at":"2026-05-21T09:06:53.128264668Z","updated_at":"2026-05-21T09:06:53.128264918Z","target":{"id":"publish-target-1","project_id":"project-1","platform":"manual","account_name":"official","display_name":"Manual channel","config_summary":"section=default","enabled":true,"updated_at":"2026-05-21T09:06:53.128265618Z"},"content_version":{"id":"version-1","content_item_id":"content-item-1","version_no":1,"source":"generation","title":"Draft","body":"draft body","editable_fields":{},"summary":"v1","created_at":"2026-05-21T09:06:53.128265858Z"},"logs":[{"id":"publish-log-unknown-job","publish_job_id":"unknown-job","event_type":"job_created","from_status":"","to_status":"queued","actor_id":"system","reason":"","note":"","payload_snapshot":{},"created_at":"2026-05-21T09:06:53.128267158Z"}],"external_url":""},"error":null,"request_id":"req-iteration-7"}
+--- FAIL: TestTask06CopyPayloadHTTPSeparatesPreviewFromCopyMutation (0.00s)
+    iteration7_publish_contract_test.go:245: copy payload must bind a real content_version_id and stable payload_hash: {"success":true,"data":{"publish_job_id":"publish-job-1","title":"Draft","body":"draft body","format":"plain_text","platform":"manual","target_id":"publish-target-1","content_version_id":"version-1","payload_hash":"sha256-placeholder"},"error":null,"request_id":"req-iteration-7"}
+--- FAIL: TestTask07BackfillHTTPEnforcesStatusAndReasonRules (0.00s)
+    iteration7_publish_contract_test.go:262: mark published before copied = 200, want 409 body={"success":true,"data":{"publish_job_id":"publish-job-1","previous_status":"copied","current_status":"published","external_url":"https://example.com/post/1","published_at":"2026-05-21T09:06:53.129658264Z","operation_log_id":"oplog-publish-job-1","publish_log_id":"publish-log-publish-job-1"},"error":null,"request_id":"req-iteration-7"}
+--- FAIL: TestTask08OpenAPIDeclaresCompletePublishContract (0.00s)
+    iteration7_publish_contract_test.go:301: operationId: createPublishTarget must declare IDEMPOTENCY_CONFLICT response
+--- FAIL: TestTask09WebClientDeclaresPublishFunctionsWithIdempotencyAndFiltering (0.00s)
+    iteration7_publish_contract_test.go:335: fetchPublishTargets must expose sort/order query support
+--- FAIL: TestTask10PublishQueuePageExposesFiltersPaginationTargetManagementAndCreateFlow (0.00s)
+    iteration7_publish_contract_test.go:345: publish queue page missing "目标筛选"
+--- FAIL: TestTask11PublishDetailCopyBackfillPagesExposeLogsPayloadAndErrors (0.00s)
+    iteration7_publish_contract_test.go:370: publish backfill page missing "published_at"
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	0.075s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers	1.056s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/agent	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/external	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/generation	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/memory	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/novel	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/review	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow	(cached)
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/store	1.026s
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/worker	(cached)
+FAIL

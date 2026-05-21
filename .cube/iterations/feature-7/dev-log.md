@@ -62,3 +62,13 @@
 - 修改：apps/web-admin/app/publish-jobs/[jobId]/backfill/page.tsx
 
 ---
+
+## 任务 1：Task-01：创建发布数据表与 SQL 查询契约（完成时间：2026-05-21 17:07）
+
+- 测试文件：publish_sql_contract_test.go
+- 测试结果：3/3 通过（`go test -race -run TestTask01 ./apps/api-server/internal/store`）
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/publish/service.go]（与计划一致；另含 CUBE 04 阶段 state/STATUS/dev-log/test-output/snapshot 元数据）
+- phase：locked → green → done
+- 全量回归：`go test -race ./...` 当前仍因后续 Task-02 至 Task-11 的锁定红测失败；store 包通过。
+
+---

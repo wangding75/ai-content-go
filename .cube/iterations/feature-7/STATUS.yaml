@@ -12,10 +12,11 @@ branch: feature/7
 tasks:
   - task: "Task-01：创建发布数据表与 SQL 查询契约"
     test_file: publish_sql_contract_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-21 17:04"
     test_passed: 3
     test_total: 3
+    completed_at: "2026-05-21 17:07"
   - task: "Task-02：定义发布模块 DTO、状态常量与服务接口"
     test_file: iteration7_publish_contract_test.go
     phase: locked
