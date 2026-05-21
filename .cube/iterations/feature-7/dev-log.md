@@ -1,0 +1,64 @@
+# Development Log
+
+## 执行计划（生成时间：2026-05-21 17:04）
+
+整体进度：已完成 0 / 共 11 个任务
+
+| # | 任务 | 测试文件 | 当前状态 | 变更文件数 |
+|---|------|----------|----------|-----------|
+| 1 | Task-01：创建发布数据表与 SQL 查询契约 | publish_sql_contract_test.go | locked | 修改 1 |
+| 2 | Task-02：定义发布模块 DTO、状态常量与服务接口 | iteration7_publish_contract_test.go | locked | 修改 2 |
+| 3 | Task-03：实现发布服务业务规则与幂等契约 | iteration7_publish_contract_test.go | locked | 修改 1 |
+| 4 | Task-04：实现发布目标 API 骨架 | iteration7_publish_contract_test.go | locked | 修改 2 |
+| 5 | Task-05：实现发布任务创建与队列 API 骨架 | iteration7_publish_contract_test.go | locked | 修改 2 |
+| 6 | Task-06：实现复制发布载荷 API 骨架 | iteration7_publish_contract_test.go | locked | 修改 2 |
+| 7 | Task-07：实现发布回填、失败与重新入队 API 骨架 | iteration7_publish_contract_test.go | locked | 修改 2 |
+| 8 | Task-08：补充 OpenAPI 发布接口契约 | iteration7_publish_contract_test.go | locked | 修改 1 |
+| 9 | Task-09：实现前端发布 API client 骨架 | iteration7_publish_contract_test.go | locked | 修改 1 |
+| 10 | Task-10：实现发布队列导航与列表页面骨架 | iteration7_publish_contract_test.go | locked | 修改 2 |
+| 11 | Task-11：实现发布详情、复制与回填页面骨架 | iteration7_publish_contract_test.go | locked | 修改 3 |
+
+### 文件变更明细
+
+**任务 1：Task-01：创建发布数据表与 SQL 查询契约**
+- 修改：apps/api-server/internal/modules/publish/service.go
+
+**任务 2：Task-02：定义发布模块 DTO、状态常量与服务接口**
+- 修改：apps/api-server/internal/modules/publish/dto.go
+- 修改：apps/api-server/internal/modules/publish/service.go
+
+**任务 3：Task-03：实现发布服务业务规则与幂等契约**
+- 修改：apps/api-server/internal/modules/publish/service.go
+
+**任务 4：Task-04：实现发布目标 API 骨架**
+- 修改：apps/api-server/internal/modules/publish/service.go
+- 修改：apps/api-server/internal/http/handlers/publish.go
+
+**任务 5：Task-05：实现发布任务创建与队列 API 骨架**
+- 修改：apps/api-server/internal/modules/publish/service.go
+- 修改：apps/api-server/internal/http/handlers/publish.go
+
+**任务 6：Task-06：实现复制发布载荷 API 骨架**
+- 修改：apps/api-server/internal/modules/publish/service.go
+- 修改：apps/api-server/internal/http/handlers/publish.go
+
+**任务 7：Task-07：实现发布回填、失败与重新入队 API 骨架**
+- 修改：apps/api-server/internal/modules/publish/service.go
+- 修改：apps/api-server/internal/http/handlers/publish.go
+
+**任务 8：Task-08：补充 OpenAPI 发布接口契约**
+- 修改：openapi/openapi.yaml
+
+**任务 9：Task-09：实现前端发布 API client 骨架**
+- 修改：apps/web-admin/lib/api.ts
+
+**任务 10：Task-10：实现发布队列导航与列表页面骨架**
+- 修改：apps/web-admin/app/projects/[projectId]/workspace-nav.tsx
+- 修改：apps/web-admin/app/projects/[projectId]/publish-jobs/page.tsx
+
+**任务 11：Task-11：实现发布详情、复制与回填页面骨架**
+- 修改：apps/web-admin/app/publish-jobs/[jobId]/page.tsx
+- 修改：apps/web-admin/app/publish-jobs/[jobId]/copy/page.tsx
+- 修改：apps/web-admin/app/publish-jobs/[jobId]/backfill/page.tsx
+
+---

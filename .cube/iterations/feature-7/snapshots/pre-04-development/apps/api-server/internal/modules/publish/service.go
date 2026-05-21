@@ -2,7 +2,6 @@ package publish
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -28,34 +27,6 @@ type service struct{}
 
 func NewService() Service {
 	return &service{}
-}
-
-const publishQueueListSQLTemplate = `
-SELECT j.*, t.platform, t.account_name, t.display_name
-FROM publish_job j
-JOIN publish_target t ON t.id = j.target_id
-WHERE j.project_id = $1
-  AND ($2::text IS NULL OR j.target_id = $2)
-  AND ($3::text IS NULL OR j.status = $3)
-  AND ($4::timestamptz IS NULL OR j.scheduled_at >= $4)
-ORDER BY %s %s
-LIMIT $5 OFFSET $6`
-
-func buildPublishQueueListSQL(sort string, order string) string {
-	sortColumn := map[string]string{
-		"":             "j.created_at",
-		"created_at":   "j.created_at",
-		"scheduled_at": "j.scheduled_at",
-		"status":       "j.status",
-	}[sort]
-	if sortColumn == "" {
-		sortColumn = "j.created_at"
-	}
-	orderDirection := "DESC"
-	if strings.EqualFold(order, "asc") {
-		orderDirection = "ASC"
-	}
-	return fmt.Sprintf(publishQueueListSQLTemplate, sortColumn, orderDirection)
 }
 
 func (s *service) ListTargets(ctx context.Context, projectID string, req ListPublishTargetsRequest) (PagedPublishTargetsResponse, error) {
