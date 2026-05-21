@@ -63,6 +63,16 @@
 
 ---
 
+## 任务 7：Task-07：实现发布回填、失败与重新入队 API 骨架（完成时间：2026-05-21 17:30）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：1/1 通过（`go test -race -run TestTask07BackfillHTTPEnforcesStatusAndReasonRules ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 []（Task-03 的状态机实现已覆盖本任务锁定契约）
+- phase：locked → green → done
+- 包级回归：`go test -race ./apps/api-server/internal/http/contract` 当前仍因后续 Task-08 至 Task-11 的锁定红测失败；Task-07 未回归。
+
+---
+
 ## 任务 6：Task-06：实现复制发布载荷 API 骨架（完成时间：2026-05-21 17:28）
 
 - 测试文件：iteration7_publish_contract_test.go
