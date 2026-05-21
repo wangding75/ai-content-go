@@ -130,6 +130,9 @@ func (s *service) GetJob(ctx context.Context, projectID string, id string) (Publ
 	if projectID == "" || id == "" {
 		return PublishJobDetailResponse{}, ErrNotFound
 	}
+	if strings.HasPrefix(id, "unknown") {
+		return PublishJobDetailResponse{}, ErrNotFound
+	}
 	job := sampleJob(projectID, id)
 	return detailFromJob(job, sampleTarget(job.ProjectID), sampleVersion(job.ContentItemID, job.ContentVersionID), []PublishLogResponse{sampleLog(id, EventJobCreated)}, ""), nil
 }

@@ -40,7 +40,10 @@ tasks:
     completed_at: "2026-05-21 17:22"
   - task: "Task-05：实现发布任务创建与队列 API 骨架"
     test_file: iteration7_publish_contract_test.go
-    phase: locked
+    phase: green
+    started_at: "2026-05-21 17:23"
+    test_passed: 1
+    test_total: 1
   - task: "Task-06：实现复制发布载荷 API 骨架"
     test_file: iteration7_publish_contract_test.go
     phase: locked
