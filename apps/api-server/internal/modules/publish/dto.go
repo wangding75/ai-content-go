@@ -130,11 +130,28 @@ type PublishLogResponse struct {
 }
 
 type PublishJobDetailResponse struct {
-	PublishJobResponse
-	Target         PublishTargetResponse         `json:"target"`
-	ContentVersion review.ContentVersionResponse `json:"content_version"`
-	Logs           []PublishLogResponse          `json:"logs"`
-	ExternalURL    string                        `json:"external_url"`
+	ID               string                        `json:"id"`
+	ProjectID        string                        `json:"project_id"`
+	ContentItemID    string                        `json:"content_item_id"`
+	ContentVersionID string                        `json:"content_version_id"`
+	TargetID         string                        `json:"target_id"`
+	Title            string                        `json:"title"`
+	TargetPlatform   string                        `json:"target_platform"`
+	TargetDisplay    string                        `json:"target_display"`
+	Status           string                        `json:"status"`
+	PayloadHash      string                        `json:"payload_hash"`
+	ScheduledAt      *time.Time                    `json:"scheduled_at,omitempty"`
+	CopiedAt         *time.Time                    `json:"copied_at,omitempty"`
+	PublishedAt      *time.Time                    `json:"published_at,omitempty"`
+	LastError        string                        `json:"last_error"`
+	RetryCount       int                           `json:"retry_count"`
+	Actions          []string                      `json:"actions"`
+	CreatedAt        time.Time                     `json:"created_at"`
+	UpdatedAt        time.Time                     `json:"updated_at"`
+	Target           PublishTargetResponse         `json:"target"`
+	ContentVersion   review.ContentVersionResponse `json:"content_version"`
+	Logs             []PublishLogResponse          `json:"logs"`
+	ExternalURL      string                        `json:"external_url"`
 }
 
 type PublishCopyPayloadResponse struct {

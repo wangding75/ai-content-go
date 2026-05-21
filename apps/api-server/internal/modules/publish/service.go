@@ -98,7 +98,34 @@ func (s *service) GetJob(ctx context.Context, projectID string, id string) (Publ
 		return PublishJobDetailResponse{}, ErrNotFound
 	}
 	job := sampleJob(projectID, id)
-	return PublishJobDetailResponse{PublishJobResponse: job, Target: sampleTarget(job.ProjectID), ContentVersion: sampleVersion(job.ContentItemID, job.ContentVersionID), Logs: []PublishLogResponse{sampleLog(id, EventJobCreated)}, ExternalURL: ""}, nil
+	return detailFromJob(job, sampleTarget(job.ProjectID), sampleVersion(job.ContentItemID, job.ContentVersionID), []PublishLogResponse{sampleLog(id, EventJobCreated)}, ""), nil
+}
+
+func detailFromJob(job PublishJobResponse, target PublishTargetResponse, version review.ContentVersionResponse, logs []PublishLogResponse, externalURL string) PublishJobDetailResponse {
+	return PublishJobDetailResponse{
+		ID:               job.ID,
+		ProjectID:        job.ProjectID,
+		ContentItemID:    job.ContentItemID,
+		ContentVersionID: job.ContentVersionID,
+		TargetID:         job.TargetID,
+		Title:            job.Title,
+		TargetPlatform:   job.TargetPlatform,
+		TargetDisplay:    job.TargetDisplay,
+		Status:           job.Status,
+		PayloadHash:      job.PayloadHash,
+		ScheduledAt:      job.ScheduledAt,
+		CopiedAt:         job.CopiedAt,
+		PublishedAt:      job.PublishedAt,
+		LastError:        job.LastError,
+		RetryCount:       job.RetryCount,
+		Actions:          job.Actions,
+		CreatedAt:        job.CreatedAt,
+		UpdatedAt:        job.UpdatedAt,
+		Target:           target,
+		ContentVersion:   version,
+		Logs:             logs,
+		ExternalURL:      externalURL,
+	}
 }
 
 func (s *service) GetCopyPayload(ctx context.Context, projectID string, id string) (PublishCopyPayloadResponse, error) {

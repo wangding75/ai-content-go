@@ -19,7 +19,10 @@ tasks:
     completed_at: "2026-05-21 17:07"
   - task: "Task-02：定义发布模块 DTO、状态常量与服务接口"
     test_file: iteration7_publish_contract_test.go
-    phase: locked
+    phase: green
+    started_at: "2026-05-21 17:07"
+    test_passed: 1
+    test_total: 1
   - task: "Task-03：实现发布服务业务规则与幂等契约"
     test_file: iteration7_publish_contract_test.go
     phase: locked
