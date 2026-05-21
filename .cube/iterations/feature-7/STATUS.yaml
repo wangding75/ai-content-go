@@ -75,7 +75,11 @@ tasks:
     completed_at: "2026-05-21 17:39"
   - task: "Task-10：实现发布队列导航与列表页面骨架"
     test_file: iteration7_publish_contract_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-05-21 17:47"
+    test_passed: 1
+    test_total: 1
+    completed_at: "2026-05-21 17:48"
   - task: "Task-11：实现发布详情、复制与回填页面骨架"
     test_file: iteration7_publish_contract_test.go
     phase: locked

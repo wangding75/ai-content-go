@@ -73,6 +73,16 @@
 
 ---
 
+## 任务 10：Task-10：实现发布队列导航与列表页面骨架（完成时间：2026-05-21 17:48）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：1/1 通过（`go test -race -run TestTask10PublishQueuePageExposesFiltersPaginationTargetManagementAndCreateFlow ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 [apps/web-admin/app/projects/[projectId]/publish-jobs/page.tsx]（与计划一致）
+- phase：locked → green → done
+- 包级回归：尚未执行；Task-11 仍处于 locked 红测阶段，待全部任务完成后统一回归。
+
+---
+
 ## 任务 8：Task-08：补充 OpenAPI 发布接口契约（完成时间：2026-05-21 17:36）
 
 - 测试文件：iteration7_publish_contract_test.go
