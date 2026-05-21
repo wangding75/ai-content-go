@@ -63,6 +63,16 @@
 
 ---
 
+## 任务 2：Task-02：定义发布模块 DTO、状态常量与服务接口（完成时间：2026-05-21 17:15）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：1/1 通过（`go test -race -run TestTask02PublishDTOAndErrorConstantsDeclareStableContracts ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/publish/dto.go, apps/api-server/internal/modules/publish/service.go]（与计划一致）
+- phase：locked → green → done
+- 包级回归：`go test -race ./apps/api-server/internal/http/contract` 当前仍因后续 Task-03 至 Task-11 的锁定红测失败；Task-02 未回归。
+
+---
+
 ## 任务 1：Task-01：创建发布数据表与 SQL 查询契约（完成时间：2026-05-21 17:07）
 
 - 测试文件：publish_sql_contract_test.go
