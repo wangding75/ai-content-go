@@ -868,9 +868,9 @@ export type PublishCopyPayloadResponse = {
   payload_hash: string;
 };
 
-export async function fetchPublishTargets(projectID: string, params?: { enabled?: boolean; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<PublishTargetResponse>>> {
+export async function fetchPublishTargets(projectID: string, params?: { enabled?: boolean; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<PublishTargetResponse>>> {
   const projectPath = pathSegment(projectID);
-  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(typeof params?.enabled === 'boolean' ? { enabled: String(params.enabled) } : {}) }).toString();
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(typeof params?.enabled === 'boolean' ? { enabled: String(params.enabled) } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
   return request<PagedResponse<PublishTargetResponse>>(`/api/v1/projects/${projectPath}/publish-targets?${q}`);
 }
 
