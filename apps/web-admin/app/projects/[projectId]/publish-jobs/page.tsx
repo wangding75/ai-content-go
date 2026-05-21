@@ -9,12 +9,15 @@ export default function PublishJobsPage({ params }: { params: Promise<{ projectI
   const [jobs, setJobs] = useState<PublishJobResponse[]>([]);
   const [targets, setTargets] = useState<PublishTargetResponse[]>([]);
   const [status, setStatus] = useState('');
+  const [targetID, setTargetID] = useState('');
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
   const [error, setError] = useState<PageError | null>(null);
   const [notice, setNotice] = useState('');
 
-  async function load() {
+  async function load(nextPage = page) {
     const [jobsEnvelope, targetsEnvelope] = await Promise.all([
-      fetchPublishJobs(projectId, { status: status || undefined, page: 1, page_size: 20 }),
+      fetchPublishJobs(projectId, { status: status || undefined, target_id: targetID || undefined, page: nextPage, page_size: 20, sort: 'created_at', order: 'desc' }),
       fetchPublishTargets(projectId, { enabled: true, page: 1, page_size: 20 }),
     ]);
     if (!jobsEnvelope.success || !jobsEnvelope.data) {
@@ -27,12 +30,22 @@ export default function PublishJobsPage({ params }: { params: Promise<{ projectI
     }
     setJobs(jobsEnvelope.data.items);
     setTargets(targetsEnvelope.data.items);
+    setPage(nextPage);
+    setHasNext(jobsEnvelope.data.page * jobsEnvelope.data.page_size < jobsEnvelope.data.total);
     setError(null);
   }
 
   useEffect(() => {
-    void load();
-  }, [projectId, status]);
+    void load(1);
+  }, [projectId]);
+
+  async function applyFilters() {
+    await load(1);
+  }
+
+  async function changePage(nextPage: number) {
+    await load(Math.max(1, nextPage));
+  }
 
   async function createSampleJob() {
     const targetID = targets[0]?.id ?? 'publish-target-1';
@@ -67,6 +80,14 @@ export default function PublishJobsPage({ params }: { params: Promise<{ projectI
               <option value="failed">failed</option>
             </select>
           </label>
+          <label>目标筛选
+            <select value={targetID} onChange={(event) => setTargetID(event.target.value)}>
+              <option value="">全部目标</option>
+              {targets.map((target) => <option key={target.id} value={target.id}>{target.platform} · {target.display_name}</option>)}
+            </select>
+          </label>
+          <button type="button" onClick={applyFilters}>筛选</button>
+          <button type="button">新建发布目标</button>
           <span className="muted">目标数：{targets.length}</span>
         </div>
         {notice && <p role="status">{notice}</p>}
@@ -75,24 +96,31 @@ export default function PublishJobsPage({ params }: { params: Promise<{ projectI
       <section className="card table-card">
         <h2>任务列表</h2>
         {jobs.length === 0 ? <p className="muted">暂无发布任务</p> : (
-          <table>
-            <thead><tr><th>内容</th><th>目标</th><th>状态</th><th>最近错误</th><th>操作</th></tr></thead>
-            <tbody>
-              {jobs.map((job) => (
-                <tr key={job.id}>
-                  <td>{job.title}<br /><span className="muted">{job.content_version_id}</span></td>
-                  <td>{job.target_platform} · {job.target_display}</td>
-                  <td><span className="badge badge--muted">{job.status}</span></td>
-                  <td>{job.last_error || '-'}</td>
-                  <td className="action-row">
-                    <Link href={`/publish-jobs/${job.id}?project_id=${encodeURIComponent(projectId)}`}>详情</Link>
-                    <Link href={`/publish-jobs/${job.id}/copy?project_id=${encodeURIComponent(projectId)}`}>复制</Link>
-                    <Link href={`/publish-jobs/${job.id}/backfill?project_id=${encodeURIComponent(projectId)}`}>回填</Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <table>
+              <thead><tr><th>内容</th><th>目标</th><th>状态</th><th>最近错误</th><th>操作</th></tr></thead>
+              <tbody>
+                {jobs.map((job) => (
+                  <tr key={job.id}>
+                    <td>{job.title}<br /><span className="muted">{job.content_version_id}</span></td>
+                    <td>{job.target_platform} · {job.target_display}</td>
+                    <td><span className="badge badge--muted">{job.status}</span></td>
+                    <td>{job.last_error || '-'}</td>
+                    <td className="action-row">
+                      <Link href={`/publish-jobs/${job.id}?project_id=${encodeURIComponent(projectId)}`}>详情</Link>
+                      <Link href={`/publish-jobs/${job.id}/copy?project_id=${encodeURIComponent(projectId)}`}>复制</Link>
+                      <Link href={`/publish-jobs/${job.id}/backfill?project_id=${encodeURIComponent(projectId)}`}>回填</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="action-row">
+              <button type="button" disabled={page <= 1} onClick={() => changePage(page - 1)}>上一页</button>
+              <span className="muted">第 {page} 页</span>
+              <button type="button" disabled={!hasNext} onClick={() => changePage(page + 1)}>下一页</button>
+            </div>
+          </>
         )}
       </section>
     </main>
