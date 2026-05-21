@@ -25,6 +25,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/memory"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/novel"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/publish"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/review"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
@@ -61,6 +62,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	generationHandler := handlers.NewGenerationHandler(generation.NewService(), wfSvc, eng, logger)
 	reviewHandler := handlers.NewReviewHandler(review.NewService(), wfSvc, eng, logger)
 	memoryHandler := handlers.NewMemoryHandler(memory.NewService(), logger)
+	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
@@ -164,6 +166,19 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Post("/projects/{projectId}/consistency-reports", memoryHandler.CreateConsistencyReport)
 		r.Get("/projects/{projectId}/consistency-reports", memoryHandler.ListConsistencyReports)
 		r.Get("/projects/{projectId}/consistency-reports/{reportId}", memoryHandler.GetConsistencyReport)
+
+		// Iteration 7: Publish queue
+		r.Get("/projects/{projectId}/publish-targets", publishHandler.ListTargets)
+		r.Post("/projects/{projectId}/publish-targets", publishHandler.CreateTarget)
+		r.Patch("/projects/{projectId}/publish-targets/{id}", publishHandler.UpdateTarget)
+		r.Post("/projects/{projectId}/publish-jobs", publishHandler.CreateJob)
+		r.Get("/projects/{projectId}/publish-jobs", publishHandler.ListJobs)
+		r.Get("/projects/{projectId}/publish-jobs/{id}", publishHandler.GetJob)
+		r.Get("/projects/{projectId}/publish-jobs/{id}/copy-payload", publishHandler.GetCopyPayload)
+		r.Post("/projects/{projectId}/publish-jobs/{id}/copy", publishHandler.CopyPayload)
+		r.Post("/projects/{projectId}/publish-jobs/{id}/mark-published", publishHandler.MarkPublished)
+		r.Post("/projects/{projectId}/publish-jobs/{id}/mark-failed", publishHandler.MarkFailed)
+		r.Post("/projects/{projectId}/publish-jobs/{id}/requeue", publishHandler.Requeue)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
