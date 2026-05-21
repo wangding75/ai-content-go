@@ -33,10 +33,11 @@ tasks:
     completed_at: "2026-05-21 17:18"
   - task: "Task-04：实现发布目标 API 骨架"
     test_file: iteration7_publish_contract_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-21 17:19"
     test_passed: 1
     test_total: 1
+    completed_at: "2026-05-21 17:22"
   - task: "Task-05：实现发布任务创建与队列 API 骨架"
     test_file: iteration7_publish_contract_test.go
     phase: locked

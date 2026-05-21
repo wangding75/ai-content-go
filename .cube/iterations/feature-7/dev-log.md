@@ -63,6 +63,16 @@
 
 ---
 
+## 任务 4：Task-04：实现发布目标 API 骨架（完成时间：2026-05-21 17:22）
+
+- 测试文件：iteration7_publish_contract_test.go
+- 测试结果：1/1 通过（`go test -race -run TestTask04PublishTargetHTTPCoversSuccessValidationAndIdempotencyConflict ./apps/api-server/internal/http/contract`）
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/publish/service.go]（计划内；`handlers/publish.go` 已满足错误映射，无需修改）
+- phase：locked → green → done
+- 包级回归：`go test -race ./apps/api-server/internal/http/contract` 当前仍因后续 Task-05 至 Task-11 的锁定红测失败；Task-04 未回归。
+
+---
+
 ## 任务 3：Task-03：实现发布服务业务规则与幂等契约（完成时间：2026-05-21 17:18）
 
 - 测试文件：iteration7_publish_contract_test.go
