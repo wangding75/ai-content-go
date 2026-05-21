@@ -7,6 +7,7 @@ export default function PublishJobBackfillPage({ params, searchParams }: { param
   const { jobId } = use(params);
   const { project_id: projectId = '' } = use(searchParams);
   const [externalUrl, setExternalUrl] = useState('');
+  const [publishedAt, setPublishedAt] = useState('');
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState<PageError | null>(null);
@@ -24,7 +25,7 @@ export default function PublishJobBackfillPage({ params, searchParams }: { param
     if (!requireProject()) {
       return;
     }
-    const envelope = await markPublishJobPublished(projectId, jobId, { external_url: externalUrl, reason, note }, `published-${Date.now()}`);
+    const envelope = await markPublishJobPublished(projectId, jobId, { external_url: externalUrl, published_at: publishedAt || undefined, reason, note }, `published-${Date.now()}`);
     if (!envelope.success || !envelope.data) {
       setError(pageErrorFromEnvelope(envelope, '标记已发布失败'));
       return;
@@ -69,6 +70,9 @@ export default function PublishJobBackfillPage({ params, searchParams }: { param
         <div className="form-grid">
           <label>外部链接
             <input value={externalUrl} onChange={(event) => setExternalUrl(event.target.value)} placeholder="https://example.com/published" />
+          </label>
+          <label>published_at
+            <input value={publishedAt} onChange={(event) => setPublishedAt(event.target.value)} placeholder="2026-05-21T09:00:00Z" />
           </label>
           <label>原因
             <input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="必填失败原因或无链接原因" />
