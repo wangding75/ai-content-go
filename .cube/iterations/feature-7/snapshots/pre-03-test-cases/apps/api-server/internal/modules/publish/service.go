@@ -1,0 +1,163 @@
+package publish
+
+import (
+	"context"
+	"strings"
+	"time"
+
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/review"
+)
+
+type Service interface {
+	ListTargets(ctx context.Context, projectID string, req ListPublishTargetsRequest) (PagedPublishTargetsResponse, error)
+	CreateTarget(ctx context.Context, projectID string, req CreatePublishTargetRequest, idempotencyKey string) (CreatePublishTargetResponse, error)
+	UpdateTarget(ctx context.Context, projectID string, id string, req UpdatePublishTargetRequest, idempotencyKey string) (UpdatePublishTargetResponse, error)
+	CreateJob(ctx context.Context, projectID string, req CreatePublishJobRequest, idempotencyKey string) (CreatePublishJobResponse, error)
+	ListJobs(ctx context.Context, projectID string, req ListPublishJobsRequest) (PagedPublishJobsResponse, error)
+	GetJob(ctx context.Context, projectID string, id string) (PublishJobDetailResponse, error)
+	GetCopyPayload(ctx context.Context, projectID string, id string) (PublishCopyPayloadResponse, error)
+	CopyPayload(ctx context.Context, projectID string, id string, req CopyPublishPayloadRequest, idempotencyKey string) (CopyPublishPayloadResponse, error)
+	MarkPublished(ctx context.Context, projectID string, id string, req MarkPublishedRequest, idempotencyKey string) (MarkPublishedResponse, error)
+	MarkFailed(ctx context.Context, projectID string, id string, req MarkFailedRequest, idempotencyKey string) (MarkFailedResponse, error)
+	Requeue(ctx context.Context, projectID string, id string, req RequeuePublishJobRequest, idempotencyKey string) (RequeuePublishJobResponse, error)
+}
+
+type service struct{}
+
+func NewService() Service {
+	return &service{}
+}
+
+func (s *service) ListTargets(ctx context.Context, projectID string, req ListPublishTargetsRequest) (PagedPublishTargetsResponse, error) {
+	if projectID == "" {
+		return PagedPublishTargetsResponse{}, ErrValidation
+	}
+	return PagedPublishTargetsResponse{Items: []PublishTargetResponse{sampleTarget(projectID)}, Pagination: publishPagination(req.PaginationRequest)}, nil
+}
+
+func (s *service) CreateTarget(ctx context.Context, projectID string, req CreatePublishTargetRequest, idempotencyKey string) (CreatePublishTargetResponse, error) {
+	if projectID == "" || req.Platform == "" || req.AccountName == "" || req.DisplayName == "" || idempotencyKey == "" || hasSensitiveConfig(req.Config) {
+		return CreatePublishTargetResponse{}, ErrValidation
+	}
+	return CreatePublishTargetResponse{TargetID: "publish-target-" + projectID, OperationLogID: "oplog-publish-target-" + projectID}, nil
+}
+
+func (s *service) UpdateTarget(ctx context.Context, projectID string, id string, req UpdatePublishTargetRequest, idempotencyKey string) (UpdatePublishTargetResponse, error) {
+	if projectID == "" || id == "" || req.Platform == "" || req.AccountName == "" || req.DisplayName == "" || idempotencyKey == "" || hasSensitiveConfig(req.Config) {
+		return UpdatePublishTargetResponse{}, ErrValidation
+	}
+	return UpdatePublishTargetResponse{TargetID: id, OperationLogID: "oplog-" + id}, nil
+}
+
+func (s *service) CreateJob(ctx context.Context, projectID string, req CreatePublishJobRequest, idempotencyKey string) (CreatePublishJobResponse, error) {
+	if projectID == "" || req.ContentItemID == "" || req.ContentVersionID == "" || req.TargetID == "" || idempotencyKey == "" {
+		return CreatePublishJobResponse{}, ErrValidation
+	}
+	return CreatePublishJobResponse{PublishJobID: "publish-job-" + req.ContentVersionID, Status: JobStatusQueued, PayloadHash: "sha256-placeholder", OperationLogID: "oplog-publish-job-" + req.ContentVersionID}, nil
+}
+
+func (s *service) ListJobs(ctx context.Context, projectID string, req ListPublishJobsRequest) (PagedPublishJobsResponse, error) {
+	if projectID == "" {
+		return PagedPublishJobsResponse{}, ErrValidation
+	}
+	return PagedPublishJobsResponse{Items: []PublishJobResponse{sampleJob(projectID, "publish-job-1")}, Pagination: publishPagination(req.PaginationRequest)}, nil
+}
+
+func (s *service) GetJob(ctx context.Context, projectID string, id string) (PublishJobDetailResponse, error) {
+	if projectID == "" || id == "" {
+		return PublishJobDetailResponse{}, ErrNotFound
+	}
+	job := sampleJob(projectID, id)
+	return PublishJobDetailResponse{PublishJobResponse: job, Target: sampleTarget(job.ProjectID), ContentVersion: sampleVersion(job.ContentItemID, job.ContentVersionID), Logs: []PublishLogResponse{sampleLog(id, EventJobCreated)}, ExternalURL: ""}, nil
+}
+
+func (s *service) GetCopyPayload(ctx context.Context, projectID string, id string) (PublishCopyPayloadResponse, error) {
+	if projectID == "" || id == "" {
+		return PublishCopyPayloadResponse{}, ErrNotFound
+	}
+	return PublishCopyPayloadResponse{PublishJobID: id, Title: "Draft", Body: "draft body", Format: "plain_text", Platform: "manual", TargetID: "publish-target-1", ContentVersionID: "version-1", PayloadHash: "sha256-placeholder"}, nil
+}
+
+func (s *service) CopyPayload(ctx context.Context, projectID string, id string, req CopyPublishPayloadRequest, idempotencyKey string) (CopyPublishPayloadResponse, error) {
+	if projectID == "" || id == "" || req.CopyScope == "" || idempotencyKey == "" {
+		return CopyPublishPayloadResponse{}, ErrValidation
+	}
+	return CopyPublishPayloadResponse{PublishJobID: id, PreviousStatus: JobStatusQueued, CurrentStatus: JobStatusCopied, CopiedAt: time.Now().UTC(), PublishLogID: "publish-log-" + id}, nil
+}
+
+func (s *service) MarkPublished(ctx context.Context, projectID string, id string, req MarkPublishedRequest, idempotencyKey string) (MarkPublishedResponse, error) {
+	if projectID == "" || id == "" || idempotencyKey == "" || (req.ExternalURL == "" && req.Reason == "" && req.Note == "") {
+		return MarkPublishedResponse{}, ErrValidation
+	}
+	publishedAt := time.Now().UTC()
+	if req.PublishedAt != nil {
+		publishedAt = *req.PublishedAt
+	}
+	return MarkPublishedResponse{PublishJobID: id, PreviousStatus: JobStatusCopied, CurrentStatus: JobStatusPublished, ExternalURL: req.ExternalURL, PublishedAt: publishedAt, OperationLogID: "oplog-" + id, PublishLogID: "publish-log-" + id}, nil
+}
+
+func (s *service) MarkFailed(ctx context.Context, projectID string, id string, req MarkFailedRequest, idempotencyKey string) (MarkFailedResponse, error) {
+	if projectID == "" || id == "" || req.Reason == "" || idempotencyKey == "" {
+		return MarkFailedResponse{}, ErrValidation
+	}
+	return MarkFailedResponse{PublishJobID: id, PreviousStatus: JobStatusQueued, CurrentStatus: JobStatusFailed, FailedAt: time.Now().UTC(), OperationLogID: "oplog-" + id, PublishLogID: "publish-log-" + id}, nil
+}
+
+func (s *service) Requeue(ctx context.Context, projectID string, id string, req RequeuePublishJobRequest, idempotencyKey string) (RequeuePublishJobResponse, error) {
+	if projectID == "" || id == "" || req.Reason == "" || idempotencyKey == "" {
+		return RequeuePublishJobResponse{}, ErrValidation
+	}
+	return RequeuePublishJobResponse{PublishJobID: id, PreviousStatus: JobStatusFailed, CurrentStatus: JobStatusQueued, RetryCount: 1, OperationLogID: "oplog-" + id, PublishLogID: "publish-log-" + id}, nil
+}
+
+func sampleTarget(projectID string) PublishTargetResponse {
+	return PublishTargetResponse{ID: "publish-target-1", ProjectID: projectID, Platform: "manual", AccountName: "official", DisplayName: "Manual channel", ConfigSummary: "section=default", Enabled: true, UpdatedAt: time.Now().UTC()}
+}
+
+func sampleJob(projectID string, id string) PublishJobResponse {
+	return PublishJobResponse{ID: id, ProjectID: projectID, ContentItemID: "content-item-1", ContentVersionID: "version-1", TargetID: "publish-target-1", Title: "Draft", TargetPlatform: "manual", TargetDisplay: "Manual channel", Status: JobStatusQueued, PayloadHash: "sha256-placeholder", LastError: "", RetryCount: 0, Actions: []string{"copy", "mark_failed"}, CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC()}
+}
+
+func sampleVersion(contentItemID string, versionID string) review.ContentVersionResponse {
+	return review.ContentVersionResponse{ID: versionID, ContentItemID: contentItemID, VersionNo: 1, Source: "generation", Title: "Draft", Body: "draft body", EditableFields: map[string]any{}, Summary: "v1", CreatedAt: time.Now().UTC()}
+}
+
+func sampleLog(jobID string, event string) PublishLogResponse {
+	return PublishLogResponse{ID: "publish-log-" + jobID, PublishJobID: jobID, EventType: event, FromStatus: "", ToStatus: JobStatusQueued, ActorID: "system", PayloadSnapshot: map[string]any{}, CreatedAt: time.Now().UTC()}
+}
+
+func hasSensitiveConfig(config map[string]any) bool {
+	for key, value := range config {
+		if isSensitiveConfigKey(key) {
+			return true
+		}
+		child, ok := value.(map[string]any)
+		if ok && hasSensitiveConfig(child) {
+			return true
+		}
+	}
+	return false
+}
+
+func isSensitiveConfigKey(key string) bool {
+	key = strings.ToLower(key)
+	for _, marker := range []string{"api_key", "apikey", "authorization", "bearer", "cookie", "credential", "password", "secret", "token"} {
+		if strings.Contains(key, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func publishPagination(req content.PaginationRequest) content.PaginationResponse {
+	page := req.Page
+	if page == 0 {
+		page = 1
+	}
+	pageSize := req.PageSize
+	if pageSize == 0 {
+		pageSize = 20
+	}
+	return content.PaginationResponse{Page: page, PageSize: pageSize, Total: 1, HasNext: false}
+}

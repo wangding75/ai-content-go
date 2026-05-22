@@ -3,6 +3,408 @@ info:
   title: AI Content Factory API
   version: 0.1.0
 paths:
+  /api/v1/projects/{projectId}/publish-targets:
+    get:
+      summary: List publish targets
+      description: Lists project publish targets for creating publish jobs.
+      tags: [publish]
+      operationId: listPublishTargets
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: enabled
+          in: query
+          required: false
+          schema: { type: boolean }
+      responses:
+        '200': { description: Publish target list, content: { application/json: { schema: { $ref: '#/components/schemas/PublishTargetsEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create publish target
+      description: Creates a non-sensitive project publish target.
+      tags: [publish]
+      operationId: createPublishTarget
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePublishTargetRequest'
+            examples:
+              default:
+                value:
+                  platform: wechat
+                  account_name: official
+                  display_name: 微信公众号
+                  config: { section: news }
+                  enabled: true
+      responses:
+        '201': { description: Publish target created, content: { application/json: { schema: { $ref: '#/components/schemas/PublishTargetMutationEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-targets/{id}:
+    patch:
+      summary: Update publish target
+      description: Updates display-only publish target configuration scoped to the project.
+      tags: [publish]
+      operationId: updatePublishTarget
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePublishTargetRequest'
+            examples:
+              default:
+                value:
+                  platform: wechat
+                  account_name: official
+                  display_name: 微信公众号
+                  config: { section: news }
+                  enabled: true
+                  note: update display config
+      responses:
+        '200': { description: Publish target updated, content: { application/json: { schema: { $ref: '#/components/schemas/PublishTargetMutationEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-jobs:
+    get:
+      summary: List publish jobs
+      description: Lists publish queue jobs with filters and pagination.
+      tags: [publish]
+      operationId: listPublishJobs
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
+        - name: target_id
+          in: query
+          required: false
+          schema: { type: string }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string, enum: [queued, copied, published, failed, canceled] }
+        - name: scheduled_from
+          in: query
+          required: false
+          schema: { type: string, format: date-time }
+      responses:
+        '200': { description: Publish job list, content: { application/json: { schema: { $ref: '#/components/schemas/PublishJobsEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create publish job
+      description: Enqueues an approved content version for manual publishing.
+      tags: [publish]
+      operationId: createPublishJob
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePublishJobRequest'
+            examples:
+              default:
+                value:
+                  content_item_id: content-item-1
+                  content_version_id: content-version-approved-1
+                  target_id: publish-target-1
+      responses:
+        '201': { description: Publish job created, content: { application/json: { schema: { $ref: '#/components/schemas/CreatePublishJobEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-jobs/{id}:
+    get:
+      summary: Get publish job
+      description: Returns current publish job detail and logs scoped to the project.
+      tags: [publish]
+      operationId: getPublishJob
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200': { description: Publish job detail, content: { application/json: { schema: { $ref: '#/components/schemas/PublishJobDetailEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-jobs/{id}/copy-payload:
+    get:
+      summary: Get publish copy payload
+      description: Previews copy payload without changing publish job state.
+      tags: [publish]
+      operationId: getPublishCopyPayload
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200': { description: Publish copy payload, content: { application/json: { schema: { $ref: '#/components/schemas/PublishCopyPayloadEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-jobs/{id}/copy:
+    post:
+      summary: Copy publish payload
+      description: Records a user copy action and moves queued jobs to copied.
+      tags: [publish]
+      operationId: copyPublishPayload
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyPublishPayloadRequest'
+            examples:
+              default:
+                value:
+                  copy_scope: full
+                  note: manual copy
+      responses:
+        '200': { description: Publish payload copied, content: { application/json: { schema: { $ref: '#/components/schemas/CopyPublishPayloadEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-jobs/{id}/mark-published:
+    post:
+      summary: Mark publish job as published
+      description: Backfills manual publication result for a copied job.
+      tags: [publish]
+      operationId: markPublishJobPublished
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkPublishedRequest'
+            examples:
+              default:
+                value:
+                  external_url: https://example.com/post/1
+                  published_at: '2026-05-21T09:00:00Z'
+                  reason: ''
+                  note: manually published
+      responses:
+        '200': { description: Publish job marked published, content: { application/json: { schema: { $ref: '#/components/schemas/MarkPublishedEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-jobs/{id}/mark-failed:
+    post:
+      summary: Mark publish job as failed
+      description: Records manual publication failure reason.
+      tags: [publish]
+      operationId: markPublishJobFailed
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkFailedRequest'
+            examples:
+              default:
+                value:
+                  reason: platform rejected
+                  retryable: true
+                  note: retry later
+      responses:
+        '200': { description: Publish job marked failed, content: { application/json: { schema: { $ref: '#/components/schemas/MarkFailedEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/publish-jobs/{id}/requeue:
+    post:
+      summary: Requeue publish job
+      description: Requeues a failed or retry-allowed publish job.
+      tags: [publish]
+      operationId: requeuePublishJob
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequeuePublishJobRequest'
+            examples:
+              default:
+                value:
+                  reason: retry after manual fix
+                  scheduled_at: '2026-05-21T10:00:00Z'
+                  note: corrected payload
+      responses:
+        '200': { description: Publish job requeued, content: { application/json: { schema: { $ref: '#/components/schemas/RequeuePublishJobEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: CONFLICT or IDEMPOTENCY_CONFLICT when state or Idempotency-Key reuse is invalid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+              examples:
+                idempotencyConflict:
+                  value:
+                    success: false
+                    data: null
+                    error: { code: IDEMPOTENCY_CONFLICT, message: idempotency key payload differs, details: [] }
+                    request_id: req-example
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+
   /api/v1/health:
     get:
       summary: Health check

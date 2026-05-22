@@ -801,3 +801,133 @@ export async function fetchConsistencyReport(projectID: string, reportID: string
   const reportPath = pathSegment(reportID);
   return request<ConsistencyReportDetailResponse>(`/api/v1/projects/${projectPath}/consistency-reports/${reportPath}`);
 }
+
+
+// ---- Iteration 7: Publish Queue Types ----
+
+export type PublishTargetResponse = {
+  id: string;
+  project_id: string;
+  platform: string;
+  account_name: string;
+  display_name: string;
+  config_summary: string;
+  enabled: boolean;
+  updated_at: string;
+};
+
+export type PublishJobResponse = {
+  id: string;
+  project_id: string;
+  content_item_id: string;
+  content_version_id: string;
+  target_id: string;
+  title: string;
+  target_platform: string;
+  target_display: string;
+  status: string;
+  payload_hash: string;
+  scheduled_at?: string;
+  copied_at?: string;
+  published_at?: string;
+  last_error: string;
+  retry_count: number;
+  actions: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type PublishLogResponse = {
+  id: string;
+  publish_job_id: string;
+  event_type: string;
+  from_status: string;
+  to_status: string;
+  actor_id: string;
+  reason: string;
+  note: string;
+  payload_snapshot: Record<string, unknown>;
+  created_at: string;
+};
+
+export type PublishJobDetailResponse = PublishJobResponse & {
+  target: PublishTargetResponse;
+  content_version: ContentVersionResponse;
+  logs: PublishLogResponse[];
+  external_url: string;
+};
+
+export type PublishCopyPayloadResponse = {
+  publish_job_id: string;
+  title: string;
+  body: string;
+  format: string;
+  platform: string;
+  target_id: string;
+  content_version_id: string;
+  payload_hash: string;
+};
+
+export async function fetchPublishTargets(projectID: string, params?: { enabled?: boolean; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<PublishTargetResponse>>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(typeof params?.enabled === 'boolean' ? { enabled: String(params.enabled) } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<PublishTargetResponse>>(`/api/v1/projects/${projectPath}/publish-targets?${q}`);
+}
+
+export async function createPublishTarget(projectID: string, input: { platform: string; account_name: string; display_name: string; config: Record<string, unknown>; enabled: boolean }, idempotencyKey: string): Promise<APIEnvelope<{ target_id: string; operation_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<{ target_id: string; operation_log_id: string }>(`/api/v1/projects/${projectPath}/publish-targets`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function updatePublishTarget(projectID: string, targetID: string, input: { platform: string; account_name: string; display_name: string; config: Record<string, unknown>; enabled: boolean; note: string }, idempotencyKey: string): Promise<APIEnvelope<{ target_id: string; operation_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  const targetPath = pathSegment(targetID);
+  return request<{ target_id: string; operation_log_id: string }>(`/api/v1/projects/${projectPath}/publish-targets/${targetPath}`, { method: 'PATCH', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function fetchPublishJobs(projectID: string, params?: { target_id?: string; status?: string; scheduled_from?: string; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<PublishJobResponse>>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.target_id ? { target_id: params.target_id } : {}), ...(params?.status ? { status: params.status } : {}), ...(params?.scheduled_from ? { scheduled_from: params.scheduled_from } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<PublishJobResponse>>(`/api/v1/projects/${projectPath}/publish-jobs?${q}`);
+}
+
+export async function createPublishJob(projectID: string, input: { content_item_id: string; content_version_id: string; target_id: string; scheduled_at?: string }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; status: string; payload_hash: string; operation_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  return request<{ publish_job_id: string; status: string; payload_hash: string; operation_log_id: string }>(`/api/v1/projects/${projectPath}/publish-jobs`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function fetchPublishJob(projectID: string, jobID: string): Promise<APIEnvelope<PublishJobDetailResponse>> {
+  const projectPath = pathSegment(projectID);
+  const jobPath = pathSegment(jobID);
+  return request<PublishJobDetailResponse>(`/api/v1/projects/${projectPath}/publish-jobs/${jobPath}`);
+}
+
+export async function fetchPublishCopyPayload(projectID: string, jobID: string): Promise<APIEnvelope<PublishCopyPayloadResponse>> {
+  const projectPath = pathSegment(projectID);
+  const jobPath = pathSegment(jobID);
+  return request<PublishCopyPayloadResponse>(`/api/v1/projects/${projectPath}/publish-jobs/${jobPath}/copy-payload`);
+}
+
+export async function copyPublishPayload(projectID: string, jobID: string, input: { copy_scope: string; note: string }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; previous_status: string; current_status: string; copied_at: string; publish_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  const jobPath = pathSegment(jobID);
+  return request<{ publish_job_id: string; previous_status: string; current_status: string; copied_at: string; publish_log_id: string }>(`/api/v1/projects/${projectPath}/publish-jobs/${jobPath}/copy`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function markPublishJobPublished(projectID: string, jobID: string, input: { external_url: string; published_at?: string; reason: string; note: string }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; previous_status: string; current_status: string; external_url: string; published_at: string; operation_log_id: string; publish_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  const jobPath = pathSegment(jobID);
+  return request<{ publish_job_id: string; previous_status: string; current_status: string; external_url: string; published_at: string; operation_log_id: string; publish_log_id: string }>(`/api/v1/projects/${projectPath}/publish-jobs/${jobPath}/mark-published`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function markPublishJobFailed(projectID: string, jobID: string, input: { reason: string; retryable: boolean; note: string }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; previous_status: string; current_status: string; failed_at: string; operation_log_id: string; publish_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  const jobPath = pathSegment(jobID);
+  return request<{ publish_job_id: string; previous_status: string; current_status: string; failed_at: string; operation_log_id: string; publish_log_id: string }>(`/api/v1/projects/${projectPath}/publish-jobs/${jobPath}/mark-failed`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function requeuePublishJob(projectID: string, jobID: string, input: { reason: string; scheduled_at?: string; note: string }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; previous_status: string; current_status: string; retry_count: number; operation_log_id: string; publish_log_id: string }>> {
+  const projectPath = pathSegment(projectID);
+  const jobPath = pathSegment(jobID);
+  return request<{ publish_job_id: string; previous_status: string; current_status: string; retry_count: number; operation_log_id: string; publish_log_id: string }>(`/api/v1/projects/${projectPath}/publish-jobs/${jobPath}/requeue`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
