@@ -77,7 +77,7 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
       <section className="card table-card">
         <div className="card__header">
           <h2>最近记录</h2>
-          <Link href={`/projects/${projectId}/metrics/trends`}>查看趋势</Link>
+          <Link href={`/projects/${projectId}/metrics/trends`}>趋势图</Link>
         </div>
         {records.length === 0 ? <p className="muted">暂无指标记录</p> : (
           <table>

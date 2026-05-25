@@ -61,7 +61,10 @@ tasks:
     completed_at: "2026-05-25 13:02"
   - task: "Task-08：实现指标工作区导航与指标表现页面骨架"
     test_file: iteration8_metrics_contract_red_test.go
-    phase: locked
+    phase: green
+    started_at: "2026-05-25 13:03"
+    test_passed: 9
+    test_total: 9
   - task: "Task-09：实现指标录入页面骨架"
     test_file: iteration8_metrics_contract_red_test.go
     phase: locked
