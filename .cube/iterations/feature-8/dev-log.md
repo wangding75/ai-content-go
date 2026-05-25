@@ -56,3 +56,12 @@
 - 修改：apps/web-admin/app/projects/[projectId]/metrics/missing/page.tsx
 
 ---
+
+## 任务 1：Task-01：创建指标数据表与 SQL 查询契约（完成时间：2026-05-25 12:39）
+
+- 测试文件：metrics_sql_contract_test.go
+- 测试结果：6/6 通过
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/metrics/service.go]（与计划一致）
+- phase：locked → green → done
+
+---
