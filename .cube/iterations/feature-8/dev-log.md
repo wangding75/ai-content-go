@@ -101,3 +101,12 @@
 - phase：locked → green → done
 
 ---
+
+## 任务 6：Task-06：补充 OpenAPI 指标接口契约（完成时间：2026-05-25 13:01）
+
+- 测试文件：iteration8_metrics_contract_red_test.go
+- 测试结果：9/9 通过
+- 文件变更：新增 [] / 修改 []（已有 OpenAPI 满足契约）
+- phase：locked → green → done
+
+---
