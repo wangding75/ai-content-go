@@ -192,7 +192,7 @@ type MetricTrendRequest struct {
 
 type MetricTrendPoint struct {
 	BucketStart       string  `json:"bucket_start"`
-	Value             float64 `json:"value"`
+	Value             float64 `json:"value,omitempty"`
 	SourceRecordCount int     `json:"source_record_count"`
 	Missing           bool    `json:"missing"`
 }
