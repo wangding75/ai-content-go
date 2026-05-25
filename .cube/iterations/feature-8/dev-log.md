@@ -83,3 +83,12 @@
 - phase：locked → green → done
 
 ---
+
+## 任务 4：Task-04：实现指标记录录入与批量导入 API 骨架（完成时间：2026-05-25 12:56）
+
+- 测试文件：iteration8_metrics_contract_red_test.go
+- 测试结果：9/9 通过
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/metrics/service.go]（与计划一致；handler.go 未需修改）
+- phase：locked → green → done
+
+---
