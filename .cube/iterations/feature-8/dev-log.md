@@ -74,3 +74,12 @@
 - phase：locked → green → done
 
 ---
+
+## 任务 3：Task-03：实现指标模板 API 骨架（完成时间：2026-05-25 12:53）
+
+- 测试文件：iteration8_metrics_contract_red_test.go
+- 测试结果：9/9 通过
+- 文件变更：新增 [] / 修改 []（已有实现满足契约）
+- phase：locked → green → done
+
+---
