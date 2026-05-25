@@ -36,10 +36,10 @@ export default function MissingMetricsPage({ params }: { params: Promise<{ proje
         <h2>待补录日期</h2>
         {!missing || missing.items.length === 0 ? <p className="muted">暂无缺失提醒</p> : (
           <table>
-            <thead><tr><th>指标</th><th>平台</th><th>周期</th><th>日期</th><th>原因</th><th>操作</th></tr></thead>
+            <thead><tr><th>指标</th><th>平台</th><th>周期</th><th>日期</th><th>原因</th><th>backfill_hint</th><th>操作</th></tr></thead>
             <tbody>{missing.items.map((item) => {
               const query = new URLSearchParams({ platform: item.platform, target_id: item.target_id, metric_code: item.metric_code, period: item.period, metric_date: item.metric_date }).toString();
-              return <tr key={`${item.publish_job_id}-${item.metric_code}-${item.metric_date}`}><td>{item.metric_code}</td><td>{item.platform}</td><td>{item.period}</td><td>{item.metric_date}</td><td>{item.missing_reason}</td><td><Link href={`/projects/${projectId}/metrics/input?${query}`}>补录</Link></td></tr>;
+              return <tr key={`${item.publish_job_id}-${item.metric_code}-${item.metric_date}`}><td>{item.metric_code}</td><td>{item.platform}</td><td>{item.period}</td><td>{item.metric_date}</td><td>{item.missing_reason}</td><td>{item.backfill_hint}</td><td><Link href={`/projects/${projectId}/metrics/input?${query}`}>补录</Link></td></tr>;
             })}</tbody>
           </table>
         )}
