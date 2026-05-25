@@ -92,3 +92,12 @@
 - phase：locked → green → done
 
 ---
+
+## 任务 5：Task-05：实现指标记录列表、汇总、趋势与缺失 API 骨架（完成时间：2026-05-25 13:00）
+
+- 测试文件：iteration8_metrics_contract_red_test.go
+- 测试结果：9/9 通过
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/metrics/dto.go]（用户已确认纳入计划）
+- phase：locked → green → done
+
+---

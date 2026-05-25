@@ -40,10 +40,11 @@ tasks:
     completed_at: "2026-05-25 12:56"
   - task: "Task-05：实现指标记录列表、汇总、趋势与缺失 API 骨架"
     test_file: iteration8_metrics_contract_red_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-25 12:59"
     test_passed: 9
     test_total: 9
+    completed_at: "2026-05-25 13:00"
   - task: "Task-06：补充 OpenAPI 指标接口契约"
     test_file: iteration8_metrics_contract_red_test.go
     phase: locked
