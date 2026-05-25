@@ -1,11 +1,11 @@
 branch: feature/8
-current_stage: 02-design
+current_stage: 03-test-cases
 created: 2026-05-25
 
 stages:
   01-prd: PASS
-  02-design: IN_PROGRESS
-  03-test-cases: PENDING
+  02-design: PASS
+  03-test-cases: IN_PROGRESS
   04-development: PENDING
   05-testing: PENDING
 
@@ -13,3 +13,6 @@ history:
   - time: "2026-05-25 02:55:28"
     action: advance
     detail: "01-prd → 02-design"
+  - time: "2026-05-25 04:08:36"
+    action: advance
+    detail: "02-design → 03-test-cases"
