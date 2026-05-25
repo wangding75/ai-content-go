@@ -146,3 +146,13 @@
 - phase：locked → green → done
 
 ---
+
+## Feature 级组件链验证（完成时间：2026-05-25 13:16）
+
+- integration / sql-query / web-e2e：`go test -race ./apps/api-server/internal/modules/metrics ./apps/api-server/internal/store ./apps/api-server/internal/http/contract` 通过
+- frontend-ui 类型检查：`npx tsc --noEmit` 通过
+- frontend-ui 浏览器联调：`WEB_BASE_URL=http://127.0.0.1:3000 API_BASE_URL=http://127.0.0.1:18080 npx playwright test e2e/iteration8-metrics-dashboard.spec.ts --reporter=line` 通过，4/4 tests
+- 双端服务：Playwright webServer 自动启动 API server 与 Next dev server
+- 视觉/交互覆盖：指标表现、指标录入、趋势图、缺失提醒页面均通过真实浏览器和真实 HTTP API 调用验证
+
+---

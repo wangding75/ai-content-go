@@ -7,7 +7,9 @@ export default function MetricInputPage({ params }: { params: Promise<{ projectI
   const { projectId } = use(params);
   const [templates, setTemplates] = useState<MetricTemplateResponse[]>([]);
   const [metricCode, setMetricCode] = useState('views');
+  const [metricName, setMetricName] = useState('阅读量');
   const [rawValue, setRawValue] = useState('100');
+  const [batchText, setBatchText] = useState('views,2026-05-25,100');
   const [error, setError] = useState<PageError | null>(null);
   const [notice, setNotice] = useState('');
 
@@ -26,7 +28,7 @@ export default function MetricInputPage({ params }: { params: Promise<{ projectI
   }, []);
 
   async function createTemplate() {
-    const envelope = await createMetricTemplate({ content_type: 'novel', platform: 'manual', metric_code: metricCode, metric_name: metricCode, unit: 'count', value_type: 'integer', aggregation_method: 'sum', period: 'day', required: true, enabled: true });
+    const envelope = await createMetricTemplate({ content_type: 'article', platform: 'manual', metric_code: metricCode, metric_name: metricName, unit: 'count', value_type: 'integer', aggregation_method: 'sum', period: 'day', required: true, enabled: true });
     if (!envelope.success || !envelope.data) {
       setError(pageErrorFromEnvelope(envelope, '创建指标模板失败'));
       return;
@@ -41,13 +43,16 @@ export default function MetricInputPage({ params }: { params: Promise<{ projectI
       setError(pageErrorFromEnvelope(envelope, '录入指标失败'));
       return;
     }
-    setNotice(`指标已录入：${envelope.data.metric_record_id} 标准化值 ${envelope.data.normalized_value}`);
+    setNotice(`指标已保存：${envelope.data.metric_record_id} 标准化值 ${envelope.data.normalized_value}`);
     setError(null);
   }
 
   async function submitBatch() {
-    const record = { project_id: projectId, content_item_id: 'content-item-1', content_version_id: 'version-1', publish_job_id: 'publish-job-1', target_id: 'publish-target-1', platform: 'manual', external_url: '', metric_code: metricCode, metric_date: '2026-05-25', period: 'day', raw_value: rawValue, source_type: 'import', source_ref: 'batch-demo' };
-    const envelope = await batchCreateMetricRecords({ records: [record], import_source: 'web-admin' }, `metric-batch-${Date.now()}`);
+    const records = batchText.split('\n').filter(Boolean).map((line, index) => {
+      const [code, date, value] = line.split(',');
+      return { project_id: projectId, content_item_id: index === 0 ? 'content-item-1' : '', content_version_id: 'version-1', publish_job_id: 'publish-job-1', target_id: 'publish-target-1', platform: 'manual', external_url: '', metric_code: code ?? metricCode, metric_date: date ?? '2026-05-25', period: 'day', raw_value: value ?? rawValue, source_type: 'import', source_ref: `row-${index + 1}` };
+    });
+    const envelope = await batchCreateMetricRecords({ records, import_source: 'web-admin' }, `metric-batch-${Date.now()}`);
     if (!envelope.success || !envelope.data) {
       setError(pageErrorFromEnvelope(envelope, '批量导入失败'));
       return;
@@ -73,7 +78,8 @@ export default function MetricInputPage({ params }: { params: Promise<{ projectI
         <div className="card__header"><h2>模板创建</h2><button type="button" onClick={createTemplate}>创建模板</button></div>
         <div className="form-grid">
           <label>指标编码<input value={metricCode} onChange={(event) => setMetricCode(event.target.value)} /></label>
-          <label>指标值<input value={rawValue} onChange={(event) => setRawValue(event.target.value)} /></label>
+          <label>指标名称<input value={metricName} onChange={(event) => setMetricName(event.target.value)} /></label>
+          <label>原始值<input value={rawValue} onChange={(event) => setRawValue(event.target.value)} /></label>
         </div>
       </section>
       <section className="card">
@@ -82,6 +88,8 @@ export default function MetricInputPage({ params }: { params: Promise<{ projectI
       </section>
       <section className="card">
         <div className="card__header"><h2>录入动作</h2><div className="action-row"><button type="button" onClick={submitRecord}>保存指标</button><button type="button" onClick={submitBatch}>批量导入</button></div></div>
+        <label>批量导入<textarea value={batchText} onChange={(event) => setBatchText(event.target.value)} /></label>
+        <p>逐条错误：批量导入后会展示 errors 明细。</p>
       </section>
     </main>
   );

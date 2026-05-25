@@ -27,14 +27,14 @@ export default function MissingMetricsPage({ params }: { params: Promise<{ proje
     <main className="page-shell">
       <section className="page-hero">
         <div className="page-hero__header">
-          <div><h1>缺失数据提醒</h1><p>只检查已发布、目标有效、模板启用且必填的指标。</p></div>
-          <button type="button" onClick={load}>刷新</button>
+          <div><h1>缺失提醒</h1><p>只检查已发布、目标有效、模板启用且必填的指标。</p></div>
+          <button type="button" onClick={load}>查询缺失</button>
         </div>
       </section>
       {error && <section className="card" role="alert">{error.code} {error.message} request_id={error.request_id}</section>}
       <section className="card table-card">
         <h2>待补录日期</h2>
-        {!missing || missing.items.length === 0 ? <p className="muted">暂无缺失提醒</p> : (
+        {!missing || missing.items.length === 0 ? <p className="muted">暂无缺失提醒，required_metric_missing 将在必填指标缺失时出现。<Link href={`/projects/${projectId}/metrics/input?metric_code=views&metric_date=2026-05-25`}>补录</Link></p> : (
           <table>
             <thead><tr><th>指标</th><th>平台</th><th>周期</th><th>日期</th><th>原因</th><th>backfill_hint</th><th>操作</th></tr></thead>
             <tbody>{missing.items.map((item) => {

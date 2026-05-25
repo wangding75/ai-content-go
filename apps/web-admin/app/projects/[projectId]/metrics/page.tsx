@@ -70,9 +70,9 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
       <section className="card">
         <div className="card__header">
           <h2>稳定快照</h2>
-          <span className="badge badge--muted">{summary?.summary_snapshot_id ?? '未生成'}</span>
+          <span className="badge badge--muted">summary_snapshot_id={summary?.summary_snapshot_id ?? '未生成'}</span>
         </div>
-        <p>来源记录数：{summary?.source_record_count ?? 0}</p>
+        <p>source_record_count={summary?.source_record_count ?? 0}</p>
       </section>
       <section className="card table-card">
         <div className="card__header">
@@ -89,7 +89,7 @@ export default function MetricsPage({ params }: { params: Promise<{ projectId: s
       <section className="card">
         <div className="card__header">
           <h2>缺失提醒</h2>
-          <Link href={`/projects/${projectId}/metrics/missing`}>查看全部</Link>
+          <Link href={`/projects/${projectId}/metrics/missing`}>缺失提醒</Link>
         </div>
         <p>待补录：{missing?.items.length ?? 0}</p>
       </section>
