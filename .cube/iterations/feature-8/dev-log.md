@@ -65,3 +65,12 @@
 - phase：locked → green → done
 
 ---
+
+## 任务 2：Task-02：定义指标模块 DTO、错误常量与服务接口（完成时间：2026-05-25 12:51）
+
+- 测试文件：task02_contract_red_test.go
+- 测试结果：6/6 通过
+- 文件变更：新增 [] / 修改 [apps/api-server/internal/modules/metrics/service.go]（与计划一致；dto.go 未需修改）
+- phase：locked → green → done
+
+---

@@ -19,10 +19,11 @@ tasks:
     completed_at: "2026-05-25 12:39"
   - task: "Task-02：定义指标模块 DTO、错误常量与服务接口"
     test_file: task02_contract_red_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-25 12:48"
     test_passed: 6
     test_total: 6
+    completed_at: "2026-05-25 12:51"
   - task: "Task-03：实现指标模板 API 骨架"
     test_file: iteration8_metrics_contract_red_test.go
     phase: locked
