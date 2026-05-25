@@ -248,6 +248,19 @@ func pagination(page int, pageSize int, total int) content.PaginationResponse {
 	return content.PaginationResponse{Page: page, PageSize: pageSize, Total: total, HasNext: page*pageSize < total}
 }
 
+func metricBatchErrorCode(err error) string {
+	switch err {
+	case ErrNotFound:
+		return "NOT_FOUND"
+	case ErrConflict:
+		return "CONFLICT"
+	case ErrInternal:
+		return "INTERNAL_ERROR"
+	default:
+		return "VALIDATION_ERROR"
+	}
+}
+
 func (s *service) CreateTemplate(ctx context.Context, req CreateMetricTemplateRequest) (CreateMetricTemplateResponse, error) {
 	if err := validateTemplateRequest(req); err != nil {
 		return CreateMetricTemplateResponse{}, err
@@ -353,7 +366,42 @@ func (s *service) CreateRecord(ctx context.Context, req CreateMetricRecordReques
 }
 
 func (s *service) BatchCreateRecords(ctx context.Context, req BatchCreateMetricRecordsRequest, idempotencyKey string) (BatchCreateMetricRecordsResponse, error) {
-	panic("not implemented")
+	if idempotencyKey == "" || len(req.Records) == 0 {
+		return BatchCreateMetricRecordsResponse{}, ErrValidation
+	}
+	projectID := req.Records[0].ProjectID
+	if projectID == "" {
+		return BatchCreateMetricRecordsResponse{}, ErrValidation
+	}
+	s.state.mu.Lock()
+	if err := s.reserveIdempotency("metrics:batch:"+projectID, idempotencyKey, req); err != nil {
+		s.state.mu.Unlock()
+		return BatchCreateMetricRecordsResponse{}, err
+	}
+	s.state.mu.Unlock()
+
+	response := BatchCreateMetricRecordsResponse{
+		Errors:         []BatchMetricRecordError{},
+		OperationLogID: "operation-log-metric-batch-" + projectID,
+	}
+	for index, record := range req.Records {
+		if record.ProjectID != projectID {
+			response.FailedCount++
+			response.Errors = append(response.Errors, BatchMetricRecordError{Index: index, MetricCode: record.MetricCode, Field: "project_id", Code: "VALIDATION_ERROR", Message: "records must belong to the same project", SourceRef: record.SourceRef})
+			continue
+		}
+		_, err := s.CreateRecord(ctx, record, idempotencyKey+":"+strconv.Itoa(index))
+		if err != nil {
+			response.FailedCount++
+			response.Errors = append(response.Errors, BatchMetricRecordError{Index: index, MetricCode: record.MetricCode, Field: "record", Code: metricBatchErrorCode(err), Message: err.Error(), SourceRef: record.SourceRef})
+			continue
+		}
+		response.CreatedCount++
+	}
+	if response.CreatedCount == 0 && response.FailedCount > 0 {
+		return response, ErrValidation
+	}
+	return response, nil
 }
 
 func (s *service) ListRecords(ctx context.Context, req ListMetricRecordsRequest) (PagedMetricRecordsResponse, error) {
