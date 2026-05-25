@@ -3,6 +3,204 @@ info:
   title: AI Content Factory API
   version: 0.1.0
 paths:
+  /api/v1/metric-templates:
+    post:
+      summary: Create metric template
+      description: Creates a metric template with reusable content type, platform, value, aggregation, and period semantics.
+      tags: [metrics]
+      operationId: createMetricTemplate
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMetricTemplateRequest' }
+      responses:
+        '201': { description: Metric template created, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMetricTemplateEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+    get:
+      summary: List metric templates
+      description: Lists metric templates by content type, platform, enabled flag, and pagination.
+      tags: [metrics]
+      operationId: listMetricTemplates
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: content_type
+          in: query
+          schema: { type: string }
+        - name: platform
+          in: query
+          schema: { type: string }
+        - name: enabled
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200': { description: Metric template list, content: { application/json: { schema: { $ref: '#/components/schemas/MetricTemplatesEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/metric-records:
+    post:
+      summary: Create metric record
+      description: Creates one metric record with idempotency and stable publish attribution.
+      tags: [metrics]
+      operationId: createMetricRecord
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMetricRecordRequest' }
+      responses:
+        '201': { description: Metric record created, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMetricRecordEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+    get:
+      summary: List metric records
+      description: Lists project metric records. project_id is required.
+      tags: [metrics]
+      operationId: listMetricRecords
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: project_id
+          in: query
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { description: Metric record list, content: { application/json: { schema: { $ref: '#/components/schemas/MetricRecordsEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/metric-records/batch:
+    post:
+      summary: Batch create metric records
+      description: Imports metric records with per-row failure details and all-failed error semantics.
+      tags: [metrics]
+      operationId: batchCreateMetricRecords
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BatchCreateMetricRecordsRequest' }
+      responses:
+        '200': { description: Metric records imported with possible row errors, content: { application/json: { schema: { $ref: '#/components/schemas/BatchCreateMetricRecordsEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/metrics/summary:
+    get:
+      summary: Get metric summary
+      description: Returns reproducible metric summary with a stable summary snapshot id.
+      tags: [metrics]
+      operationId: getMetricSummary
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - name: date_from
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: date_to
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: metric_codes
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Metric summary, content: { application/json: { schema: { $ref: '#/components/schemas/MetricSummaryEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/metrics/trends:
+    get:
+      summary: Get metric trends
+      description: Returns bucketed metric trend series, missing points, and query signature.
+      tags: [metrics]
+      operationId: getMetricTrends
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - name: metric_code
+          in: query
+          required: true
+          schema: { type: string }
+        - name: bucket
+          in: query
+          required: true
+          schema: { type: string, enum: [day, week, month] }
+      responses:
+        '200': { description: Metric trends, content: { application/json: { schema: { $ref: '#/components/schemas/MetricTrendEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/metrics/missing-dates:
+    get:
+      summary: Get missing metric dates
+      description: Returns required metric dates missing after published jobs.
+      tags: [metrics]
+      operationId: getMissingMetricDates
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ProjectIdPath'
+        - name: date_from
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: date_to
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200': { description: Missing metric dates, content: { application/json: { schema: { $ref: '#/components/schemas/MissingMetricDatesEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
   /api/v1/projects/{projectId}/publish-targets:
     get:
       summary: List publish targets
@@ -3457,3 +3655,214 @@ components:
         api_key_masked:
           type: string
       required: [provider_id, api_key_masked]
+    CreateMetricTemplateRequest:
+      type: object
+      properties:
+        content_type: { type: string }
+        platform: { type: string }
+        metric_code: { type: string }
+        metric_name: { type: string }
+        unit: { type: string }
+        value_type: { type: string, enum: [integer, decimal, percentage, currency, duration] }
+        aggregation_method: { type: string, enum: [sum, avg, max, min, latest] }
+        period: { type: string, enum: [day, week, month] }
+        required: { type: boolean }
+        enabled: { type: boolean }
+      required: [content_type, platform, metric_code, metric_name, unit, value_type, aggregation_method, period]
+    CreateMetricTemplateResponse:
+      type: object
+      properties:
+        metric_template_id: { type: string }
+      required: [metric_template_id]
+    MetricTemplate:
+      allOf:
+        - $ref: '#/components/schemas/CreateMetricTemplateRequest'
+        - type: object
+          properties:
+            id: { type: string }
+            updated_at: { type: string, format: date-time }
+          required: [id, updated_at]
+    MetricTemplatesPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/MetricTemplate' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+      required: [items, pagination]
+    CreateMetricRecordRequest:
+      type: object
+      properties:
+        project_id: { type: string }
+        content_item_id: { type: string }
+        content_version_id: { type: string }
+        publish_job_id: { type: string }
+        target_id: { type: string }
+        platform: { type: string }
+        external_url: { type: string }
+        metric_code: { type: string }
+        metric_date: { type: string, format: date }
+        period: { type: string, enum: [day, week, month] }
+        raw_value: { type: string }
+        source_type: { type: string, enum: [manual, import, extension, external_callback] }
+        source_ref: { type: string }
+      required: [project_id, content_item_id, content_version_id, publish_job_id, target_id, platform, metric_code, metric_date, period, raw_value, source_type]
+    CreateMetricRecordResponse:
+      type: object
+      properties:
+        metric_record_id: { type: string }
+        normalized_value: { type: number }
+        operation_log_id: { type: string }
+      required: [metric_record_id, normalized_value, operation_log_id]
+    BatchMetricRecordError:
+      type: object
+      properties:
+        index: { type: integer }
+        metric_code: { type: string }
+        field: { type: string }
+        code: { type: string, enum: [VALIDATION_ERROR, NOT_FOUND, CONFLICT, INTERNAL_ERROR] }
+        message: { type: string }
+        source_ref: { type: string }
+      required: [index, code, message]
+    BatchCreateMetricRecordsRequest:
+      type: object
+      properties:
+        records:
+          type: array
+          items: { $ref: '#/components/schemas/CreateMetricRecordRequest' }
+        import_source: { type: string }
+      required: [records, import_source]
+    BatchCreateMetricRecordsResponse:
+      type: object
+      properties:
+        created_count: { type: integer }
+        failed_count: { type: integer }
+        errors:
+          type: array
+          items: { $ref: '#/components/schemas/BatchMetricRecordError' }
+        operation_log_id: { type: string }
+      required: [created_count, failed_count, errors, operation_log_id]
+    MetricRecord:
+      allOf:
+        - $ref: '#/components/schemas/CreateMetricRecordRequest'
+        - type: object
+          properties:
+            id: { type: string }
+            content_type: { type: string }
+            metric_template_id: { type: string }
+            normalized_value: { type: number }
+            collected_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+          required: [id, content_type, metric_template_id, normalized_value, collected_at, updated_at]
+    MetricRecordsPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/MetricRecord' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+      required: [items, pagination]
+    MetricSummaryResponse:
+      type: object
+      properties:
+        project_id: { type: string }
+        date_from: { type: string, format: date }
+        date_to: { type: string, format: date }
+        platform: { type: string }
+        target_id: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              metric_code: { type: string }
+              value: { type: number }
+              unit: { type: string }
+              aggregation_method: { type: string }
+              source_record_count: { type: integer }
+        summary_snapshot_id: { type: string }
+        source_record_count: { type: integer }
+      required: [project_id, items, summary_snapshot_id, source_record_count]
+    MetricTrendResponse:
+      type: object
+      properties:
+        project_id: { type: string }
+        metric_code: { type: string }
+        bucket: { type: string }
+        aggregation_method: { type: string }
+        query_signature: { type: string }
+        source_record_count: { type: integer }
+        series:
+          type: array
+          items:
+            type: object
+        missing_points:
+          type: array
+          items:
+            type: object
+      required: [project_id, metric_code, bucket, query_signature, series, missing_points]
+    MissingMetricDatesResponse:
+      type: object
+      properties:
+        project_id: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+      required: [project_id, items]
+    CreateMetricTemplateEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/CreateMetricTemplateResponse' }
+        error: { nullable: true }
+        request_id: { type: string }
+    MetricTemplatesEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/MetricTemplatesPage' }
+        error: { nullable: true }
+        request_id: { type: string }
+    CreateMetricRecordEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/CreateMetricRecordResponse' }
+        error: { nullable: true }
+        request_id: { type: string }
+    BatchCreateMetricRecordsEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/BatchCreateMetricRecordsResponse' }
+        error: { nullable: true }
+        request_id: { type: string }
+    MetricRecordsEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/MetricRecordsPage' }
+        error: { nullable: true }
+        request_id: { type: string }
+    MetricSummaryEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/MetricSummaryResponse' }
+        error: { nullable: true }
+        request_id: { type: string }
+    MetricTrendEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/MetricTrendResponse' }
+        error: { nullable: true }
+        request_id: { type: string }
+    MissingMetricDatesEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/MissingMetricDatesResponse' }
+        error: { nullable: true }
+        request_id: { type: string }
