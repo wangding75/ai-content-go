@@ -128,3 +128,12 @@
 - phase：locked → green → done
 
 ---
+
+## 任务 9：Task-09：实现指标录入页面骨架（完成时间：2026-05-25 13:07）
+
+- 测试文件：iteration8_metrics_contract_red_test.go
+- 测试结果：9/9 通过
+- 文件变更：新增 [] / 修改 [apps/web-admin/app/projects/[projectId]/metrics/input/page.tsx]（与计划一致）
+- phase：locked → green → done
+
+---
