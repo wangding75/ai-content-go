@@ -137,3 +137,12 @@
 - phase：locked → green → done
 
 ---
+
+## 任务 10：Task-10：实现趋势图与缺失提醒页面骨架（完成时间：2026-05-25 13:09）
+
+- 测试文件：iteration8_metrics_contract_red_test.go
+- 测试结果：9/9 通过
+- 文件变更：新增 [] / 修改 [apps/web-admin/app/projects/[projectId]/metrics/missing/page.tsx]（与计划一致；trends/page.tsx 未需修改）
+- phase：locked → green → done
+
+---

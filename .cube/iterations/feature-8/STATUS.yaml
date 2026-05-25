@@ -75,7 +75,8 @@ tasks:
     completed_at: "2026-05-25 13:07"
   - task: "Task-10：实现趋势图与缺失提醒页面骨架"
     test_file: iteration8_metrics_contract_red_test.go
-    phase: green
+    phase: done
     started_at: "2026-05-25 13:08"
     test_passed: 9
     test_total: 9
+    completed_at: "2026-05-25 13:09"
