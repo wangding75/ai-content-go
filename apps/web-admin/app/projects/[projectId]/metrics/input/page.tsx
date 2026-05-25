@@ -52,7 +52,7 @@ export default function MetricInputPage({ params }: { params: Promise<{ projectI
       setError(pageErrorFromEnvelope(envelope, '批量导入失败'));
       return;
     }
-    setNotice(`批量导入完成：成功 ${envelope.data.created_count}，失败 ${envelope.data.failed_count}`);
+    setNotice(`批量导入完成：成功 ${envelope.data.created_count}，失败 ${envelope.data.failed_count}，errors=${envelope.data.errors.length}`);
     setError(null);
   }
 
@@ -81,7 +81,7 @@ export default function MetricInputPage({ params }: { params: Promise<{ projectI
         {templates.length === 0 ? <p className="muted">暂无指标模板</p> : <p>{templates.map((template) => template.metric_code).join(' / ')}</p>}
       </section>
       <section className="card">
-        <div className="card__header"><h2>录入动作</h2><div className="action-row"><button type="button" onClick={submitRecord}>单条录入</button><button type="button" onClick={submitBatch}>批量导入</button></div></div>
+        <div className="card__header"><h2>录入动作</h2><div className="action-row"><button type="button" onClick={submitRecord}>保存指标</button><button type="button" onClick={submitBatch}>批量导入</button></div></div>
       </section>
     </main>
   );
