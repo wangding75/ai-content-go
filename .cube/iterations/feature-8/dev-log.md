@@ -156,3 +156,19 @@
 - 视觉/交互覆盖：指标表现、指标录入、趋势图、缺失提醒页面均通过真实浏览器和真实 HTTP API 调用验证
 
 ---
+
+## 代码审查（完成时间：2026-05-26 18:10）
+
+- 代码质量审查：7 个问题已修复
+  - CRITICAL C1: generateDateRange 参数顺序修正 (from, period, to)
+  - CRITICAL C3: MetricCodes JSONB 修正为 JSON 数组格式，Summary 同步修正
+  - HIGH H2: 5 处忽略错误改为显式处理 (FindTemplateByKey, FindRecordByUniqueKey, StoreIdempotency, InsertSummarySnapshot, GetTrends)
+  - HIGH H3: record ID 添加 targetID 和 contentVersionID 避免主键冲突
+  - MEDIUM M4: batch size 上限 100 条
+  - LOW L1: 移除未使用的 NewServiceDefault()
+  - pageBounds pageSize 上限 100
+- 安全审查：2 个问题已修复
+  - HIGH #6: db.Close() 注册到 RegisterOnShutdown, SetConnMaxLifetime 5 分钟
+  - MEDIUM #8: pageSize 上限 100
+
+---

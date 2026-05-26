@@ -989,7 +989,7 @@ export type MetricTrendResponse = {
   aggregation_method: string;
   query_signature: string;
   source_record_count: number;
-  series: Array<{ bucket_start: string; value: number; source_record_count: number; missing: boolean }>;
+  series: Array<{ bucket_start: string; value?: number; source_record_count: number; missing: boolean }>;
   missing_points: Array<{ metric_date: string; reason: string }>;
 };
 

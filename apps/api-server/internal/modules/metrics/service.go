@@ -5,10 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"sort"
+	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
@@ -26,27 +25,19 @@ type Service interface {
 }
 
 type service struct {
-	state *memoryState
+	store Store
 }
 
-type memoryState struct {
-	mu          sync.Mutex
-	templates   map[string]MetricTemplateResponse
-	records     map[string]MetricRecordResponse
-	idempotency map[string]string
-}
-
-func NewService() Service {
-	return &service{state: newMemoryState()}
-}
-
-func newMemoryState() *memoryState {
-	return &memoryState{
-		templates:   map[string]MetricTemplateResponse{},
-		records:     map[string]MetricRecordResponse{},
-		idempotency: map[string]string{},
+func NewService(stores ...Store) Service {
+	var store Store
+	if len(stores) > 0 {
+		store = stores[0]
+	} else {
+		store = NewMemoryStore()
 	}
+	return &service{store: store}
 }
+
 
 const metricSummarySQL = `
 SELECT
@@ -211,8 +202,8 @@ func templateKey(contentType string, platform string, metricCode string) string 
 	return strings.Join([]string{contentType, platform, metricCode}, "|")
 }
 
-func recordKey(req CreateMetricRecordRequest) string {
-	return strings.Join([]string{req.ProjectID, req.Platform, req.TargetID, req.ContentVersionID, req.MetricCode, req.MetricDate, req.Period}, "|")
+func recordUniqueKey(projectID, platform, targetID, contentVersionID, metricCode, metricDate, period string) string {
+	return strings.Join([]string{projectID, platform, targetID, contentVersionID, metricCode, metricDate, period}, "|")
 }
 
 func requestHash(value any) string {
@@ -221,29 +212,15 @@ func requestHash(value any) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (s *service) reserveIdempotency(scope string, key string, req any) error {
-	hash := requestHash(req)
-	composite := scope + ":" + key
-	if existing, ok := s.state.idempotency[composite]; ok && existing != hash {
-		return ErrIdempotencyConflict
-	}
-	s.state.idempotency[composite] = hash
-	return nil
-}
-
-func contentTypeForRecord(req CreateMetricRecordRequest) string {
-	if strings.Contains(req.ContentItemID, "novel") {
-		return "novel"
-	}
-	return "article"
-}
-
 func pagination(page int, pageSize int, total int) content.PaginationResponse {
 	if page <= 0 {
 		page = 1
 	}
 	if pageSize <= 0 {
 		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
 	}
 	return content.PaginationResponse{Page: page, PageSize: pageSize, Total: total, HasNext: page*pageSize < total}
 }
@@ -265,14 +242,15 @@ func (s *service) CreateTemplate(ctx context.Context, req CreateMetricTemplateRe
 	if err := validateTemplateRequest(req); err != nil {
 		return CreateMetricTemplateResponse{}, err
 	}
-	s.state.mu.Lock()
-	defer s.state.mu.Unlock()
-	key := templateKey(req.ContentType, req.Platform, req.MetricCode)
-	if _, exists := s.state.templates[key]; exists {
+	existing, err := s.store.FindTemplateByKey(ctx, req.ContentType, req.Platform, req.MetricCode)
+	if err != nil {
+		return CreateMetricTemplateResponse{}, ErrInternal
+	}
+	if existing != nil {
 		return CreateMetricTemplateResponse{}, ErrConflict
 	}
 	id := "metric-template-" + req.ContentType + "-" + req.Platform + "-" + req.MetricCode
-	s.state.templates[key] = MetricTemplateResponse{
+	t := MetricTemplateResponse{
 		ID:                id,
 		ContentType:       req.ContentType,
 		Platform:          req.Platform,
@@ -286,29 +264,22 @@ func (s *service) CreateTemplate(ctx context.Context, req CreateMetricTemplateRe
 		Enabled:           req.Enabled,
 		UpdatedAt:         time.Now().UTC(),
 	}
+	if err := s.store.InsertTemplate(ctx, t); err != nil {
+		return CreateMetricTemplateResponse{}, ErrInternal
+	}
 	return CreateMetricTemplateResponse{MetricTemplateID: id}, nil
 }
 
 func (s *service) ListTemplates(ctx context.Context, req ListMetricTemplatesRequest) (PagedMetricTemplatesResponse, error) {
-	s.state.mu.Lock()
-	defer s.state.mu.Unlock()
-	items := make([]MetricTemplateResponse, 0, len(s.state.templates))
-	for _, item := range s.state.templates {
-		if req.ContentType != "" && item.ContentType != req.ContentType {
-			continue
-		}
-		if req.Platform != "" && item.Platform != req.Platform {
-			continue
-		}
-		if req.Enabled != nil && item.Enabled != *req.Enabled {
-			continue
-		}
-		items = append(items, item)
+	items, err := s.store.ListTemplates(ctx, req)
+	if err != nil {
+		return PagedMetricTemplatesResponse{}, ErrInternal
 	}
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].MetricCode < items[j].MetricCode
-	})
-	return PagedMetricTemplatesResponse{Items: items, Pagination: pagination(req.Page, req.PageSize, len(items))}, nil
+	total := len(items)
+	page := req.Page
+	pageSize := req.PageSize
+	start, end := pageBounds(page, pageSize, total)
+	return PagedMetricTemplatesResponse{Items: items[start:end], Pagination: pagination(page, pageSize, total)}, nil
 }
 
 func (s *service) CreateRecord(ctx context.Context, req CreateMetricRecordRequest, idempotencyKey string) (CreateMetricRecordResponse, error) {
@@ -319,27 +290,45 @@ func (s *service) CreateRecord(ctx context.Context, req CreateMetricRecordReques
 	if err != nil {
 		return CreateMetricRecordResponse{}, err
 	}
-	contentType := contentTypeForRecord(req)
-	s.state.mu.Lock()
-	defer s.state.mu.Unlock()
-	if err := s.reserveIdempotency("metrics:record:"+req.ProjectID, idempotencyKey, req); err != nil {
-		return CreateMetricRecordResponse{}, err
+
+	scope := "metrics:" + "record:" + req.ProjectID
+	hash := requestHash(req)
+	refType, refID, conflict, err := s.store.CheckIdempotency(ctx, scope, "create_record", idempotencyKey, hash)
+	if err != nil {
+		return CreateMetricRecordResponse{}, ErrInternal
 	}
-	template, ok := s.state.templates[templateKey(contentType, req.Platform, req.MetricCode)]
-	if !ok {
+	if conflict {
+		return CreateMetricRecordResponse{}, ErrIdempotencyConflict
+	}
+	if refType != "" {
+		return CreateMetricRecordResponse{MetricRecordID: refID, NormalizedValue: normalized, OperationLogID: "operation-log-" + refID}, nil
+	}
+
+	contentType := "article"
+	existing, err := s.store.FindTemplateByKey(ctx, contentType, req.Platform, req.MetricCode)
+	if err != nil {
+		return CreateMetricRecordResponse{}, ErrInternal
+	}
+	if existing == nil {
 		return CreateMetricRecordResponse{}, ErrNotFound
 	}
-	if !template.Enabled || template.Period != req.Period {
+	if !existing.Enabled || existing.Period != req.Period {
 		return CreateMetricRecordResponse{}, ErrValidation
 	}
-	key := recordKey(req)
-	if existing, exists := s.state.records[key]; exists {
-		if existing.RawValue != req.RawValue {
+
+	rec, err := s.store.FindRecordByUniqueKey(ctx, req.ProjectID, req.Platform, req.TargetID, req.ContentVersionID, req.MetricCode, req.MetricDate, req.Period)
+	if err != nil {
+		return CreateMetricRecordResponse{}, ErrInternal
+	}
+	if rec != nil {
+		if rec.RawValue != req.RawValue {
 			return CreateMetricRecordResponse{}, ErrConflict
 		}
-		return CreateMetricRecordResponse{MetricRecordID: existing.ID, NormalizedValue: existing.NormalizedValue, OperationLogID: "operation-log-" + existing.ID}, nil
+		return CreateMetricRecordResponse{MetricRecordID: rec.ID, NormalizedValue: rec.NormalizedValue, OperationLogID: "operation-log-" + rec.ID}, nil
 	}
-	id := "metric-record-" + req.ProjectID + "-" + req.MetricCode + "-" + req.MetricDate
+
+	id := "metric-record-" + req.ProjectID + "-" + req.TargetID + "-" + req.ContentVersionID + "-" + req.MetricCode + "-" + req.MetricDate
+	now := time.Now().UTC()
 	record := MetricRecordResponse{
 		ID:               id,
 		ProjectID:        req.ProjectID,
@@ -348,7 +337,7 @@ func (s *service) CreateRecord(ctx context.Context, req CreateMetricRecordReques
 		PublishJobID:     req.PublishJobID,
 		TargetID:         req.TargetID,
 		ContentType:      contentType,
-		MetricTemplateID: template.ID,
+		MetricTemplateID: existing.ID,
 		Platform:         req.Platform,
 		ExternalURL:      req.ExternalURL,
 		MetricCode:       req.MetricCode,
@@ -358,27 +347,43 @@ func (s *service) CreateRecord(ctx context.Context, req CreateMetricRecordReques
 		NormalizedValue:  normalized,
 		SourceType:       req.SourceType,
 		SourceRef:        req.SourceRef,
-		CollectedAt:      time.Now().UTC(),
-		UpdatedAt:        time.Now().UTC(),
+		CollectedAt:      now,
+		UpdatedAt:        now,
 	}
-	s.state.records[key] = record
-	return CreateMetricRecordResponse{MetricRecordID: id, NormalizedValue: normalized, OperationLogID: "operation-log-" + id}, nil
+	if err := s.store.InsertRecord(ctx, record); err != nil {
+		return CreateMetricRecordResponse{}, ErrInternal
+	}
+	opLogID := "operation-log-" + id
+	if err := s.store.StoreIdempotency(ctx, scope, "create_record", idempotencyKey, hash, "metric_record", id); err != nil {
+		return CreateMetricRecordResponse{}, ErrInternal
+	}
+	return CreateMetricRecordResponse{MetricRecordID: id, NormalizedValue: normalized, OperationLogID: opLogID}, nil
 }
 
 func (s *service) BatchCreateRecords(ctx context.Context, req BatchCreateMetricRecordsRequest, idempotencyKey string) (BatchCreateMetricRecordsResponse, error) {
 	if idempotencyKey == "" || len(req.Records) == 0 {
 		return BatchCreateMetricRecordsResponse{}, ErrValidation
 	}
+	if len(req.Records) > 100 {
+		return BatchCreateMetricRecordsResponse{}, ErrValidation
+	}
 	projectID := req.Records[0].ProjectID
 	if projectID == "" {
 		return BatchCreateMetricRecordsResponse{}, ErrValidation
 	}
-	s.state.mu.Lock()
-	if err := s.reserveIdempotency("metrics:batch:"+projectID, idempotencyKey, req); err != nil {
-		s.state.mu.Unlock()
-		return BatchCreateMetricRecordsResponse{}, err
+
+	scope := "metrics:" + "batch:" + projectID
+	hash := requestHash(req)
+	refType, refID, conflict, err := s.store.CheckIdempotency(ctx, scope, "batch_create", idempotencyKey, hash)
+	if err != nil {
+		return BatchCreateMetricRecordsResponse{}, ErrInternal
 	}
-	s.state.mu.Unlock()
+	if conflict {
+		return BatchCreateMetricRecordsResponse{}, ErrIdempotencyConflict
+	}
+	if refType != "" {
+		return BatchCreateMetricRecordsResponse{CreatedCount: 0, FailedCount: 0, Errors: []BatchMetricRecordError{}, OperationLogID: refID}, nil
+	}
 
 	response := BatchCreateMetricRecordsResponse{
 		Errors:         []BatchMetricRecordError{},
@@ -398,6 +403,11 @@ func (s *service) BatchCreateRecords(ctx context.Context, req BatchCreateMetricR
 		}
 		response.CreatedCount++
 	}
+
+	if err := s.store.StoreIdempotency(ctx, scope, "batch_create", idempotencyKey, hash, "operation_log", response.OperationLogID); err != nil {
+		return BatchCreateMetricRecordsResponse{}, ErrInternal
+	}
+
 	if response.CreatedCount == 0 && response.FailedCount > 0 {
 		return response, ErrValidation
 	}
@@ -408,83 +418,39 @@ func (s *service) ListRecords(ctx context.Context, req ListMetricRecordsRequest)
 	if req.ProjectID == "" {
 		return PagedMetricRecordsResponse{}, ErrValidation
 	}
-	s.state.mu.Lock()
-	defer s.state.mu.Unlock()
-	items := make([]MetricRecordResponse, 0, len(s.state.records))
-	for _, item := range s.state.records {
-		if item.ProjectID != req.ProjectID {
-			continue
-		}
-		if req.Platform != "" && item.Platform != req.Platform {
-			continue
-		}
-		if req.TargetID != "" && item.TargetID != req.TargetID {
-			continue
-		}
-		if req.ContentItemID != "" && item.ContentItemID != req.ContentItemID {
-			continue
-		}
-		if req.MetricCode != "" && item.MetricCode != req.MetricCode {
-			continue
-		}
-		if req.DateFrom != "" && item.MetricDate < req.DateFrom {
-			continue
-		}
-		if req.DateTo != "" && item.MetricDate > req.DateTo {
-			continue
-		}
-		items = append(items, item)
+	items, total, err := s.store.ListRecords(ctx, req)
+	if err != nil {
+		return PagedMetricRecordsResponse{}, ErrInternal
 	}
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].MetricDate > items[j].MetricDate
-	})
-	return PagedMetricRecordsResponse{Items: items, Pagination: pagination(req.Page, req.PageSize, len(items))}, nil
+	page := req.Page
+	pageSize := req.PageSize
+	start, end := pageBounds(page, pageSize, total)
+	return PagedMetricRecordsResponse{Items: items[start:end], Pagination: pagination(page, pageSize, total)}, nil
 }
 
 func (s *service) GetSummary(ctx context.Context, projectID string, req MetricSummaryRequest) (MetricSummaryResponse, error) {
 	if projectID == "" || req.DateFrom == "" || req.DateTo == "" || len(req.MetricCodes) == 0 {
 		return MetricSummaryResponse{}, ErrValidation
 	}
-	records, err := s.ListRecords(ctx, ListMetricRecordsRequest{
-		ProjectID: projectID,
-		Platform:  req.Platform,
-		TargetID:  req.TargetID,
-		DateFrom:  req.DateFrom,
-		DateTo:    req.DateTo,
-	})
+	items, total, err := s.store.QuerySummary(ctx, projectID, req)
 	if err != nil {
-		return MetricSummaryResponse{}, err
+		return MetricSummaryResponse{}, ErrInternal
 	}
-	codeSet := map[string]bool{}
-	for _, code := range req.MetricCodes {
-		codeSet[code] = true
+	snapshotID := fmt.Sprintf("metric-summary-snapshot-%s-%s-%s", projectID, req.DateFrom, req.DateTo)
+	snap := SummarySnapshotRow{
+		ID:                snapshotID,
+		ProjectID:         projectID,
+		DateFrom:          req.DateFrom,
+		DateTo:            req.DateTo,
+		Platform:          req.Platform,
+		TargetID:          req.TargetID,
+		MetricCodes:       "[" + strings.Join(req.MetricCodes, ",") + "]",
+		AggregationMethod: "mixed",
+		Summary:           "[]",
+		SourceRecordCount: total,
 	}
-	s.state.mu.Lock()
-	defer s.state.mu.Unlock()
-	items := make([]MetricSummaryItem, 0)
-	total := 0
-	for _, code := range req.MetricCodes {
-		var sum float64
-		count := 0
-		unit := ""
-		aggregation := AggregationSum
-		for _, record := range records.Items {
-			if !codeSet[record.MetricCode] || record.MetricCode != code {
-				continue
-			}
-			template := s.templateByIDLocked(record.MetricTemplateID)
-			if template.ID != "" {
-				unit = template.Unit
-				aggregation = template.AggregationMethod
-			}
-			sum += record.NormalizedValue
-			count++
-		}
-		if count == 0 {
-			continue
-		}
-		total += count
-		items = append(items, MetricSummaryItem{MetricCode: code, Value: sum, Unit: unit, AggregationMethod: aggregation, SourceRecordCount: count})
+	if err := s.store.InsertSummarySnapshot(ctx, snap); err != nil {
+		return MetricSummaryResponse{}, ErrInternal
 	}
 	return MetricSummaryResponse{
 		ProjectID:         projectID,
@@ -493,7 +459,7 @@ func (s *service) GetSummary(ctx context.Context, projectID string, req MetricSu
 		Platform:          req.Platform,
 		TargetID:          req.TargetID,
 		Items:             items,
-		SummarySnapshotID: "metric-summary-snapshot-" + projectID,
+		SummarySnapshotID: snapshotID,
 		SourceRecordCount: total,
 	}, nil
 }
@@ -502,39 +468,27 @@ func (s *service) GetTrends(ctx context.Context, projectID string, req MetricTre
 	if projectID == "" || req.MetricCode == "" || req.DateFrom == "" || req.DateTo == "" || metricBucketColumns[req.Bucket] == "" {
 		return MetricTrendResponse{}, ErrValidation
 	}
-	records, err := s.ListRecords(ctx, ListMetricRecordsRequest{
-		ProjectID:  projectID,
-		Platform:   req.Platform,
-		TargetID:   req.TargetID,
-		MetricCode: req.MetricCode,
-		DateFrom:   req.DateFrom,
-		DateTo:     req.DateTo,
-	})
+	series, missingPoints, signature, sourceCount, err := s.store.QueryTrends(ctx, projectID, req)
 	if err != nil {
-		return MetricTrendResponse{}, err
+		return MetricTrendResponse{}, ErrInternal
 	}
-	series := make([]MetricTrendPoint, 0, len(records.Items))
-	sourceCount := 0
 	aggregation := AggregationSum
-	s.state.mu.Lock()
-	for _, record := range records.Items {
-		template := s.templateByIDLocked(record.MetricTemplateID)
-		if template.ID != "" {
-			aggregation = template.AggregationMethod
-		}
-		series = append(series, MetricTrendPoint{BucketStart: record.MetricDate, Value: record.NormalizedValue, SourceRecordCount: 1, Missing: false})
-		sourceCount++
+	tpl, err := s.store.FindTemplateByKey(ctx, "article", req.Platform, req.MetricCode)
+	if err != nil {
+		return MetricTrendResponse{}, ErrInternal
 	}
-	s.state.mu.Unlock()
+	if tpl != nil {
+		aggregation = tpl.AggregationMethod
+	}
 	return MetricTrendResponse{
 		ProjectID:         projectID,
 		MetricCode:        req.MetricCode,
 		Bucket:            req.Bucket,
 		AggregationMethod: aggregation,
-		QuerySignature:    strings.Join([]string{projectID, req.MetricCode, req.Platform, req.TargetID, req.DateFrom, req.DateTo, req.Bucket}, ":"),
+		QuerySignature:    signature,
 		SourceRecordCount: sourceCount,
 		Series:            series,
-		MissingPoints:     []MetricMissingPoint{},
+		MissingPoints:     missingPoints,
 	}, nil
 }
 
@@ -542,53 +496,30 @@ func (s *service) GetMissingDates(ctx context.Context, projectID string, req Mis
 	if projectID == "" || req.DateFrom == "" || req.DateTo == "" {
 		return MissingMetricDatesResponse{}, ErrValidation
 	}
-	s.state.mu.Lock()
-	defer s.state.mu.Unlock()
-	items := make([]MissingMetricDateItem, 0)
-	for _, template := range s.state.templates {
-		if !template.Enabled || !template.Required {
-			continue
-		}
-		if req.Platform != "" && template.Platform != req.Platform {
-			continue
-		}
-		if req.MetricCode != "" && template.MetricCode != req.MetricCode {
-			continue
-		}
-		exists := false
-		for _, record := range s.state.records {
-			if record.ProjectID == projectID && record.Platform == template.Platform && record.MetricCode == template.MetricCode && record.MetricDate == req.DateTo {
-				exists = true
-			}
-		}
-		if exists {
-			continue
-		}
-		targetID := req.TargetID
-		if targetID == "" {
-			targetID = "publish-target-1"
-		}
-		items = append(items, MissingMetricDateItem{
-			ContentItemID:    "content-item-1",
-			ContentVersionID: "content-version-approved-1",
-			PublishJobID:     "publish-job-1",
-			TargetID:         targetID,
-			Platform:         template.Platform,
-			MetricCode:       template.MetricCode,
-			Period:           template.Period,
-			MetricDate:       req.DateFrom,
-			MissingReason:    "required_metric_missing",
-			BackfillHint:     "补录 " + template.MetricCode + " " + req.DateFrom,
-		})
+	items, err := s.store.QueryMissingDates(ctx, projectID, req)
+	if err != nil {
+		return MissingMetricDatesResponse{}, ErrInternal
 	}
 	return MissingMetricDatesResponse{ProjectID: projectID, Items: items}, nil
 }
 
-func (s *service) templateByIDLocked(id string) MetricTemplateResponse {
-	for _, template := range s.state.templates {
-		if template.ID == id {
-			return template
-		}
+func pageBounds(page, pageSize, total int) (int, int) {
+	if page <= 0 {
+		page = 1
 	}
-	return MetricTemplateResponse{}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	start := (page - 1) * pageSize
+	if start > total {
+		start = total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	return start, end
 }

@@ -33,7 +33,23 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow"
 )
 
-func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
+type RouterOption func(*routerConfig)
+
+type routerConfig struct {
+	metricsService metrics.Service
+}
+
+func WithMetricsService(svc metrics.Service) RouterOption {
+	return func(c *routerConfig) {
+		c.metricsService = svc
+	}
+}
+
+func NewRouter(systemService system.Service, logger *slog.Logger, opts ...RouterOption) http.Handler {
+	cfg := &routerConfig{}
+	for _, opt := range opts {
+		opt(cfg)
+	}
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -63,7 +79,13 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	generationHandler := handlers.NewGenerationHandler(generation.NewService(), wfSvc, eng, logger)
 	reviewHandler := handlers.NewReviewHandler(review.NewService(), wfSvc, eng, logger)
 	memoryHandler := handlers.NewMemoryHandler(memory.NewService(), logger)
-	metricsHandler := handlers.NewMetricsHandler(metrics.NewService(), logger)
+	var metricsSvc metrics.Service
+	if cfg.metricsService != nil {
+		metricsSvc = cfg.metricsService
+	} else {
+		metricsSvc = metrics.NewService()
+	}
+	metricsHandler := handlers.NewMetricsHandler(metricsSvc, logger)
 	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
 
 	r.Route("/api/v1", func(r chi.Router) {

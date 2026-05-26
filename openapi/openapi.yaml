@@ -88,6 +88,32 @@ paths:
           schema: { type: string }
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
+        - name: platform
+          in: query
+          required: false
+          schema: { type: string }
+        - name: target_id
+          in: query
+          required: false
+          schema: { type: string }
+        - name: content_item_id
+          in: query
+          required: false
+          schema: { type: string }
+        - name: metric_code
+          in: query
+          required: false
+          schema: { type: string }
+        - name: date_from
+          in: query
+          required: false
+          schema: { type: string, format: date }
+        - name: date_to
+          in: query
+          required: false
+          schema: { type: string, format: date }
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Order'
       responses:
         '200': { description: Metric record list, content: { application/json: { schema: { $ref: '#/components/schemas/MetricRecordsEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
@@ -140,6 +166,14 @@ paths:
           in: query
           required: true
           schema: { type: string }
+        - name: platform
+          in: query
+          required: false
+          schema: { type: string }
+        - name: target_id
+          in: query
+          required: false
+          schema: { type: string }
       responses:
         '200': { description: Metric summary, content: { application/json: { schema: { $ref: '#/components/schemas/MetricSummaryEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
@@ -166,6 +200,22 @@ paths:
           in: query
           required: true
           schema: { type: string, enum: [day, week, month] }
+        - name: date_from
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: date_to
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: platform
+          in: query
+          required: false
+          schema: { type: string }
+        - name: target_id
+          in: query
+          required: false
+          schema: { type: string }
       responses:
         '200': { description: Metric trends, content: { application/json: { schema: { $ref: '#/components/schemas/MetricTrendEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }
@@ -192,6 +242,18 @@ paths:
           in: query
           required: true
           schema: { type: string, format: date }
+        - name: metric_code
+          in: query
+          required: false
+          schema: { type: string }
+        - name: platform
+          in: query
+          required: false
+          schema: { type: string }
+        - name: target_id
+          in: query
+          required: false
+          schema: { type: string }
       responses:
         '200': { description: Missing metric dates, content: { application/json: { schema: { $ref: '#/components/schemas/MissingMetricDatesEnvelope' } } } }
         '400': { $ref: '#/components/responses/ValidationError' }

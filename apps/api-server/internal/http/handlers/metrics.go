@@ -72,6 +72,17 @@ func (h *MetricsHandler) BatchCreateRecords(w http.ResponseWriter, r *http.Reque
 	}
 	data, err := h.service.BatchCreateRecords(r.Context(), req, r.Header.Get("Idempotency-Key"))
 	if err != nil {
+		if errors.Is(err, metrics.ErrValidation) && data.FailedCount > 0 {
+			details := make([]api.ErrorDetail, 0, len(data.Errors))
+			for _, e := range data.Errors {
+				details = append(details, api.ErrorDetail{
+					Field:  e.Field,
+					Reason: e.Code + ": " + e.Message,
+				})
+			}
+			api.WriteError(w, r, http.StatusBadRequest, api.ErrorValidation, "batch create metric records failed", details)
+			return
+		}
 		writeMetricsError(w, r, err, "batch create metric records failed")
 		return
 	}
