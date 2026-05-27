@@ -1,0 +1,35 @@
+stage: 05-testing
+name: Testing
+
+deliverables:
+  - id: tests-pass
+    type: command
+    cmd: "${language_config.green_test_command}"
+    cwd_stage: false
+    expect_exit_code: 0
+
+  - id: coverage-check
+    type: command
+    cmd: "${language_config.coverage_command}"
+    cwd_stage: false
+    expect_exit_code: 0
+    optional_if_unresolved: true
+
+  - id: test-report
+    type: file
+    path: test-report.md
+    required: true
+    min_size_bytes: 500
+    must_contain:
+      - "Test Scope"
+      - "Test Results"
+      - "Pass Criteria"
+      - "Coverage"
+      - "Standards Evidence"
+      - "Review Evidence"
+
+  - id: type-tests-evidence
+    type: command
+    cwd_stage: true
+    expect_exit_code: 0
+    cmd: "node check-type-tests.js"
