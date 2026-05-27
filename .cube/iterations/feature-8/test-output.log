@@ -1,0 +1,6 @@
+ok  	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/metrics	1.021s
+--- FAIL: TestTask05MetricReadHTTPCoversProjectScopedListSummaryTrendAndMissingDates (0.00s)
+    iteration8_metrics_contract_red_test.go:408: missing trend points must omit value instead of encoding missing as 0: {"project_id":"seed-project","metric_code":"views","bucket":"day","aggregation_method":"sum","query_signature":"metric-trend-seed-project-views-wechat-publish-target-1-day","source_record_count":1,"series":[{"bucket_start":"2026-05-25","value":1200,"source_record_count":1,"missing":false},{"bucket_start":"2026-05-24","value":0,"source_record_count":0,"missing":true}],"missing_points":[{"metric_date":"2026-05-24","reason":"required_metric_missing"}]}
+FAIL
+FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/contract	0.085s
+FAIL

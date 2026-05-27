@@ -931,3 +931,111 @@ export async function requeuePublishJob(projectID: string, jobID: string, input:
   const jobPath = pathSegment(jobID);
   return request<{ publish_job_id: string; previous_status: string; current_status: string; retry_count: number; operation_log_id: string; publish_log_id: string }>(`/api/v1/projects/${projectPath}/publish-jobs/${jobPath}/requeue`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
 }
+
+// ---- Iteration 8: Metrics Types ----
+
+export type MetricTemplateResponse = {
+  id: string;
+  content_type: string;
+  platform: string;
+  metric_code: string;
+  metric_name: string;
+  unit: string;
+  value_type: string;
+  aggregation_method: string;
+  period: string;
+  required: boolean;
+  enabled: boolean;
+  updated_at: string;
+};
+
+export type MetricRecordResponse = {
+  id: string;
+  project_id: string;
+  content_item_id: string;
+  content_version_id: string;
+  publish_job_id: string;
+  target_id: string;
+  content_type: string;
+  metric_template_id: string;
+  platform: string;
+  external_url: string;
+  metric_code: string;
+  metric_date: string;
+  period: string;
+  raw_value: string;
+  normalized_value: number;
+  source_type: string;
+  source_ref: string;
+  collected_at: string;
+  updated_at: string;
+};
+
+export type MetricSummaryResponse = {
+  project_id: string;
+  date_from: string;
+  date_to: string;
+  platform: string;
+  target_id: string;
+  items: Array<{ metric_code: string; value: number; unit: string; aggregation_method: string; source_record_count: number }>;
+  summary_snapshot_id: string;
+  source_record_count: number;
+};
+
+export type MetricTrendResponse = {
+  project_id: string;
+  metric_code: string;
+  bucket: string;
+  aggregation_method: string;
+  query_signature: string;
+  source_record_count: number;
+  series: Array<{ bucket_start: string; value?: number; source_record_count: number; missing: boolean }>;
+  missing_points: Array<{ metric_date: string; reason: string }>;
+};
+
+export type MissingMetricDatesResponse = {
+  project_id: string;
+  items: Array<{ content_item_id: string; content_version_id: string; publish_job_id: string; target_id: string; platform: string; metric_code: string; period: string; metric_date: string; missing_reason: string; backfill_hint: string }>;
+};
+
+export type BatchMetricRecordError = { index: number; metric_code: string; field: string; code: string; message: string; source_ref: string };
+
+export async function fetchMetricTemplates(params?: { content_type?: string; platform?: string; enabled?: boolean; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<MetricTemplateResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.content_type ? { content_type: params.content_type } : {}), ...(params?.platform ? { platform: params.platform } : {}), ...(typeof params?.enabled === 'boolean' ? { enabled: String(params.enabled) } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<MetricTemplateResponse>>(`/api/v1/metric-templates?${q}`);
+}
+
+export async function createMetricTemplate(input: { content_type: string; platform: string; metric_code: string; metric_name: string; unit: string; value_type: string; aggregation_method: string; period: string; required: boolean; enabled: boolean }): Promise<APIEnvelope<{ metric_template_id: string }>> {
+  return request<{ metric_template_id: string }>('/api/v1/metric-templates', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function createMetricRecord(input: { project_id: string; content_item_id: string; content_version_id: string; publish_job_id: string; target_id: string; platform: string; external_url: string; metric_code: string; metric_date: string; period: string; raw_value: string; source_type: string; source_ref: string }, idempotencyKey: string): Promise<APIEnvelope<{ metric_record_id: string; normalized_value: number; operation_log_id: string }>> {
+  return request<{ metric_record_id: string; normalized_value: number; operation_log_id: string }>('/api/v1/metric-records', { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function batchCreateMetricRecords(input: { records: Array<{ project_id: string; content_item_id: string; content_version_id: string; publish_job_id: string; target_id: string; platform: string; external_url: string; metric_code: string; metric_date: string; period: string; raw_value: string; source_type: string; source_ref: string }>; import_source: string }, idempotencyKey: string): Promise<APIEnvelope<{ created_count: number; failed_count: number; errors: BatchMetricRecordError[]; operation_log_id: string }>> {
+  return request<{ created_count: number; failed_count: number; errors: BatchMetricRecordError[]; operation_log_id: string }>('/api/v1/metric-records/batch', { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
+}
+
+export async function fetchMetricRecords(params: { project_id: string; platform?: string; target_id?: string; content_item_id?: string; metric_code?: string; date_from?: string; date_to?: string; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<MetricRecordResponse>>> {
+  const q = new URLSearchParams({ project_id: params.project_id, page: String(params.page ?? 1), page_size: String(params.page_size ?? 20), ...(params.platform ? { platform: params.platform } : {}), ...(params.target_id ? { target_id: params.target_id } : {}), ...(params.content_item_id ? { content_item_id: params.content_item_id } : {}), ...(params.metric_code ? { metric_code: params.metric_code } : {}), ...(params.date_from ? { date_from: params.date_from } : {}), ...(params.date_to ? { date_to: params.date_to } : {}), ...(params.sort ? { sort: params.sort } : {}), ...(params.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<MetricRecordResponse>>(`/api/v1/metric-records?${q}`);
+}
+
+export async function fetchMetricSummary(projectID: string, params: { date_from: string; date_to: string; platform?: string; target_id?: string; metric_codes: string[] }): Promise<APIEnvelope<MetricSummaryResponse>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ date_from: params.date_from, date_to: params.date_to, metric_codes: params.metric_codes.join(','), ...(params.platform ? { platform: params.platform } : {}), ...(params.target_id ? { target_id: params.target_id } : {}) }).toString();
+  return request<MetricSummaryResponse>(`/api/v1/projects/${projectPath}/metrics/summary?${q}`);
+}
+
+export async function fetchMetricTrends(projectID: string, params: { metric_code: string; date_from: string; date_to: string; bucket: string; platform?: string; target_id?: string }): Promise<APIEnvelope<MetricTrendResponse>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ metric_code: params.metric_code, date_from: params.date_from, date_to: params.date_to, bucket: params.bucket, ...(params.platform ? { platform: params.platform } : {}), ...(params.target_id ? { target_id: params.target_id } : {}) }).toString();
+  return request<MetricTrendResponse>(`/api/v1/projects/${projectPath}/metrics/trends?${q}`);
+}
+
+export async function fetchMissingMetricDates(projectID: string, params: { metric_code?: string; platform?: string; target_id?: string; date_from: string; date_to: string }): Promise<APIEnvelope<MissingMetricDatesResponse>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ date_from: params.date_from, date_to: params.date_to, ...(params.metric_code ? { metric_code: params.metric_code } : {}), ...(params.platform ? { platform: params.platform } : {}), ...(params.target_id ? { target_id: params.target_id } : {}) }).toString();
+  return request<MissingMetricDatesResponse>(`/api/v1/projects/${projectPath}/metrics/missing-dates?${q}`);
+}

@@ -1,0 +1,77 @@
+tasks:
+  - task: "Task-01：创建指标数据表与 SQL 查询契约"
+    module: store
+    test_file: metrics_sql_contract_test.go
+    test_cases: 6
+  - task: "Task-02：定义指标模块 DTO、错误常量与服务接口"
+    module: metrics
+    test_file: task02_contract_red_test.go
+    test_cases: 6
+  - task: "Task-03：实现指标模板 API 骨架"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+  - task: "Task-04：实现指标记录录入与批量导入 API 骨架"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+  - task: "Task-05：实现指标记录列表、汇总、趋势与缺失 API 骨架"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+  - task: "Task-06：补充 OpenAPI 指标接口契约"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+  - task: "Task-07：实现前端指标 API client 骨架"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+  - task: "Task-08：实现指标工作区导航与指标表现页面骨架"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+  - task: "Task-09：实现指标录入页面骨架"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+  - task: "Task-10：实现趋势图与缺失提醒页面骨架"
+    module: http/contract
+    test_file: iteration8_metrics_contract_red_test.go
+    test_cases: 9
+type_tests:
+  - type: sql-query
+    standard: standards/testing/sql-query.md
+    test_file: metrics_sql_contract_test.go
+    resources:
+      - apps/api-server/migrations/00010_create_metrics_tables.sql
+    covers:
+      - "Task-01：创建指标数据表与 SQL 查询契约"
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: iteration8_metrics_contract_red_test.go
+    resources: []
+    covers:
+      - "Task-02：定义指标模块 DTO、错误常量与服务接口"
+      - "Task-03：实现指标模板 API 骨架"
+      - "Task-04：实现指标记录录入与批量导入 API 骨架"
+      - "Task-05：实现指标记录列表、汇总、趋势与缺失 API 骨架"
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: iteration8-metrics-dashboard.spec.ts
+    resources:
+      - apps/web-admin/e2e/iteration8-metrics-dashboard.spec.ts
+    covers:
+      - "Task-03：实现指标模板 API 骨架"
+      - "Task-04：实现指标记录录入与批量导入 API 骨架"
+      - "Task-05：实现指标记录列表、汇总、趋势与缺失 API 骨架"
+      - "Task-06：补充 OpenAPI 指标接口契约"
+  - type: frontend-ui
+    standard: standards/testing/frontend-ui.md
+    test_file: iteration8-metrics-dashboard.spec.ts
+    resources: []
+    covers:
+      - "Task-07：实现前端指标 API client 骨架"
+      - "Task-08：实现指标工作区导航与指标表现页面骨架"
+      - "Task-09：实现指标录入页面骨架"
+      - "Task-10：实现趋势图与缺失提醒页面骨架"

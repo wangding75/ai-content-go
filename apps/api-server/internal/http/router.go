@@ -23,6 +23,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/generation"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/llm"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/memory"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/metrics"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/novel"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/prompt"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/publish"
@@ -32,7 +33,23 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow"
 )
 
-func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
+type RouterOption func(*routerConfig)
+
+type routerConfig struct {
+	metricsService metrics.Service
+}
+
+func WithMetricsService(svc metrics.Service) RouterOption {
+	return func(c *routerConfig) {
+		c.metricsService = svc
+	}
+}
+
+func NewRouter(systemService system.Service, logger *slog.Logger, opts ...RouterOption) http.Handler {
+	cfg := &routerConfig{}
+	for _, opt := range opts {
+		opt(cfg)
+	}
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -62,6 +79,13 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 	generationHandler := handlers.NewGenerationHandler(generation.NewService(), wfSvc, eng, logger)
 	reviewHandler := handlers.NewReviewHandler(review.NewService(), wfSvc, eng, logger)
 	memoryHandler := handlers.NewMemoryHandler(memory.NewService(), logger)
+	var metricsSvc metrics.Service
+	if cfg.metricsService != nil {
+		metricsSvc = cfg.metricsService
+	} else {
+		metricsSvc = metrics.NewService()
+	}
+	metricsHandler := handlers.NewMetricsHandler(metricsSvc, logger)
 	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
 
 	r.Route("/api/v1", func(r chi.Router) {
@@ -179,6 +203,16 @@ func NewRouter(systemService system.Service, logger *slog.Logger) http.Handler {
 		r.Post("/projects/{projectId}/publish-jobs/{id}/mark-published", publishHandler.MarkPublished)
 		r.Post("/projects/{projectId}/publish-jobs/{id}/mark-failed", publishHandler.MarkFailed)
 		r.Post("/projects/{projectId}/publish-jobs/{id}/requeue", publishHandler.Requeue)
+
+		// Iteration 8: Metrics dashboard
+		r.Post("/metric-templates", metricsHandler.CreateTemplate)
+		r.Get("/metric-templates", metricsHandler.ListTemplates)
+		r.Post("/metric-records", metricsHandler.CreateRecord)
+		r.Post("/metric-records/batch", metricsHandler.BatchCreateRecords)
+		r.Get("/metric-records", metricsHandler.ListRecords)
+		r.Get("/projects/{projectId}/metrics/summary", metricsHandler.GetSummary)
+		r.Get("/projects/{projectId}/metrics/trends", metricsHandler.GetTrends)
+		r.Get("/projects/{projectId}/metrics/missing-dates", metricsHandler.GetMissingDates)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 

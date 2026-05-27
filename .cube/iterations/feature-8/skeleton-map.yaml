@@ -1,0 +1,70 @@
+files:
+  - path: migrations/00010_create_metrics_tables.sql
+    module: api-server
+    type: migration
+    tasks:
+      - "Task-01：创建指标数据表与 SQL 查询契约"
+  - path: internal/modules/metrics/dto.go
+    module: api-server
+    type: dto
+    tasks:
+      - "Task-02：定义指标模块 DTO、错误常量与服务接口"
+  - path: internal/modules/metrics/errors.go
+    module: api-server
+    type: constant
+    tasks:
+      - "Task-02：定义指标模块 DTO、错误常量与服务接口"
+  - path: internal/modules/metrics/service.go
+    module: api-server
+    type: interface
+    tasks:
+      - "Task-02：定义指标模块 DTO、错误常量与服务接口"
+  - path: internal/http/handlers/metrics.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-03：实现指标模板 API 骨架"
+      - "Task-04：实现指标记录录入与批量导入 API 骨架"
+      - "Task-05：实现指标记录列表、汇总、趋势与缺失 API 骨架"
+  - path: internal/http/router.go
+    module: api-server
+    type: interface
+    tasks:
+      - "Task-03：实现指标模板 API 骨架"
+      - "Task-04：实现指标记录录入与批量导入 API 骨架"
+      - "Task-05：实现指标记录列表、汇总、趋势与缺失 API 骨架"
+  - path: openapi.yaml
+    module: openapi
+    type: interface
+    tasks:
+      - "Task-06：补充 OpenAPI 指标接口契约"
+  - path: lib/api.ts
+    module: web-admin
+    type: interface
+    tasks:
+      - "Task-07：实现前端指标 API client 骨架"
+  - path: app/projects/[projectId]/workspace-nav.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-08：实现指标工作区导航与指标表现页面骨架"
+  - path: app/projects/[projectId]/metrics/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-08：实现指标工作区导航与指标表现页面骨架"
+  - path: app/projects/[projectId]/metrics/input/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-09：实现指标录入页面骨架"
+  - path: app/projects/[projectId]/metrics/trends/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-10：实现趋势图与缺失提醒页面骨架"
+  - path: app/projects/[projectId]/metrics/missing/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-10：实现趋势图与缺失提醒页面骨架"
