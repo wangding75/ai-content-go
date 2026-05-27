@@ -1,3 +1,6 @@
 node_modules/
 .next/
 *.tsbuildinfo
+test-results/
+!apps/web-admin/e2e/__screenshots__/
+!apps/web-admin/e2e/__screenshots__/**

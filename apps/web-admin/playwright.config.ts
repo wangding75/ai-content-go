@@ -1,16 +1,34 @@
+import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 
 const webBaseURL = process.env.WEB_BASE_URL ?? 'http://127.0.0.1:3000';
 const apiBaseURL = process.env.API_BASE_URL ?? 'http://127.0.0.1:18080';
+const defaultChromiumPath = '/home/wangding/.cache/ms-playwright/chromium-1223/chrome-linux64/chrome';
+const systemChromePath = '/usr/bin/google-chrome';
+const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+  ?? (existsSync(defaultChromiumPath) ? defaultChromiumPath : undefined)
+  ?? (existsSync(systemChromePath) ? systemChromePath : undefined);
 
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
+  snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixels: 100,
+      threshold: 0.2,
+      animations: 'disabled',
+    },
+    toMatchSnapshot: {
+      maxDiffPixels: 100,
+    },
+  },
   use: {
     ...devices['Desktop Chrome'],
     baseURL: webBaseURL,
+    viewport: { width: 1280, height: 720 },
     launchOptions: {
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ?? '/home/wangding/.cache/ms-playwright/chromium-1223/chrome-linux64/chrome',
+      executablePath: chromiumExecutablePath,
     },
     extraHTTPHeaders: {
       Authorization: 'Bearer dev',
