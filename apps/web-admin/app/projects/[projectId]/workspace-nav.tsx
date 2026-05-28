@@ -17,6 +17,7 @@ const items = [
   { href: 'metrics/input', label: '指标录入' },
   { href: 'metrics/trends', label: '趋势图' },
   { href: 'metrics/missing', label: '缺失提醒' },
+  { href: 'strategy-suggestions', label: '策略建议' },
   { href: 'memory', label: '记忆上下文' },
   { href: 'memory/context-preview', label: '上下文预览' },
   { href: 'consistency-reports', label: '一致性报告' },

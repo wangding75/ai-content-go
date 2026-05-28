@@ -29,6 +29,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/publish"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/review"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/strategy"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow"
 )
@@ -36,12 +37,19 @@ import (
 type RouterOption func(*routerConfig)
 
 type routerConfig struct {
-	metricsService metrics.Service
+	metricsService  metrics.Service
+	strategyService strategy.Service
 }
 
 func WithMetricsService(svc metrics.Service) RouterOption {
 	return func(c *routerConfig) {
 		c.metricsService = svc
+	}
+}
+
+func WithStrategyService(svc strategy.Service) RouterOption {
+	return func(c *routerConfig) {
+		c.strategyService = svc
 	}
 }
 
@@ -86,6 +94,13 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		metricsSvc = metrics.NewService()
 	}
 	metricsHandler := handlers.NewMetricsHandler(metricsSvc, logger)
+	var strategySvc strategy.Service
+	if cfg.strategyService != nil {
+		strategySvc = cfg.strategyService
+	} else {
+		strategySvc = strategy.NewService()
+	}
+	strategyHandler := handlers.NewStrategyHandler(strategySvc, logger)
 	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
 
 	r.Route("/api/v1", func(r chi.Router) {
@@ -213,6 +228,16 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		r.Get("/projects/{projectId}/metrics/summary", metricsHandler.GetSummary)
 		r.Get("/projects/{projectId}/metrics/trends", metricsHandler.GetTrends)
 		r.Get("/projects/{projectId}/metrics/missing-dates", metricsHandler.GetMissingDates)
+
+			// Iteration 9: Strategy suggestion
+			r.Post("/projects/{projectId}/strategy-suggestion-runs", strategyHandler.GenerateSuggestions)
+			r.Get("/projects/{projectId}/strategy-suggestions", strategyHandler.ListSuggestions)
+			r.Get("/strategy-suggestions/{suggestionId}", strategyHandler.GetSuggestion)
+			r.Post("/strategy-suggestions/{suggestionId}/confirm", strategyHandler.ConfirmSuggestion)
+			r.Post("/strategy-suggestions/{suggestionId}/ignore", strategyHandler.IgnoreSuggestion)
+			r.Post("/strategy-suggestions/{suggestionId}/execute", strategyHandler.ExecuteSuggestion)
+			r.Post("/strategy-suggestions/{suggestionId}/retry", strategyHandler.RetrySuggestion)
+			r.Get("/strategy-suggestions/{suggestionId}/execution-logs", strategyHandler.ListExecutionLogs)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
