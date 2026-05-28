@@ -1,0 +1,55 @@
+# Skeleton map for iteration 9: Strategy Suggestion
+# Generated during 02-design stage
+
+skeleton_files:
+  - path: apps/api-server/internal/modules/strategy/dto.go
+    type: contract
+    description: Strategy DTO definitions, constants, request/response types
+
+  - path: apps/api-server/internal/modules/strategy/errors.go
+    type: contract
+    description: Strategy error constants (ErrValidation, ErrNotFound, ErrConflict, ErrIdempotencyConflict, ErrInternal)
+
+  - path: apps/api-server/internal/modules/strategy/service.go
+    type: contract
+    description: Strategy Service interface with panic stubs for 8 methods
+
+  - path: apps/api-server/internal/modules/strategy/store.go
+    type: contract
+    description: Strategy Store interface definition
+
+  - path: apps/api-server/internal/modules/strategy/memory_store.go
+    type: implementation
+    description: In-memory Store implementation for testing
+
+  - path: apps/api-server/internal/http/handlers/strategy.go
+    type: implementation
+    description: Strategy HTTP handler with full request parsing and error mapping
+
+  - path: apps/api-server/internal/http/router.go
+    type: modification
+    description: Added strategy import, WithStrategyService option, handler instantiation, 8 route registrations
+
+  - path: apps/api-server/migrations/00011_create_strategy_tables.sql
+    type: migration
+    description: DDL for strategy_suggestion_run, strategy_suggestion, strategy_execution_log tables
+
+  - path: apps/web-admin/lib/api.ts
+    type: modification
+    description: Added strategy types and 8 API client functions
+
+  - path: apps/web-admin/app/projects/[projectId]/workspace-nav.tsx
+    type: modification
+    description: Added "策略建议" navigation entry
+
+  - path: apps/web-admin/app/projects/[projectId]/strategy-suggestions/page.tsx
+    type: implementation
+    description: Strategy suggestions list page with generate, filter, empty/loading/error/success states
+
+  - path: apps/web-admin/app/projects/[projectId]/strategy-suggestions/[suggestionId]/page.tsx
+    type: implementation
+    description: Suggestion detail page with evidence metrics, execution logs, status badges
+
+  - path: apps/web-admin/app/projects/[projectId]/strategy-suggestions/[suggestionId]/actions/page.tsx
+    type: implementation
+    description: Suggestion actions page with confirm/ignore/execute/retry forms, state-aware button disabling

@@ -1039,3 +1039,117 @@ export async function fetchMissingMetricDates(projectID: string, params: { metri
   const q = new URLSearchParams({ date_from: params.date_from, date_to: params.date_to, ...(params.metric_code ? { metric_code: params.metric_code } : {}), ...(params.platform ? { platform: params.platform } : {}), ...(params.target_id ? { target_id: params.target_id } : {}) }).toString();
   return request<MissingMetricDatesResponse>(`/api/v1/projects/${projectPath}/metrics/missing-dates?${q}`);
 }
+
+// Strategy suggestion types
+export type StrategySuggestionType = 'keep' | 'optimize' | 'suspend' | 'promote' | 'cost_control';
+export type StrategyRiskLevel = 'low' | 'medium' | 'high';
+export type StrategyConfidence = 'low' | 'medium' | 'high';
+export type StrategySuggestionStatus = 'pending' | 'confirmed' | 'ignored' | 'executed' | 'execution_failed';
+
+export type StrategySuggestionItem = {
+  id: string;
+  project_id: string;
+  suggestion_type: StrategySuggestionType;
+  title: string;
+  trigger_reason: string;
+  risk_level: StrategyRiskLevel;
+  confidence: StrategyConfidence;
+  status: StrategySuggestionStatus;
+  date_from: string;
+  date_to: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MetricEvidence = { metric_code: string; value: number; trend: string };
+export type MetricsSnapshot = { summary_snapshot_id: string };
+
+export type StrategySuggestionDetail = {
+  id: string;
+  project_id: string;
+  suggestion_run_id: string;
+  suggestion_type: StrategySuggestionType;
+  title: string;
+  trigger_reason: string;
+  evidence_metrics: MetricEvidence[];
+  impact_scope: string;
+  risk_level: StrategyRiskLevel;
+  confidence: StrategyConfidence;
+  suggested_action: string;
+  expected_benefit: string;
+  metrics_snapshot: MetricsSnapshot;
+  status: StrategySuggestionStatus;
+  ignored_reason: string;
+  ignored_note: string;
+  confirmed_at: string | null;
+  ignored_at: string | null;
+  executed_at: string | null;
+  date_from: string;
+  date_to: string;
+  triggered_rules: string[];
+  generation_method: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ExecutionLogItem = {
+  id: string;
+  suggestion_id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string;
+  operator_note: string;
+  previous_status: StrategySuggestionStatus;
+  current_status: StrategySuggestionStatus;
+  result: 'success' | 'failed';
+  failure_reason: string;
+  target_interface: string;
+  target_resource: string;
+  created_at: string;
+};
+
+export type GenerateSuggestionsResponse = { suggestion_run_id: string; status: string };
+export type SuggestionStatusChangeResponse = { suggestion_id: string; previous_status: string; current_status: string; operation_log_id: string };
+export type ExecuteSuggestionResponse = { execution_log_id: string; suggestion_id: string; previous_status: string; current_status: string; operation_log_id: string };
+
+export async function generateStrategySuggestions(projectID: string, params: { date_from: string; date_to: string; rule_codes?: string[]; metric_codes?: string[]; force_regenerate?: boolean }, idempotencyKey?: string): Promise<APIEnvelope<GenerateSuggestionsResponse>> {
+  const projectPath = pathSegment(projectID);
+  return request<GenerateSuggestionsResponse>(`/api/v1/projects/${projectPath}/strategy-suggestion-runs`, { method: 'POST', body: JSON.stringify(params), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function fetchStrategySuggestions(projectID: string, params?: { status?: string; suggestion_type?: string; risk_level?: string; confidence?: string; date_from?: string; date_to?: string; page?: number; page_size?: number; sort?: string; order?: string }): Promise<APIEnvelope<PagedResponse<StrategySuggestionItem>>> {
+  const projectPath = pathSegment(projectID);
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.status ? { status: params.status } : {}), ...(params?.suggestion_type ? { suggestion_type: params.suggestion_type } : {}), ...(params?.risk_level ? { risk_level: params.risk_level } : {}), ...(params?.confidence ? { confidence: params.confidence } : {}), ...(params?.date_from ? { date_from: params.date_from } : {}), ...(params?.date_to ? { date_to: params.date_to } : {}), ...(params?.sort ? { sort: params.sort } : {}), ...(params?.order ? { order: params.order } : {}) }).toString();
+  return request<PagedResponse<StrategySuggestionItem>>(`/api/v1/projects/${projectPath}/strategy-suggestions?${q}`);
+}
+
+export async function fetchStrategySuggestion(suggestionID: string): Promise<APIEnvelope<StrategySuggestionDetail>> {
+  const id = pathSegment(suggestionID);
+  return request<StrategySuggestionDetail>(`/api/v1/strategy-suggestions/${id}`);
+}
+
+export async function confirmSuggestion(suggestionID: string, params?: { note?: string }, idempotencyKey?: string): Promise<APIEnvelope<SuggestionStatusChangeResponse>> {
+  const id = pathSegment(suggestionID);
+  return request<SuggestionStatusChangeResponse>(`/api/v1/strategy-suggestions/${id}/confirm`, { method: 'POST', body: JSON.stringify(params ?? {}), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function ignoreSuggestion(suggestionID: string, params: { reason: string; note?: string }, idempotencyKey?: string): Promise<APIEnvelope<SuggestionStatusChangeResponse>> {
+  const id = pathSegment(suggestionID);
+  return request<SuggestionStatusChangeResponse>(`/api/v1/strategy-suggestions/${id}/ignore`, { method: 'POST', body: JSON.stringify(params), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function executeSuggestion(suggestionID: string, params: { action_type: string; target_type: string; target_id: string; operator_note?: string }, idempotencyKey?: string): Promise<APIEnvelope<ExecuteSuggestionResponse>> {
+  const id = pathSegment(suggestionID);
+  return request<ExecuteSuggestionResponse>(`/api/v1/strategy-suggestions/${id}/execute`, { method: 'POST', body: JSON.stringify(params), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function retrySuggestion(suggestionID: string, params?: { operator_note?: string }, idempotencyKey?: string): Promise<APIEnvelope<ExecuteSuggestionResponse>> {
+  const id = pathSegment(suggestionID);
+  return request<ExecuteSuggestionResponse>(`/api/v1/strategy-suggestions/${id}/retry`, { method: 'POST', body: JSON.stringify(params ?? {}), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function fetchExecutionLogs(suggestionID: string, params?: { page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<ExecutionLogItem>>> {
+  const id = pathSegment(suggestionID);
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20) }).toString();
+  return request<PagedResponse<ExecutionLogItem>>(`/api/v1/strategy-suggestions/${id}/execution-logs?${q}`);
+}
