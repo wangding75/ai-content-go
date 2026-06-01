@@ -47,7 +47,11 @@ tasks:
     test_total: 3
   - task: "Task-06：Portfolio 前端 API client 契约"
     test_file: iteration10_portfolio_api_client_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-01 13:14"
+    completed_at: "2026-06-01 13:15"
+    test_passed: 4
+    test_total: 4
   - task: "Task-07：Portfolio 前端页面与导航骨架"
     test_file: iteration10_portfolio_pages_contract_red_test.go
     phase: locked
