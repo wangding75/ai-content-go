@@ -33,7 +33,11 @@ tasks:
     test_total: 11
   - task: "Task-04：Portfolio app server 注入契约"
     test_file: portfolio_server_injection_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-01 13:10"
+    completed_at: "2026-06-01 13:12"
+    test_passed: 1
+    test_total: 1
   - task: "Task-05：Portfolio OpenAPI 契约"
     test_file: iteration10_portfolio_openapi_contract_red_test.go
     phase: locked
