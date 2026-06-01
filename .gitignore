@@ -4,3 +4,5 @@ node_modules/
 test-results/
 !apps/web-admin/e2e/__screenshots__/
 !apps/web-admin/e2e/__screenshots__/**
+.cludae/
+*:Zone.Identifier
