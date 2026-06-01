@@ -19,7 +19,11 @@ tasks:
     test_total: 9
   - task: "Task-02：Portfolio 数据库迁移"
     test_file: portfolio_sql_contract_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-01 13:05"
+    completed_at: "2026-06-01 13:08"
+    test_passed: 3
+    test_total: 3
   - task: "Task-03：Portfolio HTTP handler 与路由契约"
     test_file: portfolio_handler_red_test.go
     phase: locked
