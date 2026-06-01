@@ -2,6 +2,8 @@ package portfolio
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
 )
@@ -35,7 +37,8 @@ func NewService(stores ...Store) Service {
 }
 
 func (s *service) CreatePortfolio(ctx context.Context, req CreatePortfolioRequest, _ string) (PortfolioDetailResponse, error) {
-	item := PortfolioDetailResponse{Name: req.Name, Description: req.Description, ScopeType: req.ScopeType, OwnerID: req.OwnerID, HealthPolicy: req.HealthPolicy, Status: req.Status}
+	now := time.Now().UTC()
+	item := PortfolioDetailResponse{ID: fmt.Sprintf("pf_%d", now.UnixNano()), Name: req.Name, Description: req.Description, ScopeType: req.ScopeType, OwnerID: req.OwnerID, HealthPolicy: req.HealthPolicy, Status: req.Status, CreatedAt: now.Format(time.RFC3339), UpdatedAt: now.Format(time.RFC3339)}
 	return item, s.store.CreatePortfolio(ctx, item)
 }
 
@@ -59,7 +62,8 @@ func (s *service) GetPortfolio(ctx context.Context, portfolioID string) (Portfol
 }
 
 func (s *service) UpdatePortfolio(ctx context.Context, portfolioID string, req UpdatePortfolioRequest, _ string) (PortfolioDetailResponse, error) {
-	item := PortfolioDetailResponse{ID: portfolioID, Name: req.Name, Description: req.Description, ScopeType: req.ScopeType, OwnerID: req.OwnerID, HealthPolicy: req.HealthPolicy, Status: req.Status}
+	now := time.Now().UTC()
+	item := PortfolioDetailResponse{ID: portfolioID, Name: req.Name, Description: req.Description, ScopeType: req.ScopeType, OwnerID: req.OwnerID, HealthPolicy: req.HealthPolicy, Status: req.Status, UpdatedAt: now.Format(time.RFC3339)}
 	return item, s.store.UpdatePortfolio(ctx, item)
 }
 
@@ -85,11 +89,12 @@ func (s *service) RemoveProject(ctx context.Context, portfolioID string, project
 	if err := s.store.RemoveProject(ctx, portfolioID, projectID, req); err != nil {
 		return RemovePortfolioProjectResponse{}, err
 	}
-	return RemovePortfolioProjectResponse{PortfolioID: portfolioID, ProjectID: projectID, Removed: true}, nil
+	return RemovePortfolioProjectResponse{PortfolioID: portfolioID, ProjectID: projectID, Removed: true, OperationID: fmt.Sprintf("ppo_%d", time.Now().UnixNano())}, nil
 }
 
 func (s *service) RecalculateStatusSnapshot(_ context.Context, portfolioID string, _ RecalculatePortfolioStatusSnapshotRequest, _ string) (RecalculatePortfolioStatusSnapshotResponse, error) {
-	return RecalculatePortfolioStatusSnapshotResponse{PortfolioID: portfolioID, CalculationStatus: SnapshotStatusQueued}, nil
+	id := fmt.Sprintf("pss_%d", time.Now().UnixNano())
+	return RecalculatePortfolioStatusSnapshotResponse{PortfolioID: portfolioID, SnapshotID: id, JobID: id, CalculationStatus: SnapshotStatusQueued}, nil
 }
 
 func (s *service) ListStatusSnapshots(ctx context.Context, portfolioID string, req ListPortfolioStatusSnapshotsRequest) (PagedPortfolioStatusSnapshotsResponse, error) {

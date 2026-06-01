@@ -12,7 +12,11 @@ branch: feature/10
 tasks:
   - task: "Task-01：Portfolio 后端模块契约"
     test_file: portfolio_contract_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-01 13:00"
+    completed_at: "2026-06-01 13:05"
+    test_passed: 9
+    test_total: 9
   - task: "Task-02：Portfolio 数据库迁移"
     test_file: portfolio_sql_contract_test.go
     phase: locked
