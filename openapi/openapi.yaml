@@ -2286,6 +2286,95 @@ paths:
         '500': { $ref: '#/components/responses/InternalError' }
       security:
         - bearerAuth: []
+  /api/v1/portfolios:
+    post:
+      summary: Create portfolio
+      tags: [portfolio]
+      operationId: createPortfolio
+      responses:
+        '201': { description: Portfolio created }
+    get:
+      summary: List portfolios
+      tags: [portfolio]
+      operationId: listPortfolios
+      responses:
+        '200': { description: Portfolio list }
+  /api/v1/portfolios/{portfolioId}:
+    get:
+      summary: Get portfolio
+      tags: [portfolio]
+      operationId: getPortfolio
+      responses:
+        '200': { description: Portfolio detail }
+    patch:
+      summary: Update portfolio
+      tags: [portfolio]
+      operationId: updatePortfolio
+      responses:
+        '200': { description: Portfolio updated }
+  /api/v1/portfolios/{portfolioId}/projects:
+    post:
+      summary: Add project to portfolio
+      tags: [portfolio]
+      operationId: addPortfolioProject
+      responses:
+        '201': { description: Portfolio project added }
+    get:
+      summary: List portfolio projects
+      tags: [portfolio]
+      operationId: listPortfolioProjects
+      responses:
+        '200': { description: Portfolio project list }
+  /api/v1/portfolios/{portfolioId}/projects/{projectId}/priority:
+    patch:
+      summary: Update portfolio project priority
+      tags: [portfolio]
+      operationId: updatePortfolioProjectPriority
+      responses:
+        '200': { description: Portfolio project priority updated }
+  /api/v1/portfolios/{portfolioId}/projects/{projectId}:
+    delete:
+      summary: Remove project from portfolio
+      tags: [portfolio]
+      operationId: removePortfolioProject
+      responses:
+        '200': { description: Portfolio project removed }
+  /api/v1/portfolios/{portfolioId}/status-snapshots/recalculate:
+    post:
+      summary: Recalculate portfolio status snapshot
+      tags: [portfolio]
+      operationId: recalculatePortfolioStatusSnapshot
+      responses:
+        '202': { description: Portfolio status snapshot queued }
+  /api/v1/portfolios/{portfolioId}/status-snapshots:
+    get:
+      summary: List portfolio status snapshots
+      tags: [portfolio]
+      operationId: listPortfolioStatusSnapshots
+      responses:
+        '200': { description: Portfolio status snapshot list }
+  /api/v1/portfolios/{portfolioId}/health-summary:
+    get:
+      summary: Get portfolio health summary
+      tags: [portfolio]
+      operationId: getPortfolioHealthSummary
+      responses:
+        '200': { description: Portfolio health summary }
+  /api/v1/portfolios/{portfolioId}/cost-summary:
+    get:
+      summary: Get portfolio cost summary
+      tags: [portfolio]
+      operationId: getPortfolioCostSummary
+      responses:
+        '200': { description: Portfolio cost summary }
+  /api/v1/portfolios/{portfolioId}/strategy-summary:
+    get:
+      summary: Get portfolio strategy summary
+      tags: [portfolio]
+      operationId: getPortfolioStrategySummary
+      responses:
+        '200': { description: Portfolio strategy summary }
+
 components:
   parameters:
     RequestIdHeader:

@@ -1153,3 +1153,158 @@ export async function fetchExecutionLogs(suggestionID: string, params?: { page?:
   const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20) }).toString();
   return request<PagedResponse<ExecutionLogItem>>(`/api/v1/strategy-suggestions/${id}/execution-logs?${q}`);
 }
+
+
+// Portfolio management types
+export type DateRange = { start: string; end: string };
+export type SourceRef = { source: string; source_id: string; updated_at: string };
+
+export type PortfolioDetailResponse = {
+  id: string;
+  name: string;
+  description: string;
+  scope_type: string;
+  owner_id: string;
+  health_policy: Record<string, unknown>;
+  status: string;
+  project_count: number;
+  latest_health_score: number;
+  latest_health_status: string;
+  estimated_monthly_cost: number;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PortfolioProjectResponse = {
+  portfolio_id: string;
+  project_id: string;
+  project_name: string;
+  content_type: string;
+  role: string;
+  priority: number;
+  weight: number;
+  note: string;
+  added_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RemovePortfolioProjectResponse = { portfolio_id: string; project_id: string; operation_id: string; removed: boolean };
+export type RecalculatePortfolioStatusSnapshotResponse = { portfolio_id: string; snapshot_id: string; job_id: string; calculation_status: string };
+
+export type PortfolioStatusSnapshotResponse = {
+  id: string;
+  portfolio_id: string;
+  date_range: DateRange;
+  health_score: number;
+  health_status: string;
+  total_projects: number;
+  active_projects: number;
+  warning_projects: number;
+  estimated_monthly_cost: number;
+  currency: string;
+  risk_summary: Record<string, unknown>;
+  cost_summary: Record<string, unknown>;
+  strategy_summary: Record<string, unknown>;
+  source_refs: SourceRef[];
+  calculation_status: string;
+  calculated_at: string;
+  created_at: string;
+};
+
+export type PortfolioHealthSummaryResponse = {
+  portfolio_id: string;
+  date_range: DateRange;
+  health_score: number;
+  health_status: string;
+  total_projects: number;
+  active_projects: number;
+  warning_projects: number;
+  risk_summary: Record<string, unknown>;
+  latest_snapshot_at: string;
+  calculated_at: string;
+  source_refs: SourceRef[];
+};
+
+export type PortfolioCostSummaryResponse = {
+  portfolio_id: string;
+  date_range: DateRange;
+  estimated_monthly_cost: number;
+  currency: string;
+  by_model: Array<{ model: string; estimated_cost: number; currency: string }>;
+  project_costs: Array<{ project_id: string; project_name: string; estimated_cost: number; currency: string }>;
+  calculated_at: string;
+  source_refs: SourceRef[];
+};
+
+export type PortfolioStrategySummaryResponse = {
+  portfolio_id: string;
+  date_range: DateRange;
+  pending: number;
+  confirmed: number;
+  ignored: number;
+  executed: number;
+  execution_failed: number;
+  top_suggestions: Array<{ project_id: string; suggestion_id: string; type: string; status: string; title: string }>;
+  calculated_at: string;
+  source_refs: SourceRef[];
+};
+
+export async function createPortfolio(input: { name: string; description?: string; scope_type: string; owner_id?: string; health_policy?: Record<string, unknown>; status: string }, idempotencyKey?: string): Promise<APIEnvelope<PortfolioDetailResponse>> {
+  return request<PortfolioDetailResponse>('/api/v1/portfolios', { method: 'POST', body: JSON.stringify(input), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function fetchPortfolios(params?: { q?: string; status?: string; scope_type?: string; owner_id?: string; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<PortfolioDetailResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.q ? { q: params.q } : {}), ...(params?.status ? { status: params.status } : {}), ...(params?.scope_type ? { scope_type: params.scope_type } : {}), ...(params?.owner_id ? { owner_id: params.owner_id } : {}) }).toString();
+  return request<PagedResponse<PortfolioDetailResponse>>(`/api/v1/portfolios?${q}`);
+}
+
+export async function fetchPortfolio(portfolioID: string): Promise<APIEnvelope<PortfolioDetailResponse>> {
+  return request<PortfolioDetailResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}`);
+}
+
+export async function updatePortfolio(portfolioID: string, input: { name?: string; description?: string; scope_type?: string; owner_id?: string; health_policy?: Record<string, unknown>; status?: string }, idempotencyKey?: string): Promise<APIEnvelope<PortfolioDetailResponse>> {
+  return request<PortfolioDetailResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}`, { method: 'PATCH', body: JSON.stringify(input), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function addPortfolioProject(portfolioID: string, input: { project_id: string; role?: string; priority: number; weight: number; note?: string; added_by?: string }, idempotencyKey?: string): Promise<APIEnvelope<PortfolioProjectResponse>> {
+  return request<PortfolioProjectResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/projects`, { method: 'POST', body: JSON.stringify(input), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function fetchPortfolioProjects(portfolioID: string, params?: { role?: string; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<PortfolioProjectResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.role ? { role: params.role } : {}) }).toString();
+  return request<PagedResponse<PortfolioProjectResponse>>(`/api/v1/portfolios/${pathSegment(portfolioID)}/projects?${q}`);
+}
+
+export async function updatePortfolioProjectPriority(portfolioID: string, projectID: string, input: { role?: string; priority: number; weight: number; note?: string }, idempotencyKey?: string): Promise<APIEnvelope<PortfolioProjectResponse>> {
+  return request<PortfolioProjectResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/projects/${pathSegment(projectID)}/priority`, { method: 'PATCH', body: JSON.stringify(input), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function removePortfolioProject(portfolioID: string, projectID: string, input: { reason: string; note?: string }): Promise<APIEnvelope<RemovePortfolioProjectResponse>> {
+  return request<RemovePortfolioProjectResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/projects/${pathSegment(projectID)}`, { method: 'DELETE', body: JSON.stringify(input) });
+}
+
+export async function recalculatePortfolioStatusSnapshot(portfolioID: string, input: { date_range: DateRange; force: boolean }, idempotencyKey?: string): Promise<APIEnvelope<RecalculatePortfolioStatusSnapshotResponse>> {
+  return request<RecalculatePortfolioStatusSnapshotResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/status-snapshots/recalculate`, { method: 'POST', body: JSON.stringify(input), headers: { ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) } });
+}
+
+export async function fetchPortfolioStatusSnapshots(portfolioID: string, params?: { date_from?: string; date_to?: string; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<PortfolioStatusSnapshotResponse>>> {
+  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.date_from ? { date_from: params.date_from } : {}), ...(params?.date_to ? { date_to: params.date_to } : {}) }).toString();
+  return request<PagedResponse<PortfolioStatusSnapshotResponse>>(`/api/v1/portfolios/${pathSegment(portfolioID)}/status-snapshots?${q}`);
+}
+
+export async function fetchPortfolioHealthSummary(portfolioID: string, params?: { date_from?: string; date_to?: string }): Promise<APIEnvelope<PortfolioHealthSummaryResponse>> {
+  const q = new URLSearchParams({ ...(params?.date_from ? { date_from: params.date_from } : {}), ...(params?.date_to ? { date_to: params.date_to } : {}) }).toString();
+  return request<PortfolioHealthSummaryResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/health-summary${q ? `?${q}` : ''}`);
+}
+
+export async function fetchPortfolioCostSummary(portfolioID: string, params?: { date_from?: string; date_to?: string }): Promise<APIEnvelope<PortfolioCostSummaryResponse>> {
+  const q = new URLSearchParams({ ...(params?.date_from ? { date_from: params.date_from } : {}), ...(params?.date_to ? { date_to: params.date_to } : {}) }).toString();
+  return request<PortfolioCostSummaryResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/cost-summary${q ? `?${q}` : ''}`);
+}
+
+export async function fetchPortfolioStrategySummary(portfolioID: string, params?: { date_from?: string; date_to?: string }): Promise<APIEnvelope<PortfolioStrategySummaryResponse>> {
+  const q = new URLSearchParams({ ...(params?.date_from ? { date_from: params.date_from } : {}), ...(params?.date_to ? { date_to: params.date_to } : {}) }).toString();
+  return request<PortfolioStrategySummaryResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/strategy-summary${q ? `?${q}` : ''}`);
+}
