@@ -1,0 +1,81 @@
+tasks:
+  - task: "Task-01：Portfolio 后端模块契约"
+    module: portfolio
+    test_file: portfolio_contract_test.go
+    test_cases: 9
+    task_type: contract
+    data_operations: 无
+    boundary: 只新增 Portfolio 模块类型、接口、构造函数和最小可编译占位实现
+    forbidden: 不得实现完整业务逻辑；不得调用 WorkflowRun、AgentRuntime、ContentItem 创建或策略建议执行接口
+  - task: "Task-02：Portfolio 数据库迁移"
+    module: store
+    test_file: portfolio_sql_contract_test.go
+    test_cases: 4
+    task_type: migration
+    data_operations: 写 project_portfolio 表；写 portfolio_project 表；写 portfolio_status_snapshot 表
+    boundary: 只新增 00012_create_portfolio_tables.sql
+    forbidden: 不得修改既有迁移文件；不得修改 docs/requirements/
+  - task: "Task-03：Portfolio HTTP handler 与路由契约"
+    module: http/handlers
+    test_file: portfolio_handler_red_test.go
+    test_cases: 11
+    task_type: contract
+    data_operations: 无
+    boundary: 只新增 handler 并最小修改 router.go
+    forbidden: 不得改变既有路由语义；不得跳过 bearer auth；不得同步执行多项目快照聚合
+  - task: "Task-04：Portfolio app server 注入契约"
+    module: app
+    test_file: portfolio_server_injection_test.go
+    test_cases: 1
+    task_type: contract
+    data_operations: 连接 PostgreSQL 句柄复用
+    boundary: 只修改 server.go 的依赖注入
+    forbidden: 不得新增独立数据库连接生命周期；不得影响 metrics store 注入
+  - task: "Task-05：Portfolio OpenAPI 契约"
+    module: http/contract
+    test_file: iteration10_portfolio_openapi_contract_red_test.go
+    test_cases: 3
+    task_type: contract
+    data_operations: 无
+    boundary: 只修改 openapi/openapi.yaml
+    forbidden: 不得移除或重命名既有 API path
+  - task: "Task-06：Portfolio 前端 API client 契约"
+    module: http/contract
+    test_file: iteration10_portfolio_api_client_contract_red_test.go
+    test_cases: 4
+    task_type: contract
+    data_operations: 无
+    boundary: 只追加 Portfolio 类型和函数
+    forbidden: 不得绕过统一 request()；不得硬编码 secret 或 token
+  - task: "Task-07：Portfolio 前端页面与导航骨架"
+    module: http/contract
+    test_file: iteration10_portfolio_pages_contract_red_test.go
+    test_cases: 5
+    task_type: contract
+    data_operations: UI renders cards/table with loading, empty, error states
+    boundary: 只新增 Portfolio 页面树并最小修改 global-nav.tsx
+    forbidden: 不得修改 docs/requirements/；不得在页面中直接拼接敏感认证信息
+
+type_tests:
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: portfolio_integration_contract_test.go
+    resources: []
+    covers:
+      - "Task-01：Portfolio 后端模块契约"
+      - "Task-03：Portfolio HTTP handler 与路由契约"
+  - type: sql-query
+    standard: standards/testing/sql-query.md
+    test_file: portfolio_sql_contract_test.go
+    resources:
+      - apps/api-server/migrations/00012_create_portfolio_tables.sql
+    covers:
+      - "Task-02：Portfolio 数据库迁移"
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: iteration10_portfolio_web_e2e_contract_red_test.go
+    resources: []
+    covers:
+      - "Task-05：Portfolio OpenAPI 契约"
+      - "Task-06：Portfolio 前端 API client 契约"
+      - "Task-07：Portfolio 前端页面与导航骨架"

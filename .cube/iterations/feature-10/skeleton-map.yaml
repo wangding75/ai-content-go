@@ -1,0 +1,86 @@
+files:
+  - path: internal/modules/portfolio/dto.go
+    type: dto
+    module: api-server
+    tasks:
+      - "Task-01：Portfolio 后端模块契约"
+  - path: internal/modules/portfolio/errors.go
+    type: constant
+    module: api-server
+    tasks:
+      - "Task-01：Portfolio 后端模块契约"
+  - path: internal/modules/portfolio/store.go
+    type: interface
+    module: api-server
+    tasks:
+      - "Task-01：Portfolio 后端模块契约"
+  - path: internal/modules/portfolio/memory_store.go
+    type: class
+    module: api-server
+    tasks:
+      - "Task-01：Portfolio 后端模块契约"
+  - path: internal/modules/portfolio/postgres_store.go
+    type: class
+    module: api-server
+    tasks:
+      - "Task-01：Portfolio 后端模块契约"
+  - path: internal/modules/portfolio/service.go
+    type: interface
+    module: api-server
+    tasks:
+      - "Task-01：Portfolio 后端模块契约"
+  - path: migrations/00012_create_portfolio_tables.sql
+    type: sql
+    module: api-server
+    tasks:
+      - "Task-02：Portfolio 数据库迁移"
+  - path: internal/http/handlers/portfolio.go
+    type: class
+    module: api-server
+    tasks:
+      - "Task-03：Portfolio HTTP handler 与路由契约"
+  - path: internal/http/router.go
+    type: class
+    module: api-server
+    tasks:
+      - "Task-03：Portfolio HTTP handler 与路由契约"
+  - path: internal/app/server.go
+    type: class
+    module: api-server
+    tasks:
+      - "Task-04：Portfolio app server 注入契约"
+  - path: openapi.yaml
+    type: schema
+    module: openapi
+    tasks:
+      - "Task-05：Portfolio OpenAPI 契约"
+  - path: lib/api.ts
+    type: interface
+    module: web-admin
+    tasks:
+      - "Task-06：Portfolio 前端 API client 契约"
+  - path: app/global-nav.tsx
+    type: class
+    module: web-admin
+    tasks:
+      - "Task-07：Portfolio 前端页面与导航骨架"
+  - path: app/portfolios/page.tsx
+    type: class
+    module: web-admin
+    tasks:
+      - "Task-07：Portfolio 前端页面与导航骨架"
+  - path: app/portfolios/[portfolioId]/page.tsx
+    type: class
+    module: web-admin
+    tasks:
+      - "Task-07：Portfolio 前端页面与导航骨架"
+  - path: app/portfolios/[portfolioId]/projects/page.tsx
+    type: class
+    module: web-admin
+    tasks:
+      - "Task-07：Portfolio 前端页面与导航骨架"
+  - path: app/portfolios/[portfolioId]/health/page.tsx
+    type: class
+    module: web-admin
+    tasks:
+      - "Task-07：Portfolio 前端页面与导航骨架"

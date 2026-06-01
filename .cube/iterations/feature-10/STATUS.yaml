@@ -1,0 +1,61 @@
+# STATUS.yaml — Per-task TDD development progress
+# AI reads this file at session start to recover context
+# Update phase after completing each task
+#
+# phase values: locked | green | done
+# tracking fields (added during execution): started_at, completed_at, test_passed, test_total
+
+stage: 04-development
+project: ai-content-go
+branch: feature/10
+
+tasks:
+  - task: "Task-01：Portfolio 后端模块契约"
+    test_file: portfolio_contract_test.go
+    phase: done
+    started_at: "2026-06-01 13:00"
+    completed_at: "2026-06-01 13:05"
+    test_passed: 9
+    test_total: 9
+  - task: "Task-02：Portfolio 数据库迁移"
+    test_file: portfolio_sql_contract_test.go
+    phase: done
+    started_at: "2026-06-01 13:05"
+    completed_at: "2026-06-01 13:08"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-03：Portfolio HTTP handler 与路由契约"
+    test_file: portfolio_handler_red_test.go
+    phase: done
+    started_at: "2026-06-01 13:08"
+    completed_at: "2026-06-01 13:10"
+    test_passed: 11
+    test_total: 11
+  - task: "Task-04：Portfolio app server 注入契约"
+    test_file: portfolio_server_injection_test.go
+    phase: done
+    started_at: "2026-06-01 13:10"
+    completed_at: "2026-06-01 13:12"
+    test_passed: 1
+    test_total: 1
+  - task: "Task-05：Portfolio OpenAPI 契约"
+    test_file: iteration10_portfolio_openapi_contract_red_test.go
+    phase: done
+    started_at: "2026-06-01 13:12"
+    completed_at: "2026-06-01 13:14"
+    test_passed: 3
+    test_total: 3
+  - task: "Task-06：Portfolio 前端 API client 契约"
+    test_file: iteration10_portfolio_api_client_contract_red_test.go
+    phase: done
+    started_at: "2026-06-01 13:14"
+    completed_at: "2026-06-01 13:15"
+    test_passed: 4
+    test_total: 4
+  - task: "Task-07：Portfolio 前端页面与导航骨架"
+    test_file: iteration10_portfolio_pages_contract_red_test.go
+    phase: done
+    started_at: "2026-06-01 13:15"
+    completed_at: "2026-06-01 13:16"
+    test_passed: 5
+    test_total: 5
