@@ -177,8 +177,8 @@ func (m *memoryStore) QuerySummary(ctx context.Context, projectID string, req Me
 	}
 
 	type acc struct {
-		values     []float64
-		unit       string
+		values      []float64
+		unit        string
 		aggregation string
 	}
 	accs := map[string]*acc{}
@@ -415,4 +415,20 @@ func aggregate(method string, values []float64) float64 {
 
 func querySignature(projectID string, req MetricTrendRequest) string {
 	return strings.Join([]string{projectID, req.MetricCode, req.Platform, req.TargetID, req.DateFrom, req.DateTo, req.Bucket}, ":")
+}
+
+func (m *memoryStore) InsertPlatformCollectLog(ctx context.Context, log PlatformCollectLogDetailResponse) error {
+	panic("not implemented")
+}
+
+func (m *memoryStore) ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) ([]PlatformCollectLogResponse, int, error) {
+	panic("not implemented")
+}
+
+func (m *memoryStore) GetPlatformCollectLog(ctx context.Context, collectLogID string) (*PlatformCollectLogDetailResponse, error) {
+	panic("not implemented")
+}
+
+func (m *memoryStore) UpdatePlatformCollectLogStatus(ctx context.Context, collectLogID string, status string, operationLogID string) error {
+	panic("not implemented")
 }

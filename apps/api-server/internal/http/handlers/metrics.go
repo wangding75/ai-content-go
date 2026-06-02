@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -12,12 +13,23 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/metrics"
 )
 
+type metricCoreService interface {
+	CreateTemplate(ctx context.Context, req metrics.CreateMetricTemplateRequest) (metrics.CreateMetricTemplateResponse, error)
+	ListTemplates(ctx context.Context, req metrics.ListMetricTemplatesRequest) (metrics.PagedMetricTemplatesResponse, error)
+	CreateRecord(ctx context.Context, req metrics.CreateMetricRecordRequest, idempotencyKey string) (metrics.CreateMetricRecordResponse, error)
+	BatchCreateRecords(ctx context.Context, req metrics.BatchCreateMetricRecordsRequest, idempotencyKey string) (metrics.BatchCreateMetricRecordsResponse, error)
+	ListRecords(ctx context.Context, req metrics.ListMetricRecordsRequest) (metrics.PagedMetricRecordsResponse, error)
+	GetSummary(ctx context.Context, projectID string, req metrics.MetricSummaryRequest) (metrics.MetricSummaryResponse, error)
+	GetTrends(ctx context.Context, projectID string, req metrics.MetricTrendRequest) (metrics.MetricTrendResponse, error)
+	GetMissingDates(ctx context.Context, projectID string, req metrics.MissingMetricDatesRequest) (metrics.MissingMetricDatesResponse, error)
+}
+
 type MetricsHandler struct {
-	service metrics.Service
+	service metricCoreService
 	logger  *slog.Logger
 }
 
-func NewMetricsHandler(service metrics.Service, logger *slog.Logger) *MetricsHandler {
+func NewMetricsHandler(service metricCoreService, logger *slog.Logger) *MetricsHandler {
 	return &MetricsHandler{service: service, logger: logger}
 }
 
@@ -222,4 +234,20 @@ func writeMetricsError(w http.ResponseWriter, r *http.Request, err error, messag
 	default:
 		api.WriteError(w, r, http.StatusInternalServerError, api.ErrorInternal, message, nil)
 	}
+}
+
+func (h *MetricsHandler) SubmitPlatformCollectLog(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *MetricsHandler) ListPlatformCollectLogs(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *MetricsHandler) GetPlatformCollectLog(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *MetricsHandler) ConfirmPlatformCollectLogMetrics(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
 }

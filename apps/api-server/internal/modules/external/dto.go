@@ -59,3 +59,74 @@ type PagedBindingsResponse struct {
 type CreateBindingResponse struct {
 	BindingID string `json:"binding_id"`
 }
+
+type RotateCallbackTokenRequest struct {
+	Reason string `json:"reason"`
+}
+
+type RotateCallbackTokenResponse struct {
+	BindingID           string `json:"binding_id"`
+	CallbackTokenOnce   string `json:"callback_token_once"`
+	CallbackTokenMasked string `json:"callback_token_masked"`
+	OperationLogID      string `json:"operation_log_id"`
+}
+
+type UpdateCallbackAuthRequest struct {
+	CallbackAuthType string `json:"callback_auth_type"`
+	SigningSecretRef string `json:"signing_secret_ref"`
+	ChangeReason     string `json:"change_reason"`
+}
+
+type UpdateCallbackAuthResponse struct {
+	BindingID        string `json:"binding_id"`
+	CallbackAuthType string `json:"callback_auth_type"`
+	OperationLogID   string `json:"operation_log_id"`
+}
+
+type ExternalCallbackRequest struct {
+	BindingID     string         `json:"binding_id"`
+	EventType     string         `json:"event_type"`
+	Payload       map[string]any `json:"payload"`
+	StableEventID string         `json:"stable_event_id"`
+}
+
+type ExternalCallbackAuth struct {
+	BindingID       string `json:"binding_id"`
+	CallbackToken   string `json:"callback_token"`
+	SignatureHeader string `json:"signature_header"`
+}
+
+type ExternalCallbackResponse struct {
+	Accepted      bool   `json:"accepted"`
+	CallbackLogID string `json:"callback_log_id"`
+}
+
+type ListCallbackLogsRequest struct {
+	content.PaginationRequest
+	ProviderID string `json:"provider_id"`
+	BindingID  string `json:"binding_id"`
+	EventType  string `json:"event_type"`
+	Accepted   *bool  `json:"accepted"`
+}
+
+type ExternalCallbackLogResponse struct {
+	ID                string `json:"id"`
+	ProviderID        string `json:"provider_id"`
+	BindingID         string `json:"binding_id"`
+	EventType         string `json:"event_type"`
+	Accepted          bool   `json:"accepted"`
+	RejectedReason    string `json:"rejected_reason"`
+	BoundaryViolation bool   `json:"boundary_violation"`
+	CreatedAt         string `json:"created_at"`
+}
+
+type PagedExternalCallbackLogsResponse struct {
+	Items      []ExternalCallbackLogResponse `json:"items"`
+	Pagination content.PaginationResponse    `json:"pagination"`
+}
+
+type TestExternalCallbackRequest struct {
+	BindingID string         `json:"binding_id"`
+	EventType string         `json:"event_type"`
+	Payload   map[string]any `json:"payload"`
+}

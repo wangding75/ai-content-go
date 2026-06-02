@@ -15,6 +15,7 @@ var (
 	ErrNotFound           = errors.New("not found")
 	ErrConflict           = errors.New("conflict")
 	ErrExternalAutomation = errors.New("external automation error")
+	ErrForbidden          = errors.New("forbidden")
 )
 
 type Service interface {
@@ -22,6 +23,11 @@ type Service interface {
 	CreateProvider(ctx context.Context, req CreateProviderRequest) (CreateProviderResponse, error)
 	ListBindings(ctx context.Context, req ListBindingsRequest) (PagedBindingsResponse, error)
 	CreateBinding(ctx context.Context, req CreateBindingRequest) (CreateBindingResponse, error)
+	RotateCallbackToken(ctx context.Context, bindingID string, req RotateCallbackTokenRequest, idempotencyKey string) (RotateCallbackTokenResponse, error)
+	UpdateCallbackAuth(ctx context.Context, bindingID string, req UpdateCallbackAuthRequest, idempotencyKey string) (UpdateCallbackAuthResponse, error)
+	ReceiveCallback(ctx context.Context, req ExternalCallbackRequest, auth ExternalCallbackAuth, idempotencyKey string) (ExternalCallbackResponse, error)
+	ListCallbackLogs(ctx context.Context, req ListCallbackLogsRequest) (PagedExternalCallbackLogsResponse, error)
+	TestCallback(ctx context.Context, req TestExternalCallbackRequest) (ExternalCallbackResponse, error)
 }
 
 type service struct {
@@ -128,4 +134,24 @@ func maskToken(token string) string {
 		return "****"
 	}
 	return token[:3] + "****" + token[len(token)-4:]
+}
+
+func (s *service) RotateCallbackToken(ctx context.Context, bindingID string, req RotateCallbackTokenRequest, idempotencyKey string) (RotateCallbackTokenResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) UpdateCallbackAuth(ctx context.Context, bindingID string, req UpdateCallbackAuthRequest, idempotencyKey string) (UpdateCallbackAuthResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ReceiveCallback(ctx context.Context, req ExternalCallbackRequest, auth ExternalCallbackAuth, idempotencyKey string) (ExternalCallbackResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ListCallbackLogs(ctx context.Context, req ListCallbackLogsRequest) (PagedExternalCallbackLogsResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) TestCallback(ctx context.Context, req TestExternalCallbackRequest) (ExternalCallbackResponse, error) {
+	panic("not implemented")
 }

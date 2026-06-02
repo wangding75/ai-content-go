@@ -221,3 +221,59 @@ func writePublishError(w http.ResponseWriter, r *http.Request, err error, messag
 		api.WriteError(w, r, http.StatusInternalServerError, api.ErrorInternal, message, nil)
 	}
 }
+
+func (h *PublishHandler) CreatePlatformAdapter(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) ListPlatformAdapters(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) GetPlatformAdapter(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) UpdatePlatformAdapter(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) RegisterPluginClient(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) ListPluginClients(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) UpdatePluginClient(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) RotatePluginClientKey(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) AuthenticatePlugin(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) ListPluginPublishJobs(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) LockPluginPublishJob(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) MarkPluginPublishJobFilled(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) MarkPluginPublishJobPublished(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *PublishHandler) MarkPluginPublishJobFailed(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}

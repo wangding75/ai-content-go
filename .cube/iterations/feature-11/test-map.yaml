@@ -1,0 +1,170 @@
+tasks:
+  - task: "Task-01：定义平台适配器与插件协作数据库契约"
+    module: api-server/store
+    test_file: platform_adapter_sql_contract_test.go
+    test_cases: 2
+    task_type: migration
+    data_operations:
+      - "写 platform_adapter_config 表结构"
+      - "写 platform_adapter_revision 表结构"
+      - "写 plugin_client 表结构"
+      - "写 plugin_access_token 表结构"
+      - "写 platform_collect_log 表结构"
+      - "写 external_callback_log 表结构"
+      - "修改 publish_target target_type 字段"
+      - "修改 publish_job 插件锁和 Adapter 字段"
+      - "修改 publish_log 事件约束"
+      - "修改 external_workflow_binding callback auth 字段"
+    boundary: "只新增 00013 migration 和 SQL 契约测试；只通过 ALTER TABLE 扩展既有 publish 表"
+    forbidden:
+      - "不得删除既有表"
+      - "不得保存 api_key、password、secret 明文字段"
+      - "不得重写旧迁移"
+      - "不得使用未白名单动态 ORDER BY"
+  - task: "Task-02：实现平台 Adapter 配置管理业务行为"
+    module: api-server/publish
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: business-implementation
+    data_operations:
+      - "读写 platform_adapter_config"
+      - "写 platform_adapter_revision"
+      - "读外部 credential/provider/binding 引用"
+      - "停用前读 publish_job 关联任务"
+      - "写 operation_log"
+    boundary: "只新增 publish DTO/Service/Handler 中 Adapter 相关类型和方法"
+    forbidden:
+      - "不得保存平台凭证明文"
+      - "不得新增独立 platform 模块"
+      - "不得破坏既有 publish target API 语义"
+  - task: "Task-03：实现插件客户端密钥与短期认证业务行为"
+    module: api-server/publish
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: business-implementation
+    data_operations:
+      - "读写 plugin_client"
+      - "写 plugin_access_token"
+      - "写 operation_log"
+      - "更新 last_active_at"
+      - "写认证失败审计"
+    boundary: "只新增 publish DTO/Service/Handler 中插件客户端和认证相关类型和方法"
+    forbidden:
+      - "不得保存 api_key 明文"
+      - "不得泄露密钥校验细节"
+      - "不得让禁用客户端认证成功"
+  - task: "Task-04：实现插件发布任务锁定与回填业务行为"
+    module: api-server/publish
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: business-implementation
+    data_operations:
+      - "读 plugin_access_token 和 plugin_client"
+      - "读 platform_adapter_config"
+      - "以原子条件更新 publish_job 锁字段"
+      - "读写 publish_job 状态"
+      - "写 publish_log"
+      - "写 operation_log"
+      - "读写幂等记录"
+    boundary: "只扩展 publish Service、Handler、DTO 和 router 中插件任务相关方法"
+    forbidden:
+      - "不得新增第二套发布主状态机"
+      - "不得绕过 publish_job"
+      - "不得使用事务外 read-then-write 领取锁"
+  - task: "Task-05：实现平台采集日志与人工确认指标业务行为"
+    module: api-server/metrics
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: business-implementation
+    data_operations:
+      - "插入/列表/读取/更新 platform_collect_log"
+      - "读 metric_template"
+      - "写 metric_record"
+      - "写 operation_log"
+      - "读写幂等记录"
+    boundary: "只扩展 metrics DTO/Service/Handler/router"
+    forbidden:
+      - "不得默认自动写入 metric_record"
+      - "不得丢弃失败采集摘要"
+      - "不得重复确认污染指标"
+  - task: "Task-06：实现 n8n 外围回调边界业务行为"
+    module: api-server/external
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: business-implementation
+    data_operations:
+      - "读写 external binding callback auth 字段"
+      - "读 external provider"
+      - "读写 external_callback_log"
+      - "读写幂等记录"
+    boundary: "只扩展 external DTO/Service/Handler 和 router 中回调相关方法"
+    forbidden:
+      - "不得创建 WorkflowRun"
+      - "不得推进 Agent 编排"
+      - "不得修改内容正文"
+      - "不得直接改 publish_job 主状态"
+  - task: "Task-07：实现 Iteration 11 OpenAPI 与前端 API Client 契约"
+    module: openapi/web-admin
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: contract
+    data_operations: 无
+    boundary: "只修改 openapi/openapi.yaml 和 apps/web-admin/lib/api.ts 中 Iteration 11 相关定义"
+    forbidden:
+      - "不得改变既有 API client 函数签名"
+      - "不得删除旧 OpenAPI paths"
+      - "不得使用 any 表示新增公共响应"
+  - task: "Task-08：实现管理台平台 Adapter 与插件客户端页面交互"
+    module: web-admin
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: ui
+    data_operations: 调用 Adapter 和 plugin client HTTP API
+    boundary: "只新增两个页面；只为 /platform-adapters、/plugin-clients 追加 global-nav 项"
+    forbidden:
+      - "不得裸 HTML 无样式"
+      - "不得刷新 404"
+      - "不得在页面状态中持久化 api_key_once 超出弹窗生命周期"
+  - task: "Task-09：实现管理台采集日志与 n8n 回调页面交互"
+    module: web-admin
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    test_cases: 1
+    task_type: ui
+    data_operations: 调用采集日志和回调日志 HTTP API
+    boundary: "只增强 /platform-collect-logs 和 /external-automation/n8n 页面；只追加 global-nav 项"
+    forbidden:
+      - "不得裸 HTML 无样式"
+      - "不得刷新 404"
+      - "不得偏离 prototype 管理台视觉"
+
+type_tests:
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    resources: []
+    covers:
+      - "Task-02：实现平台 Adapter 配置管理业务行为"
+      - "Task-03：实现插件客户端密钥与短期认证业务行为"
+      - "Task-06：实现 n8n 外围回调边界业务行为"
+      - "Task-07：实现 Iteration 11 OpenAPI 与前端 API Client 契约"
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    resources: []
+    covers:
+      - "Task-04：实现插件发布任务锁定与回填业务行为"
+      - "Task-05：实现平台采集日志与人工确认指标业务行为"
+  - type: frontend-ui
+    standard: standards/testing/frontend-ui.md
+    test_file: iteration11_platform_adapter_contract_red_test.go
+    resources: []
+    covers:
+      - "Task-08：实现管理台平台 Adapter 与插件客户端页面交互"
+      - "Task-09：实现管理台采集日志与 n8n 回调页面交互"
+  - type: sql-query
+    standard: standards/testing/sql-query.md
+    test_file: platform_adapter_sql_contract_test.go
+    resources:
+      - apps/api-server/migrations/00013_create_platform_adapter_extension_tables.sql
+    covers:
+      - "Task-01：定义平台适配器与插件协作数据库契约"

@@ -79,9 +79,31 @@ func writeExternalError(w http.ResponseWriter, r *http.Request, err error, messa
 		api.WriteError(w, r, http.StatusNotFound, api.ErrorNotFound, message, nil)
 	case errors.Is(err, external.ErrConflict):
 		api.WriteError(w, r, http.StatusConflict, api.ErrorConflict, message, nil)
+	case errors.Is(err, external.ErrForbidden):
+		api.WriteError(w, r, http.StatusForbidden, api.ErrorForbidden, message, nil)
 	case errors.Is(err, external.ErrExternalAutomation):
 		api.WriteError(w, r, http.StatusBadGateway, api.ErrorExternalAutomation, message, nil)
 	default:
 		api.WriteError(w, r, http.StatusInternalServerError, api.ErrorInternal, message, nil)
 	}
+}
+
+func (h *ExternalHandler) RotateCallbackToken(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *ExternalHandler) UpdateCallbackAuth(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *ExternalHandler) ReceiveCallback(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *ExternalHandler) ListCallbackLogs(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
+}
+
+func (h *ExternalHandler) TestCallback(w http.ResponseWriter, r *http.Request) {
+	panic("not implemented")
 }

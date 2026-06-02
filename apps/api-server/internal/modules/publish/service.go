@@ -25,6 +25,20 @@ type Service interface {
 	MarkPublished(ctx context.Context, projectID string, id string, req MarkPublishedRequest, idempotencyKey string) (MarkPublishedResponse, error)
 	MarkFailed(ctx context.Context, projectID string, id string, req MarkFailedRequest, idempotencyKey string) (MarkFailedResponse, error)
 	Requeue(ctx context.Context, projectID string, id string, req RequeuePublishJobRequest, idempotencyKey string) (RequeuePublishJobResponse, error)
+	CreatePlatformAdapter(ctx context.Context, req CreatePlatformAdapterRequest, idempotencyKey string) (CreatePlatformAdapterResponse, error)
+	ListPlatformAdapters(ctx context.Context, req ListPlatformAdaptersRequest) (PagedPlatformAdaptersResponse, error)
+	GetPlatformAdapter(ctx context.Context, adapterID string) (PlatformAdapterDetailResponse, error)
+	UpdatePlatformAdapter(ctx context.Context, adapterID string, req UpdatePlatformAdapterRequest, idempotencyKey string) (UpdatePlatformAdapterResponse, error)
+	RegisterPluginClient(ctx context.Context, req RegisterPluginClientRequest, idempotencyKey string) (RegisterPluginClientResponse, error)
+	ListPluginClients(ctx context.Context, req ListPluginClientsRequest) (PagedPluginClientsResponse, error)
+	UpdatePluginClient(ctx context.Context, clientID string, req UpdatePluginClientRequest, idempotencyKey string) (UpdatePluginClientResponse, error)
+	RotatePluginClientKey(ctx context.Context, clientID string, req RotatePluginClientKeyRequest, idempotencyKey string) (RotatePluginClientKeyResponse, error)
+	AuthenticatePlugin(ctx context.Context, req PluginAuthRequest) (PluginAuthTokenResponse, error)
+	ListPluginPublishJobs(ctx context.Context, req ListPluginPublishJobsRequest, token string) (PagedPluginPublishJobsResponse, error)
+	LockPluginPublishJob(ctx context.Context, jobID string, req LockPluginPublishJobRequest, token string) (PluginPublishJobLockResponse, error)
+	MarkPluginPublishJobFilled(ctx context.Context, jobID string, req MarkPluginPublishJobFilledRequest, token string) (PluginPublishJobFilledResponse, error)
+	MarkPluginPublishJobPublished(ctx context.Context, jobID string, req MarkPluginPublishJobPublishedRequest, token string, idempotencyKey string) (PluginPublishJobPublishedResponse, error)
+	MarkPluginPublishJobFailed(ctx context.Context, jobID string, req MarkPluginPublishJobFailedRequest, token string, idempotencyKey string) (PluginPublishJobFailedResponse, error)
 }
 
 type service struct {
@@ -32,9 +46,9 @@ type service struct {
 }
 
 type memoryState struct {
-	mu          sync.Mutex
+	mu         sync.Mutex
 	idempotent map[string]string
-	jobs        map[string]PublishJobResponse
+	jobs       map[string]PublishJobResponse
 }
 
 var defaultState = &memoryState{idempotent: map[string]string{}, jobs: map[string]PublishJobResponse{}}
@@ -297,4 +311,60 @@ func publishPagination(req content.PaginationRequest) content.PaginationResponse
 		pageSize = 20
 	}
 	return content.PaginationResponse{Page: page, PageSize: pageSize, Total: 1, HasNext: false}
+}
+
+func (s *service) CreatePlatformAdapter(ctx context.Context, req CreatePlatformAdapterRequest, idempotencyKey string) (CreatePlatformAdapterResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ListPlatformAdapters(ctx context.Context, req ListPlatformAdaptersRequest) (PagedPlatformAdaptersResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) GetPlatformAdapter(ctx context.Context, adapterID string) (PlatformAdapterDetailResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) UpdatePlatformAdapter(ctx context.Context, adapterID string, req UpdatePlatformAdapterRequest, idempotencyKey string) (UpdatePlatformAdapterResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) RegisterPluginClient(ctx context.Context, req RegisterPluginClientRequest, idempotencyKey string) (RegisterPluginClientResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ListPluginClients(ctx context.Context, req ListPluginClientsRequest) (PagedPluginClientsResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) UpdatePluginClient(ctx context.Context, clientID string, req UpdatePluginClientRequest, idempotencyKey string) (UpdatePluginClientResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) RotatePluginClientKey(ctx context.Context, clientID string, req RotatePluginClientKeyRequest, idempotencyKey string) (RotatePluginClientKeyResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) AuthenticatePlugin(ctx context.Context, req PluginAuthRequest) (PluginAuthTokenResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ListPluginPublishJobs(ctx context.Context, req ListPluginPublishJobsRequest, token string) (PagedPluginPublishJobsResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) LockPluginPublishJob(ctx context.Context, jobID string, req LockPluginPublishJobRequest, token string) (PluginPublishJobLockResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) MarkPluginPublishJobFilled(ctx context.Context, jobID string, req MarkPluginPublishJobFilledRequest, token string) (PluginPublishJobFilledResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) MarkPluginPublishJobPublished(ctx context.Context, jobID string, req MarkPluginPublishJobPublishedRequest, token string, idempotencyKey string) (PluginPublishJobPublishedResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) MarkPluginPublishJobFailed(ctx context.Context, jobID string, req MarkPluginPublishJobFailedRequest, token string, idempotencyKey string) (PluginPublishJobFailedResponse, error) {
+	panic("not implemented")
 }

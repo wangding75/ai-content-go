@@ -19,17 +19,22 @@ type Store interface {
 	QuerySummary(ctx context.Context, projectID string, req MetricSummaryRequest) ([]MetricSummaryItem, int, error)
 	QueryTrends(ctx context.Context, projectID string, req MetricTrendRequest) ([]MetricTrendPoint, []MetricMissingPoint, string, int, error)
 	QueryMissingDates(ctx context.Context, projectID string, req MissingMetricDatesRequest) ([]MissingMetricDateItem, error)
+
+	InsertPlatformCollectLog(ctx context.Context, log PlatformCollectLogDetailResponse) error
+	ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) ([]PlatformCollectLogResponse, int, error)
+	GetPlatformCollectLog(ctx context.Context, collectLogID string) (*PlatformCollectLogDetailResponse, error)
+	UpdatePlatformCollectLogStatus(ctx context.Context, collectLogID string, status string, operationLogID string) error
 }
 
 type SummarySnapshotRow struct {
-	ID               string
-	ProjectID        string
-	DateFrom         string
-	DateTo           string
-	Platform         string
-	TargetID         string
-	MetricCodes      string
+	ID                string
+	ProjectID         string
+	DateFrom          string
+	DateTo            string
+	Platform          string
+	TargetID          string
+	MetricCodes       string
 	AggregationMethod string
-	Summary          string
+	Summary           string
 	SourceRecordCount int
 }

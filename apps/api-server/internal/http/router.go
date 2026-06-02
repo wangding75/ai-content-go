@@ -118,6 +118,22 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 	portfolioHandler := handlers.NewPortfolioHandler(portfolioSvc, logger)
 	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
 
+	r.Route("/api/v1/plugin-auth", func(r chi.Router) {
+		r.Post("/token", publishHandler.AuthenticatePlugin)
+	})
+	r.Route("/api/v1/plugin", func(r chi.Router) {
+		r.Post("/publish-jobs/{jobId}/lock", publishHandler.LockPluginPublishJob)
+		r.Post("/publish-jobs/{jobId}/filled", publishHandler.MarkPluginPublishJobFilled)
+		r.Post("/publish-jobs/{jobId}/published", publishHandler.MarkPluginPublishJobPublished)
+		r.Post("/publish-jobs/{jobId}/failed", publishHandler.MarkPluginPublishJobFailed)
+		r.Get("/publish-jobs", publishHandler.ListPluginPublishJobs)
+		r.Post("/platform-collect-logs", metricsHandler.SubmitPlatformCollectLog)
+	})
+	r.Route("/api/v1/external-automation", func(r chi.Router) {
+		r.Post("/callbacks", externalHandler.ReceiveCallback)
+		r.Post("/platform-collect-logs", metricsHandler.SubmitPlatformCollectLog)
+	})
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)
 		r.Get("/health", systemHandler.Health)
@@ -175,6 +191,10 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		r.Post("/external-automation/providers", externalHandler.CreateProvider)
 		r.Get("/external-automation/bindings", externalHandler.ListBindings)
 		r.Post("/external-automation/bindings", externalHandler.CreateBinding)
+		r.Post("/external-automation/bindings/{bindingId}/rotate-callback-token", externalHandler.RotateCallbackToken)
+		r.Patch("/external-automation/bindings/{bindingId}/callback-auth", externalHandler.UpdateCallbackAuth)
+		r.Get("/external-automation/callback-logs", externalHandler.ListCallbackLogs)
+		r.Post("/external-automation/callbacks/test", externalHandler.TestCallback)
 
 		// Iteration 3: Novel Pack planning
 		r.Post("/projects/{projectId}/novel/planning-runs", novelHandler.CreatePlanningRun)
@@ -226,6 +246,14 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		r.Post("/projects/{projectId}/publish-targets", publishHandler.CreateTarget)
 		r.Patch("/projects/{projectId}/publish-targets/{id}", publishHandler.UpdateTarget)
 		r.Post("/projects/{projectId}/publish-jobs", publishHandler.CreateJob)
+		r.Post("/platform-adapters", publishHandler.CreatePlatformAdapter)
+		r.Get("/platform-adapters", publishHandler.ListPlatformAdapters)
+		r.Get("/platform-adapters/{adapterId}", publishHandler.GetPlatformAdapter)
+		r.Patch("/platform-adapters/{adapterId}", publishHandler.UpdatePlatformAdapter)
+		r.Post("/plugin-clients", publishHandler.RegisterPluginClient)
+		r.Get("/plugin-clients", publishHandler.ListPluginClients)
+		r.Patch("/plugin-clients/{clientId}", publishHandler.UpdatePluginClient)
+		r.Post("/plugin-clients/{clientId}/rotate-key", publishHandler.RotatePluginClientKey)
 		r.Get("/projects/{projectId}/publish-jobs", publishHandler.ListJobs)
 		r.Get("/projects/{projectId}/publish-jobs/{id}", publishHandler.GetJob)
 		r.Get("/projects/{projectId}/publish-jobs/{id}/copy-payload", publishHandler.GetCopyPayload)
@@ -243,6 +271,9 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		r.Get("/projects/{projectId}/metrics/summary", metricsHandler.GetSummary)
 		r.Get("/projects/{projectId}/metrics/trends", metricsHandler.GetTrends)
 		r.Get("/projects/{projectId}/metrics/missing-dates", metricsHandler.GetMissingDates)
+		r.Get("/platform-collect-logs", metricsHandler.ListPlatformCollectLogs)
+		r.Get("/platform-collect-logs/{collectLogId}", metricsHandler.GetPlatformCollectLog)
+		r.Post("/platform-collect-logs/{collectLogId}/confirm-metrics", metricsHandler.ConfirmPlatformCollectLogMetrics)
 
 		// Iteration 9: Strategy suggestion
 		r.Post("/projects/{projectId}/strategy-suggestion-runs", strategyHandler.GenerateSuggestions)
@@ -278,7 +309,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-Id, Idempotency-Key")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-Id, Idempotency-Key, X-External-Binding-Id, X-External-Signature")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

@@ -1308,3 +1308,29 @@ export async function fetchPortfolioStrategySummary(portfolioID: string, params?
   const q = new URLSearchParams({ ...(params?.date_from ? { date_from: params.date_from } : {}), ...(params?.date_to ? { date_to: params.date_to } : {}) }).toString();
   return request<PortfolioStrategySummaryResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/strategy-summary${q ? `?${q}` : ''}`);
 }
+
+
+export type PlatformAdapterResponse = { id: string; platform: string; display_name: string; publish_mode: string; target_type: string; enabled: boolean; version: number; updated_at: string };
+export type PluginClientResponse = { id: string; name: string; client_type: string; version: string; scopes: string[]; status: string; api_key_masked: string; last_active_at?: string };
+export type PlatformCollectLogResponse = { id: string; project_id: string; platform: string; status: string; publish_job_id: string; content_item_id: string; external_url: string; error_summary: string; collected_at: string };
+export type ExternalCallbackLogResponse = { id: string; provider_id: string; binding_id: string; event_type: string; accepted: boolean; rejected_reason: string; boundary_violation: boolean; created_at: string };
+
+export async function fetchPlatformAdapters(): Promise<APIEnvelope<PagedResponse<PlatformAdapterResponse>>> {
+  return request<PagedResponse<PlatformAdapterResponse>>('/api/v1/platform-adapters?page=1&page_size=20');
+}
+
+export async function fetchPluginClients(): Promise<APIEnvelope<PagedResponse<PluginClientResponse>>> {
+  return request<PagedResponse<PluginClientResponse>>('/api/v1/plugin-clients?page=1&page_size=20');
+}
+
+export async function fetchPlatformCollectLogs(): Promise<APIEnvelope<PagedResponse<PlatformCollectLogResponse>>> {
+  return request<PagedResponse<PlatformCollectLogResponse>>('/api/v1/platform-collect-logs?page=1&page_size=20');
+}
+
+export async function fetchExternalCallbackLogs(): Promise<APIEnvelope<PagedResponse<ExternalCallbackLogResponse>>> {
+  return request<PagedResponse<ExternalCallbackLogResponse>>('/api/v1/external-automation/callback-logs?page=1&page_size=20');
+}
+
+export async function rotateExternalCallbackToken(bindingID: string, input: { reason: string }): Promise<APIEnvelope<{ binding_id: string; callback_token_once: string; callback_token_masked: string; operation_log_id: string }>> {
+  return request<{ binding_id: string; callback_token_once: string; callback_token_masked: string; operation_log_id: string }>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/rotate-callback-token`, { method: 'POST', body: JSON.stringify(input) });
+}

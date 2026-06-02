@@ -4017,3 +4017,5 @@ components:
         data: { $ref: '#/components/schemas/MissingMetricDatesResponse' }
         error: { nullable: true }
         request_id: { type: string }
+
+# x-iteration-11-platform-adapter-skeleton: platform adapters, plugin clients, collect logs, external callbacks

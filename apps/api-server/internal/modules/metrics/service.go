@@ -22,6 +22,10 @@ type Service interface {
 	GetSummary(ctx context.Context, projectID string, req MetricSummaryRequest) (MetricSummaryResponse, error)
 	GetTrends(ctx context.Context, projectID string, req MetricTrendRequest) (MetricTrendResponse, error)
 	GetMissingDates(ctx context.Context, projectID string, req MissingMetricDatesRequest) (MissingMetricDatesResponse, error)
+	SubmitPlatformCollectLog(ctx context.Context, req SubmitPlatformCollectLogRequest, auth PlatformCollectLogAuth, idempotencyKey string) (SubmitPlatformCollectLogResponse, error)
+	ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) (PagedPlatformCollectLogsResponse, error)
+	GetPlatformCollectLog(ctx context.Context, collectLogID string) (PlatformCollectLogDetailResponse, error)
+	ConfirmPlatformCollectLogMetrics(ctx context.Context, collectLogID string, req ConfirmPlatformCollectLogMetricsRequest, idempotencyKey string) (ConfirmPlatformCollectLogMetricsResponse, error)
 }
 
 type service struct {
@@ -37,7 +41,6 @@ func NewService(stores ...Store) Service {
 	}
 	return &service{store: store}
 }
-
 
 const metricSummarySQL = `
 SELECT
@@ -522,4 +525,20 @@ func pageBounds(page, pageSize, total int) (int, int) {
 		end = total
 	}
 	return start, end
+}
+
+func (s *service) SubmitPlatformCollectLog(ctx context.Context, req SubmitPlatformCollectLogRequest, auth PlatformCollectLogAuth, idempotencyKey string) (SubmitPlatformCollectLogResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) (PagedPlatformCollectLogsResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) GetPlatformCollectLog(ctx context.Context, collectLogID string) (PlatformCollectLogDetailResponse, error) {
+	panic("not implemented")
+}
+
+func (s *service) ConfirmPlatformCollectLogMetrics(ctx context.Context, collectLogID string, req ConfirmPlatformCollectLogMetricsRequest, idempotencyKey string) (ConfirmPlatformCollectLogMetricsResponse, error) {
+	panic("not implemented")
 }

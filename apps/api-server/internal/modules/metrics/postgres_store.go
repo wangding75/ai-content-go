@@ -341,3 +341,19 @@ func isDuplicateKey(err error) bool {
 	}
 	return false
 }
+
+func (p *postgresStore) InsertPlatformCollectLog(ctx context.Context, log PlatformCollectLogDetailResponse) error {
+	panic("not implemented")
+}
+
+func (p *postgresStore) ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) ([]PlatformCollectLogResponse, int, error) {
+	panic("not implemented")
+}
+
+func (p *postgresStore) GetPlatformCollectLog(ctx context.Context, collectLogID string) (*PlatformCollectLogDetailResponse, error) {
+	panic("not implemented")
+}
+
+func (p *postgresStore) UpdatePlatformCollectLogStatus(ctx context.Context, collectLogID string, status string, operationLogID string) error {
+	panic("not implemented")
+}

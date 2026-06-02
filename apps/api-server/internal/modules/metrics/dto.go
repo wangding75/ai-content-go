@@ -238,3 +238,98 @@ type MissingMetricDatesResponse struct {
 	ProjectID string                  `json:"project_id"`
 	Items     []MissingMetricDateItem `json:"items"`
 }
+
+const (
+	CollectLogStatusReceived    = "received"
+	CollectLogStatusParseFailed = "parse_failed"
+	CollectLogStatusReady       = "ready"
+	CollectLogStatusConfirmed   = "confirmed"
+	CollectLogStatusRejected    = "rejected"
+)
+
+type SubmitPlatformCollectLogRequest struct {
+	ProjectID     string                 `json:"project_id"`
+	Platform      string                 `json:"platform"`
+	TargetAccount string                 `json:"target_account"`
+	PublishJobID  string                 `json:"publish_job_id"`
+	BindingID     string                 `json:"binding_id"`
+	ExternalURL   string                 `json:"external_url"`
+	SourceType    string                 `json:"source_type"`
+	RawPayload    map[string]any         `json:"raw_payload"`
+	ParsedMetrics []ParsedPlatformMetric `json:"parsed_metrics"`
+	CollectedAt   time.Time              `json:"collected_at"`
+	ErrorSummary  string                 `json:"error_summary"`
+}
+
+type PlatformCollectLogAuth struct {
+	SourceType         string `json:"source_type"`
+	PluginToken        string `json:"plugin_token"`
+	BindingID          string `json:"binding_id"`
+	CallbackAuthHeader string `json:"callback_auth_header"`
+	SignatureHeader    string `json:"signature_header"`
+}
+
+type ParsedPlatformMetric struct {
+	MetricCode string `json:"metric_code"`
+	RawValue   string `json:"raw_value"`
+	Unit       string `json:"unit"`
+}
+
+type SubmitPlatformCollectLogResponse struct {
+	CollectLogID string `json:"collect_log_id"`
+	Status       string `json:"status"`
+}
+
+type ListPlatformCollectLogsRequest struct {
+	content.PaginationRequest
+	ProjectID string `json:"project_id"`
+	Platform  string `json:"platform"`
+	Status    string `json:"status"`
+}
+
+type PlatformCollectLogResponse struct {
+	ID               string    `json:"id"`
+	ProjectID        string    `json:"project_id"`
+	Platform         string    `json:"platform"`
+	Status           string    `json:"status"`
+	PublishJobID     string    `json:"publish_job_id"`
+	ContentItemID    string    `json:"content_item_id"`
+	ContentVersionID string    `json:"content_version_id"`
+	TargetID         string    `json:"target_id"`
+	ContentType      string    `json:"content_type"`
+	ExternalURL      string    `json:"external_url"`
+	ErrorSummary     string    `json:"error_summary"`
+	CollectedAt      time.Time `json:"collected_at"`
+}
+
+type PlatformCollectLogDetailResponse struct {
+	PlatformCollectLogResponse
+	RawPayload    map[string]any         `json:"raw_payload"`
+	ParsedMetrics []ParsedPlatformMetric `json:"parsed_metrics"`
+	Related       map[string]any         `json:"related"`
+}
+
+type PagedPlatformCollectLogsResponse struct {
+	Items      []PlatformCollectLogResponse `json:"items"`
+	Pagination content.PaginationResponse   `json:"pagination"`
+}
+
+type ConfirmPlatformMetricRecord struct {
+	MetricTemplateID string  `json:"metric_template_id"`
+	MetricCode       string  `json:"metric_code"`
+	MetricDate       string  `json:"metric_date"`
+	Period           string  `json:"period"`
+	RawValue         string  `json:"raw_value"`
+	NormalizedValue  float64 `json:"normalized_value,omitempty"`
+	Unit             string  `json:"unit"`
+}
+
+type ConfirmPlatformCollectLogMetricsRequest struct {
+	Records []ConfirmPlatformMetricRecord `json:"records"`
+	Note    string                        `json:"note"`
+}
+
+type ConfirmPlatformCollectLogMetricsResponse struct {
+	MetricRecordIDs []string `json:"metric_record_ids"`
+	OperationLogID  string   `json:"operation_log_id"`
+}
