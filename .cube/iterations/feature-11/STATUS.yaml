@@ -1,0 +1,39 @@
+# STATUS.yaml — Per-task TDD development progress
+# AI reads this file at session start to recover context
+# Update phase after completing each task
+#
+# phase values: locked | green | done
+# tracking fields (added during execution): started_at, completed_at, test_passed, test_total
+
+stage: 04-development
+project: ai-content-go
+branch: feature/11
+
+tasks:
+  - task: "Task-01：定义平台适配器与插件协作数据库契约"
+    test_file: platform_adapter_sql_contract_test.go
+    phase: locked
+  - task: "Task-02：实现平台 Adapter 配置管理业务行为"
+    test_file: iteration11_task02_adapter_contract_red_test.go
+    phase: locked
+  - task: "Task-03：实现插件客户端密钥与短期认证业务行为"
+    test_file: iteration11_task03_plugin_client_contract_red_test.go
+    phase: locked
+  - task: "Task-04：实现插件发布任务锁定与回填业务行为"
+    test_file: iteration11_task04_plugin_publish_job_contract_red_test.go
+    phase: locked
+  - task: "Task-05：实现平台采集日志与人工确认指标业务行为"
+    test_file: iteration11_task05_collect_log_contract_red_test.go
+    phase: locked
+  - task: "Task-06：实现 n8n 外围回调边界业务行为"
+    test_file: iteration11_task06_callback_contract_red_test.go
+    phase: locked
+  - task: "Task-07：实现 Iteration 11 OpenAPI 与前端 API Client 契约"
+    test_file: iteration11_task07_openapi_contract_red_test.go
+    phase: locked
+  - task: "Task-08：实现管理台平台 Adapter 与插件客户端页面交互"
+    test_file: iteration11_task08_pages_contract_red_test.go
+    phase: locked
+  - task: "Task-09：实现管理台采集日志与 n8n 回调页面交互"
+    test_file: iteration11_task09_pages_contract_red_test.go
+    phase: locked
