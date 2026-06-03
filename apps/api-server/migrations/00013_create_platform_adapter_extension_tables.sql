@@ -107,11 +107,24 @@ CREATE TABLE IF NOT EXISTS external_callback_log (
     UNIQUE(binding_id, idempotency_key)
 );
 
+CREATE INDEX IF NOT EXISTS idx_platform_adapter_enabled ON platform_adapter_config(enabled);
+CREATE INDEX IF NOT EXISTS idx_platform_adapter_mode ON platform_adapter_config(publish_mode);
+CREATE INDEX IF NOT EXISTS idx_platform_adapter_revision_adapter_version ON platform_adapter_revision(adapter_id, version);
+CREATE INDEX IF NOT EXISTS idx_plugin_client_status ON plugin_client(status);
+CREATE INDEX IF NOT EXISTS idx_plugin_client_last_active ON plugin_client(last_active_at);
+CREATE INDEX IF NOT EXISTS idx_plugin_access_token_client_expires ON plugin_access_token(client_id, expires_at);
+CREATE INDEX IF NOT EXISTS idx_plugin_access_token_hash ON plugin_access_token(token_hash);
+
 CREATE INDEX IF NOT EXISTS idx_publish_target_platform_type ON publish_target(platform, target_type);
 CREATE INDEX IF NOT EXISTS idx_publish_job_plugin_lock ON publish_job(plugin_lock_id);
 CREATE INDEX IF NOT EXISTS idx_publish_job_adapter_status ON publish_job(adapter_config_id, status);
 CREATE INDEX IF NOT EXISTS idx_publish_job_locked_until ON publish_job(locked_until);
+
 CREATE INDEX IF NOT EXISTS idx_platform_collect_log_project_status ON platform_collect_log(project_id, status);
+CREATE INDEX IF NOT EXISTS idx_platform_collect_log_platform_collected ON platform_collect_log(platform, collected_at);
+CREATE INDEX IF NOT EXISTS idx_platform_collect_log_publish_job ON platform_collect_log(publish_job_id);
+
 CREATE INDEX IF NOT EXISTS idx_external_callback_binding_created ON external_callback_log(binding_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_external_callback_event_accepted ON external_callback_log(event_type, accepted);
 
 -- Atomic lock contract: UPDATE publish_job SET plugin_lock_id = $2, plugin_client_id = $3, locked_until = $4 WHERE id = $1 AND status IN ('queued','copied','failed') AND (locked_until IS NULL OR locked_until < $5) RETURNING id;

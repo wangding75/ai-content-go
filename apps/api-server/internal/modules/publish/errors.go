@@ -9,4 +9,5 @@ var (
 	ErrConflict            = errors.New("conflict")
 	ErrIdempotencyConflict = errors.New("idempotency conflict")
 	ErrInternal            = errors.New("internal error")
+	ErrUnauthorized        = errors.New("unauthorized")
 )

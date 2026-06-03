@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -201,6 +202,41 @@ func parseListPublishJobsRequest(r *http.Request) (publish.ListPublishJobsReques
 	return req, nil
 }
 
+func parseListPlatformAdaptersRequest(r *http.Request) (publish.ListPlatformAdaptersRequest, error) {
+	pagination, err := parsePagination(r)
+	if err != nil {
+		return publish.ListPlatformAdaptersRequest{}, err
+	}
+	req := publish.ListPlatformAdaptersRequest{PaginationRequest: pagination}
+	if value := r.URL.Query().Get("platform"); value != "" {
+		req.Platform = value
+	}
+	if value := r.URL.Query().Get("publish_mode"); value != "" {
+		req.PublishMode = value
+	}
+	if value := r.URL.Query().Get("enabled"); value != "" {
+		enabled, err := strconv.ParseBool(value)
+		if err != nil {
+			return publish.ListPlatformAdaptersRequest{}, err
+		}
+		req.Enabled = &enabled
+	}
+	req.Sort = r.URL.Query().Get("sort")
+	req.Order = r.URL.Query().Get("order")
+	return req, nil
+}
+
+func parseListPluginClientsRequest(r *http.Request) (publish.ListPluginClientsRequest, error) {
+	pagination, err := parsePagination(r)
+	if err != nil {
+		return publish.ListPluginClientsRequest{}, err
+	}
+	req := publish.ListPluginClientsRequest{PaginationRequest: pagination, Status: r.URL.Query().Get("status"), ClientType: r.URL.Query().Get("client_type")}
+	req.Sort = r.URL.Query().Get("sort")
+	req.Order = r.URL.Query().Get("order")
+	return req, nil
+}
+
 func noStore(w http.ResponseWriter) {
 	w.Header().Set("Cache-Control", "no-store")
 }
@@ -217,63 +253,230 @@ func writePublishError(w http.ResponseWriter, r *http.Request, err error, messag
 		api.WriteError(w, r, http.StatusConflict, api.ErrorConflict, message, nil)
 	case errors.Is(err, publish.ErrIdempotencyConflict):
 		api.WriteError(w, r, http.StatusConflict, api.ErrorIdempotencyConflict, message, nil)
+	case errors.Is(err, publish.ErrUnauthorized):
+		api.WriteError(w, r, http.StatusUnauthorized, api.ErrorUnauthorized, message, nil)
 	default:
 		api.WriteError(w, r, http.StatusInternalServerError, api.ErrorInternal, message, nil)
 	}
 }
 
 func (h *PublishHandler) CreatePlatformAdapter(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.CreatePlatformAdapterRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid platform adapter request")
+		return
+	}
+	data, err := h.service.CreatePlatformAdapter(r.Context(), req, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		writePublishError(w, r, err, "create platform adapter failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusCreated, data)
 }
 
 func (h *PublishHandler) ListPlatformAdapters(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	noStore(w)
+	req, err := parseListPlatformAdaptersRequest(r)
+	if err != nil {
+		api.WriteError(w, r, http.StatusBadRequest, api.ErrorValidation, "invalid query parameters", nil)
+		return
+	}
+	data, err := h.service.ListPlatformAdapters(r.Context(), req)
+	if err != nil {
+		writePublishError(w, r, err, "list platform adapters failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) GetPlatformAdapter(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	noStore(w)
+	data, err := h.service.GetPlatformAdapter(r.Context(), chi.URLParam(r, "adapterId"))
+	if err != nil {
+		writePublishError(w, r, err, "get platform adapter failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) UpdatePlatformAdapter(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.UpdatePlatformAdapterRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid platform adapter update request")
+		return
+	}
+	data, err := h.service.UpdatePlatformAdapter(r.Context(), chi.URLParam(r, "adapterId"), req, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		writePublishError(w, r, err, "update platform adapter failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) RegisterPluginClient(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.RegisterPluginClientRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid register plugin client request")
+		return
+	}
+	data, err := h.service.RegisterPluginClient(r.Context(), req, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		writePublishError(w, r, err, "register plugin client failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusCreated, data)
 }
 
 func (h *PublishHandler) ListPluginClients(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	noStore(w)
+	req, err := parseListPluginClientsRequest(r)
+	if err != nil {
+		api.WriteError(w, r, http.StatusBadRequest, api.ErrorValidation, "invalid query parameters", nil)
+		return
+	}
+	data, err := h.service.ListPluginClients(r.Context(), req)
+	if err != nil {
+		writePublishError(w, r, err, "list plugin clients failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) UpdatePluginClient(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.UpdatePluginClientRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid update plugin client request")
+		return
+	}
+	data, err := h.service.UpdatePluginClient(r.Context(), chi.URLParam(r, "clientId"), req, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		writePublishError(w, r, err, "update plugin client failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) RotatePluginClientKey(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.RotatePluginClientKeyRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid rotate plugin client key request")
+		return
+	}
+	data, err := h.service.RotatePluginClientKey(r.Context(), chi.URLParam(r, "clientId"), req, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		writePublishError(w, r, err, "rotate plugin client key failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) AuthenticatePlugin(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.PluginAuthRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid plugin auth request")
+		return
+	}
+	data, err := h.service.AuthenticatePlugin(r.Context(), req)
+	if err != nil {
+		writePublishError(w, r, err, "plugin auth failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) ListPluginPublishJobs(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	noStore(w)
+	req, err := parseListPluginPublishJobsRequest(r)
+	if err != nil {
+		api.WriteError(w, r, http.StatusBadRequest, api.ErrorValidation, "invalid query parameters", nil)
+		return
+	}
+	token := pluginBearerToken(r)
+	data, err := h.service.ListPluginPublishJobs(r.Context(), req, token)
+	if err != nil {
+		writePublishError(w, r, err, "list plugin publish jobs failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) LockPluginPublishJob(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.LockPluginPublishJobRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid lock plugin publish job request")
+		return
+	}
+	token := pluginBearerToken(r)
+	data, err := h.service.LockPluginPublishJob(r.Context(), chi.URLParam(r, "jobId"), req, token)
+	if err != nil {
+		writePublishError(w, r, err, "lock plugin publish job failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) MarkPluginPublishJobFilled(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.MarkPluginPublishJobFilledRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid mark plugin publish job filled request")
+		return
+	}
+	token := pluginBearerToken(r)
+	data, err := h.service.MarkPluginPublishJobFilled(r.Context(), chi.URLParam(r, "jobId"), req, token)
+	if err != nil {
+		writePublishError(w, r, err, "mark plugin publish job filled failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) MarkPluginPublishJobPublished(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.MarkPluginPublishJobPublishedRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid mark plugin publish job published request")
+		return
+	}
+	token := pluginBearerToken(r)
+	data, err := h.service.MarkPluginPublishJobPublished(r.Context(), chi.URLParam(r, "jobId"), req, token, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		writePublishError(w, r, err, "mark plugin publish job published failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
 }
 
 func (h *PublishHandler) MarkPluginPublishJobFailed(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	var req publish.MarkPluginPublishJobFailedRequest
+	if err := decodeJSON(w, r, &req); err != nil {
+		writePublishError(w, r, publish.ErrValidation, "invalid mark plugin publish job failed request")
+		return
+	}
+	token := pluginBearerToken(r)
+	data, err := h.service.MarkPluginPublishJobFailed(r.Context(), chi.URLParam(r, "jobId"), req, token, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		writePublishError(w, r, err, "mark plugin publish job failed failed")
+		return
+	}
+	api.WriteSuccess(w, r, http.StatusOK, data)
+}
+
+func parseListPluginPublishJobsRequest(r *http.Request) (publish.ListPluginPublishJobsRequest, error) {
+	pagination, err := parsePagination(r)
+	if err != nil {
+		return publish.ListPluginPublishJobsRequest{}, err
+	}
+	return publish.ListPluginPublishJobsRequest{
+		PaginationRequest: pagination,
+		ProjectID:         r.URL.Query().Get("project_id"),
+		Platform:          r.URL.Query().Get("platform"),
+		Status:            r.URL.Query().Get("status"),
+	}, nil
+}
+
+func pluginBearerToken(r *http.Request) string {
+	auth := r.Header.Get("Authorization")
+	if strings.HasPrefix(auth, "Bearer ") {
+		return strings.TrimSpace(strings.TrimPrefix(auth, "Bearer "))
+	}
+	return ""
 }

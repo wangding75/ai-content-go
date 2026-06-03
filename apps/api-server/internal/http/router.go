@@ -41,6 +41,7 @@ type routerConfig struct {
 	metricsService   metrics.Service
 	strategyService  strategy.Service
 	portfolioService portfolio.Service
+	externalService  external.Service
 }
 
 func WithMetricsService(svc metrics.Service) RouterOption {
@@ -58,6 +59,12 @@ func WithStrategyService(svc strategy.Service) RouterOption {
 func WithPortfolioService(svc portfolio.Service) RouterOption {
 	return func(c *routerConfig) {
 		c.portfolioService = svc
+	}
+}
+
+func WithExternalService(svc external.Service) RouterOption {
+	return func(c *routerConfig) {
+		c.externalService = svc
 	}
 }
 
@@ -90,7 +97,13 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 	agentHandler := handlers.NewAgentHandler(agentSvc, logger)
 	llmLogHandler := handlers.NewLLMLogHandler(llmSvc, logger)
 	scheduleHandler := handlers.NewScheduleHandler(schedule.NewService(), wfSvc, eng, logger)
-	externalHandler := handlers.NewExternalHandler(external.NewService(), logger)
+	var externalSvc external.Service
+	if cfg.externalService != nil {
+		externalSvc = cfg.externalService
+	} else {
+		externalSvc = external.NewService()
+	}
+	externalHandler := handlers.NewExternalHandler(externalSvc, logger)
 	novelHandler := handlers.NewNovelHandler(novel.NewService(), wfSvc, eng, logger)
 	generationHandler := handlers.NewGenerationHandler(generation.NewService(), wfSvc, eng, logger)
 	reviewHandler := handlers.NewReviewHandler(review.NewService(), wfSvc, eng, logger)
@@ -101,7 +114,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 	} else {
 		metricsSvc = metrics.NewService()
 	}
-	metricsHandler := handlers.NewMetricsHandler(metricsSvc, logger)
+	metricsHandler := handlers.NewMetricsHandler(metricsSvc, metricsSvc, logger)
 	var strategySvc strategy.Service
 	if cfg.strategyService != nil {
 		strategySvc = cfg.strategyService
@@ -127,12 +140,9 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		r.Post("/publish-jobs/{jobId}/published", publishHandler.MarkPluginPublishJobPublished)
 		r.Post("/publish-jobs/{jobId}/failed", publishHandler.MarkPluginPublishJobFailed)
 		r.Get("/publish-jobs", publishHandler.ListPluginPublishJobs)
-		r.Post("/platform-collect-logs", metricsHandler.SubmitPlatformCollectLog)
 	})
-	r.Route("/api/v1/external-automation", func(r chi.Router) {
-		r.Post("/callbacks", externalHandler.ReceiveCallback)
-		r.Post("/platform-collect-logs", metricsHandler.SubmitPlatformCollectLog)
-	})
+	r.Post("/api/v1/external-automation/callbacks", externalHandler.ReceiveCallback)
+	r.Post("/api/v1/platform-collect-logs", metricsHandler.SubmitPlatformCollectLog)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(bearerAuth)

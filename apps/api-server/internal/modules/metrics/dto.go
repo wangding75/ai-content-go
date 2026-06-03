@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"context"
 	"time"
 
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
@@ -332,4 +333,18 @@ type ConfirmPlatformCollectLogMetricsRequest struct {
 type ConfirmPlatformCollectLogMetricsResponse struct {
 	MetricRecordIDs []string `json:"metric_record_ids"`
 	OperationLogID  string   `json:"operation_log_id"`
+}
+
+type PublishJobContext struct {
+	ProjectID        string
+	ContentItemID    string
+	ContentVersionID string
+	TargetID         string
+	ContentType      string
+	Platform         string
+	ExternalURL      string
+}
+
+type PublishJobLookup interface {
+	FindPublishJobContext(ctx context.Context, publishJobID string) (*PublishJobContext, error)
 }

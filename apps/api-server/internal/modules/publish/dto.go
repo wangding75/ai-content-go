@@ -122,7 +122,12 @@ type PublishJobResponse struct {
 	LastError        string     `json:"last_error"`
 	RetryCount       int        `json:"retry_count"`
 	Actions          []string   `json:"actions"`
-	CreatedAt        time.Time  `json:"created_at"`
+	AdapterConfigID  string     `json:"adapter_config_id"`
+	AdapterVersion   int        `json:"adapter_version"`
+	LockedUntil      *time.Time `json:"locked_until,omitempty"`
+	PlatformErrorSummary string     `json:"platform_error_summary"`
+	PluginLockID         string     `json:"-"`
+	CreatedAt            time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
 }
 
@@ -270,6 +275,8 @@ type ListPlatformAdaptersRequest struct {
 	Platform    string `json:"platform"`
 	PublishMode string `json:"publish_mode"`
 	Enabled     *bool  `json:"enabled"`
+	Sort        string `json:"sort"`
+	Order       string `json:"order"`
 }
 
 type PlatformAdapterResponse struct {

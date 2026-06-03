@@ -99,6 +99,9 @@ type ExternalCallbackAuth struct {
 type ExternalCallbackResponse struct {
 	Accepted      bool   `json:"accepted"`
 	CallbackLogID string `json:"callback_log_id"`
+	BindingID     string `json:"binding_id,omitempty"`
+	StableEventID string `json:"stable_event_id,omitempty"`
+	TestResult    string `json:"test_result,omitempty"`
 }
 
 type ListCallbackLogsRequest struct {

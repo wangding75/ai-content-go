@@ -14,6 +14,7 @@ type memoryStore struct {
 	records     map[string]MetricRecordResponse
 	idempotency map[string]idempotencyEntry
 	snapshots   map[string]SummarySnapshotRow
+	collectLogs map[string]PlatformCollectLogDetailResponse
 }
 
 type idempotencyEntry struct {
@@ -33,6 +34,7 @@ func newMemoryStore() *memoryStore {
 		records:     map[string]MetricRecordResponse{},
 		idempotency: map[string]idempotencyEntry{},
 		snapshots:   map[string]SummarySnapshotRow{},
+		collectLogs: map[string]PlatformCollectLogDetailResponse{},
 	}
 }
 
@@ -417,18 +419,53 @@ func querySignature(projectID string, req MetricTrendRequest) string {
 	return strings.Join([]string{projectID, req.MetricCode, req.Platform, req.TargetID, req.DateFrom, req.DateTo, req.Bucket}, ":")
 }
 
-func (m *memoryStore) InsertPlatformCollectLog(ctx context.Context, log PlatformCollectLogDetailResponse) error {
-	panic("not implemented")
+func (m *memoryStore) InsertPlatformCollectLog(_ context.Context, log PlatformCollectLogDetailResponse) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.collectLogs[log.ID] = log
+	return nil
 }
 
-func (m *memoryStore) ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) ([]PlatformCollectLogResponse, int, error) {
-	panic("not implemented")
+func (m *memoryStore) ListPlatformCollectLogs(_ context.Context, req ListPlatformCollectLogsRequest) ([]PlatformCollectLogResponse, int, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	items := make([]PlatformCollectLogResponse, 0, len(m.collectLogs))
+	for _, log := range m.collectLogs {
+		if req.ProjectID != "" && log.ProjectID != req.ProjectID {
+			continue
+		}
+		if req.Platform != "" && log.Platform != req.Platform {
+			continue
+		}
+		if req.Status != "" && log.Status != req.Status {
+			continue
+		}
+		items = append(items, log.PlatformCollectLogResponse)
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CollectedAt.After(items[j].CollectedAt)
+	})
+	return items, len(items), nil
 }
 
-func (m *memoryStore) GetPlatformCollectLog(ctx context.Context, collectLogID string) (*PlatformCollectLogDetailResponse, error) {
-	panic("not implemented")
+func (m *memoryStore) GetPlatformCollectLog(_ context.Context, collectLogID string) (*PlatformCollectLogDetailResponse, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	log, ok := m.collectLogs[collectLogID]
+	if !ok {
+		return nil, nil
+	}
+	return &log, nil
 }
 
-func (m *memoryStore) UpdatePlatformCollectLogStatus(ctx context.Context, collectLogID string, status string, operationLogID string) error {
-	panic("not implemented")
+func (m *memoryStore) UpdatePlatformCollectLogStatus(_ context.Context, collectLogID string, status string, operationLogID string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	log, ok := m.collectLogs[collectLogID]
+	if !ok {
+		return nil
+	}
+	log.Status = status
+	m.collectLogs[collectLogID] = log
+	return nil
 }
