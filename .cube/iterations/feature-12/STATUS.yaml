@@ -1,0 +1,39 @@
+# STATUS.yaml — Per-task TDD development progress
+# AI reads this file at session start to recover context
+# Update phase after completing each task
+#
+# phase values: locked | green | done
+# tracking fields (added during execution): started_at, completed_at, test_passed, test_total
+
+stage: 04-development
+project: ai-content-go
+branch: feature/12
+
+tasks:
+  - task: "Task-01：定义 Article DTO、错误常量和 Service 接口"
+    test_file: article_contract_test.go
+    phase: locked
+  - task: "Task-02：实现 Article Pack 注册业务逻辑"
+    test_file: article_service_test.go
+    phase: locked
+  - task: "Task-03：实现 Article 扩展配置业务逻辑"
+    test_file: article_service_config_test.go
+    phase: locked
+  - task: "Task-04：实现 Article 生成运行业务逻辑"
+    test_file: article_service_genrun_test.go
+    phase: locked
+  - task: "Task-05：实现 Article 指标配置业务逻辑"
+    test_file: article_service_metrics_test.go
+    phase: locked
+  - task: "Task-06：实现 Article HTTP Handler 和路由注册"
+    test_file: article_handler_red_test.go
+    phase: locked
+  - task: "Task-07：实现 Article 前端管理台页面（FR-012 Article Pack 页）"
+    test_file: article_service_integration_test.go
+    phase: locked
+  - task: "Task-08：实现 Article 前端管理台页面（FR-013 内容规划与生产页）"
+    test_file: article_service_integration_test.go
+    phase: locked
+  - task: "Task-09：实现 Article 前端管理台页面（FR-014 指标配置页）"
+    test_file: article_service_integration_test.go
+    phase: locked
