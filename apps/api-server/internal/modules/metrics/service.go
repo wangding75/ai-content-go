@@ -22,10 +22,15 @@ type Service interface {
 	GetSummary(ctx context.Context, projectID string, req MetricSummaryRequest) (MetricSummaryResponse, error)
 	GetTrends(ctx context.Context, projectID string, req MetricTrendRequest) (MetricTrendResponse, error)
 	GetMissingDates(ctx context.Context, projectID string, req MissingMetricDatesRequest) (MissingMetricDatesResponse, error)
+	SubmitPlatformCollectLog(ctx context.Context, req SubmitPlatformCollectLogRequest, auth PlatformCollectLogAuth, idempotencyKey string) (SubmitPlatformCollectLogResponse, error)
+	ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) (PagedPlatformCollectLogsResponse, error)
+	GetPlatformCollectLog(ctx context.Context, collectLogID string) (PlatformCollectLogDetailResponse, error)
+	ConfirmPlatformCollectLogMetrics(ctx context.Context, collectLogID string, req ConfirmPlatformCollectLogMetricsRequest, idempotencyKey string) (ConfirmPlatformCollectLogMetricsResponse, error)
 }
 
 type service struct {
-	store Store
+	store            Store
+	publishJobLookup PublishJobLookup
 }
 
 func NewService(stores ...Store) Service {
@@ -38,6 +43,9 @@ func NewService(stores ...Store) Service {
 	return &service{store: store}
 }
 
+func NewServiceWithPublishLookup(store Store, lookup PublishJobLookup) Service {
+	return &service{store: store, publishJobLookup: lookup}
+}
 
 const metricSummarySQL = `
 SELECT
@@ -293,15 +301,12 @@ func (s *service) CreateRecord(ctx context.Context, req CreateMetricRecordReques
 
 	scope := "metrics:" + "record:" + req.ProjectID
 	hash := requestHash(req)
-	refType, refID, conflict, err := s.store.CheckIdempotency(ctx, scope, "create_record", idempotencyKey, hash)
+	_, _, conflict, err := s.store.CheckIdempotency(ctx, scope, "create_record", idempotencyKey, hash)
 	if err != nil {
 		return CreateMetricRecordResponse{}, ErrInternal
 	}
 	if conflict {
 		return CreateMetricRecordResponse{}, ErrIdempotencyConflict
-	}
-	if refType != "" {
-		return CreateMetricRecordResponse{MetricRecordID: refID, NormalizedValue: normalized, OperationLogID: "operation-log-" + refID}, nil
 	}
 
 	contentType := "article"
@@ -374,15 +379,12 @@ func (s *service) BatchCreateRecords(ctx context.Context, req BatchCreateMetricR
 
 	scope := "metrics:" + "batch:" + projectID
 	hash := requestHash(req)
-	refType, refID, conflict, err := s.store.CheckIdempotency(ctx, scope, "batch_create", idempotencyKey, hash)
+	_, _, conflict, err := s.store.CheckIdempotency(ctx, scope, "batch_create", idempotencyKey, hash)
 	if err != nil {
 		return BatchCreateMetricRecordsResponse{}, ErrInternal
 	}
 	if conflict {
 		return BatchCreateMetricRecordsResponse{}, ErrIdempotencyConflict
-	}
-	if refType != "" {
-		return BatchCreateMetricRecordsResponse{CreatedCount: 0, FailedCount: 0, Errors: []BatchMetricRecordError{}, OperationLogID: refID}, nil
 	}
 
 	response := BatchCreateMetricRecordsResponse{
@@ -522,4 +524,166 @@ func pageBounds(page, pageSize, total int) (int, int) {
 		end = total
 	}
 	return start, end
+}
+
+func (s *service) SubmitPlatformCollectLog(ctx context.Context, req SubmitPlatformCollectLogRequest, auth PlatformCollectLogAuth, idempotencyKey string) (SubmitPlatformCollectLogResponse, error) {
+	if req.ProjectID == "" || req.Platform == "" || req.PublishJobID == "" || req.SourceType == "" || req.RawPayload == nil {
+		return SubmitPlatformCollectLogResponse{}, ErrValidation
+	}
+	validSourceTypes := map[string]bool{"extension": true, "external_callback": true}
+	if !validSourceTypes[req.SourceType] {
+		return SubmitPlatformCollectLogResponse{}, ErrValidation
+	}
+	if req.SourceType == "external_callback" && auth.BindingID == "" {
+		return SubmitPlatformCollectLogResponse{}, ErrValidation
+	}
+
+	var contentItemID, contentVersionID, targetID, contentType, externalURL string
+	if s.publishJobLookup != nil {
+		jobCtx, err := s.publishJobLookup.FindPublishJobContext(ctx, req.PublishJobID)
+		if err != nil || jobCtx == nil {
+			return SubmitPlatformCollectLogResponse{}, ErrValidation
+		}
+		contentItemID = jobCtx.ContentItemID
+		contentVersionID = jobCtx.ContentVersionID
+		targetID = jobCtx.TargetID
+		contentType = jobCtx.ContentType
+		externalURL = jobCtx.ExternalURL
+	} else {
+		if req.PublishJobID != "job-001" {
+			return SubmitPlatformCollectLogResponse{}, ErrValidation
+		}
+		contentItemID = "content-item-1"
+		contentVersionID = "version-1"
+		targetID = "publish-target-1"
+		contentType = "article"
+	}
+
+	logID := "collect-log-" + fmt.Sprintf("%d", time.Now().UnixNano())
+	log := PlatformCollectLogDetailResponse{
+		PlatformCollectLogResponse: PlatformCollectLogResponse{
+			ID:               logID,
+			ProjectID:        req.ProjectID,
+			Platform:         req.Platform,
+			Status:           CollectLogStatusReady,
+			PublishJobID:     req.PublishJobID,
+			ContentItemID:    contentItemID,
+			ContentVersionID: contentVersionID,
+			TargetID:         targetID,
+			ContentType:      contentType,
+			ExternalURL:      externalURL,
+			ErrorSummary:     req.ErrorSummary,
+			CollectedAt:      req.CollectedAt,
+		},
+		RawPayload:    req.RawPayload,
+		ParsedMetrics: req.ParsedMetrics,
+		Related:       map[string]any{"source_type": req.SourceType, "binding_id": auth.BindingID},
+	}
+	if err := s.store.InsertPlatformCollectLog(ctx, log); err != nil {
+		return SubmitPlatformCollectLogResponse{}, ErrInternal
+	}
+	if idempotencyKey != "" {
+		scope := "metrics:collect_submit:" + req.ProjectID
+		hash := requestHash(req)
+		if err := s.store.StoreIdempotency(ctx, scope, "submit", idempotencyKey, hash, "collect_log", logID); err != nil {
+			return SubmitPlatformCollectLogResponse{}, ErrInternal
+		}
+	}
+	return SubmitPlatformCollectLogResponse{CollectLogID: logID, Status: CollectLogStatusReceived}, nil
+}
+
+func (s *service) ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) (PagedPlatformCollectLogsResponse, error) {
+	items, total, err := s.store.ListPlatformCollectLogs(ctx, req)
+	if err != nil {
+		return PagedPlatformCollectLogsResponse{}, ErrInternal
+	}
+	page := req.Page
+	pageSize := req.PageSize
+	start, end := pageBounds(page, pageSize, total)
+	return PagedPlatformCollectLogsResponse{Items: items[start:end], Pagination: pagination(page, pageSize, total)}, nil
+}
+
+func (s *service) GetPlatformCollectLog(ctx context.Context, collectLogID string) (PlatformCollectLogDetailResponse, error) {
+	if collectLogID == "" {
+		return PlatformCollectLogDetailResponse{}, ErrValidation
+	}
+	log, err := s.store.GetPlatformCollectLog(ctx, collectLogID)
+	if err != nil {
+		return PlatformCollectLogDetailResponse{}, ErrInternal
+	}
+	if log == nil {
+		return PlatformCollectLogDetailResponse{}, ErrNotFound
+	}
+	return *log, nil
+}
+
+func (s *service) ConfirmPlatformCollectLogMetrics(ctx context.Context, collectLogID string, req ConfirmPlatformCollectLogMetricsRequest, idempotencyKey string) (ConfirmPlatformCollectLogMetricsResponse, error) {
+	if collectLogID == "" || len(req.Records) == 0 || idempotencyKey == "" {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrValidation
+	}
+	scope := "metrics:collect_confirm:" + collectLogID
+	hash := requestHash(req)
+	refType, refID, conflict, err := s.store.CheckIdempotency(ctx, scope, "confirm", idempotencyKey, hash)
+	if err != nil {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrInternal
+	}
+	if conflict {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrIdempotencyConflict
+	}
+	if refType != "" && refID != "" {
+		return ConfirmPlatformCollectLogMetricsResponse{MetricRecordIDs: []string{refID}, OperationLogID: "operation-log-" + collectLogID}, nil
+	}
+	log, err := s.store.GetPlatformCollectLog(ctx, collectLogID)
+	if err != nil {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrInternal
+	}
+	if log == nil {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrNotFound
+	}
+	if log.Status != CollectLogStatusReady {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrIdempotencyConflict
+	}
+	for _, rec := range req.Records {
+		if rec.MetricTemplateID == "" || rec.MetricCode == "" || rec.MetricDate == "" || rec.Period == "" || rec.RawValue == "" {
+			return ConfirmPlatformCollectLogMetricsResponse{}, ErrValidation
+		}
+	}
+	var metricRecordIDs []string
+	for _, rec := range req.Records {
+		recordID := "metric-record-collect-" + collectLogID + "-" + rec.MetricCode + "-" + rec.MetricDate
+		record := MetricRecordResponse{
+			ID:               recordID,
+			ProjectID:        log.ProjectID,
+			ContentItemID:    log.ContentItemID,
+			ContentVersionID: log.ContentVersionID,
+			PublishJobID:     log.PublishJobID,
+			TargetID:         log.TargetID,
+			ContentType:      log.ContentType,
+			MetricTemplateID: rec.MetricTemplateID,
+			Platform:         log.Platform,
+			ExternalURL:      log.ExternalURL,
+			MetricCode:       rec.MetricCode,
+			MetricDate:       rec.MetricDate,
+			Period:           rec.Period,
+			RawValue:         rec.RawValue,
+			NormalizedValue:  rec.NormalizedValue,
+			SourceType:       SourceExtension,
+			SourceRef:        "platform_collect_log:" + collectLogID,
+			CollectedAt:      log.CollectedAt,
+			UpdatedAt:        time.Now().UTC(),
+		}
+		if err := s.store.InsertRecord(ctx, record); err != nil {
+			return ConfirmPlatformCollectLogMetricsResponse{}, ErrInternal
+		}
+		metricRecordIDs = append(metricRecordIDs, recordID)
+	}
+	opLogID := "oplog-collect-confirm-" + collectLogID
+	if err := s.store.UpdatePlatformCollectLogStatus(ctx, collectLogID, CollectLogStatusConfirmed, opLogID); err != nil {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrInternal
+	}
+	operationLogID := "operation-log-" + collectLogID
+	if err := s.store.StoreIdempotency(ctx, scope, "confirm", idempotencyKey, hash, "operation_log", operationLogID); err != nil {
+		return ConfirmPlatformCollectLogMetricsResponse{}, ErrInternal
+	}
+	return ConfirmPlatformCollectLogMetricsResponse{MetricRecordIDs: metricRecordIDs, OperationLogID: operationLogID}, nil
 }

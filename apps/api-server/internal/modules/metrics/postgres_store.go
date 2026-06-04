@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -340,4 +341,20 @@ func isDuplicateKey(err error) bool {
 		return pqErr.Code == "23505"
 	}
 	return false
+}
+
+func (p *postgresStore) InsertPlatformCollectLog(ctx context.Context, log PlatformCollectLogDetailResponse) error {
+	return errors.New("not implemented")
+}
+
+func (p *postgresStore) ListPlatformCollectLogs(ctx context.Context, req ListPlatformCollectLogsRequest) ([]PlatformCollectLogResponse, int, error) {
+	return nil, 0, errors.New("not implemented")
+}
+
+func (p *postgresStore) GetPlatformCollectLog(ctx context.Context, collectLogID string) (*PlatformCollectLogDetailResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (p *postgresStore) UpdatePlatformCollectLogStatus(ctx context.Context, collectLogID string, status string, operationLogID string) error {
+	return errors.New("not implemented")
 }

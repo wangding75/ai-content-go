@@ -1,0 +1,104 @@
+stage: 02-design
+branch: feature/11
+files:
+  - path: migrations/00013_create_platform_adapter_extension_tables.sql
+    module: api-server
+    tasks:
+      - Task-01：定义平台适配器与插件协作数据库契约
+  - path: internal/modules/publish/dto.go
+    module: api-server
+    tasks:
+      - Task-02：实现平台 Adapter 配置管理业务行为
+      - Task-03：实现插件客户端密钥与短期认证业务行为
+      - Task-04：实现插件发布任务锁定与回填业务行为
+  - path: internal/modules/publish/service.go
+    module: api-server
+    tasks:
+      - Task-02：实现平台 Adapter 配置管理业务行为
+      - Task-03：实现插件客户端密钥与短期认证业务行为
+      - Task-04：实现插件发布任务锁定与回填业务行为
+  - path: internal/http/handlers/publish.go
+    module: api-server
+    tasks:
+      - Task-02：实现平台 Adapter 配置管理业务行为
+      - Task-03：实现插件客户端密钥与短期认证业务行为
+      - Task-04：实现插件发布任务锁定与回填业务行为
+  - path: internal/modules/metrics/dto.go
+    module: api-server
+    tasks:
+      - Task-05：实现平台采集日志与人工确认指标业务行为
+  - path: internal/modules/metrics/service.go
+    module: api-server
+    tasks:
+      - Task-05：实现平台采集日志与人工确认指标业务行为
+  - path: internal/modules/metrics/store.go
+    module: api-server
+    tasks:
+      - Task-05：实现平台采集日志与人工确认指标业务行为
+  - path: internal/modules/metrics/memory_store.go
+    module: api-server
+    tasks:
+      - Task-05：实现平台采集日志与人工确认指标业务行为
+  - path: internal/modules/metrics/postgres_store.go
+    module: api-server
+    tasks:
+      - Task-05：实现平台采集日志与人工确认指标业务行为
+  - path: internal/http/handlers/metrics.go
+    module: api-server
+    tasks:
+      - Task-05：实现平台采集日志与人工确认指标业务行为
+  - path: internal/modules/external/dto.go
+    module: api-server
+    tasks:
+      - Task-06：实现 n8n 外围回调边界业务行为
+  - path: internal/modules/external/service.go
+    module: api-server
+    tasks:
+      - Task-06：实现 n8n 外围回调边界业务行为
+  - path: internal/http/handlers/external.go
+    module: api-server
+    tasks:
+      - Task-06：实现 n8n 外围回调边界业务行为
+  - path: internal/http/router.go
+    module: api-server
+    tasks:
+      - Task-02：实现平台 Adapter 配置管理业务行为
+      - Task-03：实现插件客户端密钥与短期认证业务行为
+      - Task-04：实现插件发布任务锁定与回填业务行为
+      - Task-05：实现平台采集日志与人工确认指标业务行为
+      - Task-06：实现 n8n 外围回调边界业务行为
+  - path: openapi.yaml
+    module: openapi
+    tasks:
+      - Task-07：实现 Iteration 11 OpenAPI 与前端 API Client 契约
+  - path: lib/api.ts
+    module: web-admin
+    tasks:
+      - Task-07：实现 Iteration 11 OpenAPI 与前端 API Client 契约
+  - path: app/global-nav.tsx
+    module: web-admin
+    tasks:
+      - Task-08：实现管理台平台 Adapter 与插件客户端页面交互
+      - Task-09：实现管理台采集日志与 n8n 回调页面交互
+  - path: app/platform-adapters/page.tsx
+    module: web-admin
+    tasks:
+      - Task-08：实现管理台平台 Adapter 与插件客户端页面交互
+  - path: app/plugin-clients/page.tsx
+    module: web-admin
+    tasks:
+      - Task-08：实现管理台平台 Adapter 与插件客户端页面交互
+  - path: app/platform-collect-logs/page.tsx
+    module: web-admin
+    tasks:
+      - Task-09：实现管理台采集日志与 n8n 回调页面交互
+  - path: app/external-automation/n8n/page.tsx
+    module: web-admin
+    tasks:
+      - Task-09：实现管理台采集日志与 n8n 回调页面交互
+  - path: internal/modules/publish/errors.go
+    module: api-server
+    tasks:
+      - Task-02：实现平台 Adapter 配置管理业务行为
+      - Task-03：实现插件客户端密钥与短期认证业务行为
+      - Task-04：实现插件发布任务锁定与回填业务行为

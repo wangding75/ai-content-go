@@ -2375,6 +2375,396 @@ paths:
       responses:
         '200': { description: Portfolio strategy summary }
 
+  /api/v1/platform-adapters:
+    get:
+      summary: List platform adapters
+      tags: [publish]
+      operationId: listPlatformAdapters
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { description: Platform adapter list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+    post:
+      summary: Create platform adapter
+      tags: [publish]
+      operationId: createPlatformAdapter
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '201': { description: Platform adapter created }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+  /api/v1/platform-adapters/{adapterId}:
+    get:
+      summary: Get platform adapter
+      tags: [publish]
+      operationId: getPlatformAdapter
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: adapterId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Platform adapter detail }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+    patch:
+      summary: Update platform adapter
+      tags: [publish]
+      operationId: updatePlatformAdapter
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: adapterId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Platform adapter updated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+  /api/v1/plugin-clients:
+    get:
+      summary: List plugin clients
+      tags: [publish]
+      operationId: listPluginClients
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { description: Plugin client list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+    post:
+      summary: Register plugin client
+      tags: [publish]
+      operationId: registerPluginClient
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '201': { description: Plugin client registered }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+  /api/v1/plugin-clients/{clientId}:
+    patch:
+      summary: Update plugin client
+      tags: [publish]
+      operationId: updatePluginClient
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: clientId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Plugin client updated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+  /api/v1/plugin-clients/{clientId}/rotate-key:
+    post:
+      summary: Rotate plugin client key
+      tags: [publish]
+      operationId: rotatePluginClientKey
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: clientId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Plugin client key rotated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+  /api/v1/plugin-auth/token:
+    post:
+      summary: Authenticate plugin
+      tags: [publish]
+      operationId: authenticatePlugin
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200': { description: Plugin authenticated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+  /api/v1/plugin/publish-jobs:
+    get:
+      summary: List plugin publish jobs
+      tags: [publish]
+      operationId: listPluginPublishJobs
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { description: Plugin publish job list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/plugin/publish-jobs/{jobId}/lock:
+    post:
+      summary: Lock plugin publish job
+      tags: [publish]
+      operationId: lockPluginPublishJob
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Publish job locked }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/plugin/publish-jobs/{jobId}/filled:
+    post:
+      summary: Mark plugin publish job filled
+      tags: [publish]
+      operationId: markPluginPublishJobFilled
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Publish job filled }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/plugin/publish-jobs/{jobId}/published:
+    post:
+      summary: Mark plugin publish job published
+      tags: [publish]
+      operationId: markPluginPublishJobPublished
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Publish job marked published }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/plugin/publish-jobs/{jobId}/failed:
+    post:
+      summary: Mark plugin publish job failed
+      tags: [publish]
+      operationId: markPluginPublishJobFailed
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Publish job marked failed }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/platform-collect-logs:
+    post:
+      summary: Submit platform collect log
+      tags: [metrics]
+      operationId: submitPlatformCollectLog
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitPlatformCollectLogRequest' }
+      responses:
+        '201': { description: Platform collect log submitted }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      summary: List platform collect logs
+      tags: [metrics]
+      operationId: listPlatformCollectLogs
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { description: Platform collect log list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+  /api/v1/platform-collect-logs/{collectLogId}:
+    get:
+      summary: Get platform collect log
+      tags: [metrics]
+      operationId: getPlatformCollectLog
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: collectLogId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Platform collect log detail }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+  /api/v1/platform-collect-logs/{collectLogId}/confirm-metrics:
+    post:
+      summary: Confirm platform collect log metrics
+      tags: [metrics]
+      operationId: confirmPlatformCollectLogMetrics
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: collectLogId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Platform collect log metrics confirmed }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+      security:
+        - bearerAuth: []
+  /api/v1/external-automation/bindings/{bindingId}/rotate-callback-token:
+    post:
+      summary: Rotate callback token
+      tags: [external-automation]
+      operationId: rotateCallbackToken
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: bindingId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Callback token rotated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+  /api/v1/external-automation/bindings/{bindingId}/callback-auth:
+    patch:
+      summary: Update callback auth
+      tags: [external-automation]
+      operationId: updateCallbackAuth
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: bindingId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Callback auth updated }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      security:
+        - bearerAuth: []
+  /api/v1/external-automation/callbacks:
+    post:
+      summary: Receive external callback
+      tags: [external-automation]
+      operationId: receiveExternalCallback
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/ExternalBindingIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExternalCallbackRequest' }
+      responses:
+        '200': { description: External callback received }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/external-automation/callback-logs:
+    get:
+      summary: List callback logs
+      tags: [external-automation]
+      operationId: listCallbackLogs
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { description: Callback log list }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+  /api/v1/external-automation/callbacks/test:
+    post:
+      summary: Test external callback
+      tags: [external-automation]
+      operationId: testExternalCallback
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200': { description: External callback test result }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+      security:
+        - bearerAuth: []
+
 components:
   parameters:
     RequestIdHeader:
@@ -2438,6 +2828,12 @@ components:
       name: Idempotency-Key
       in: header
       required: true
+      schema:
+        type: string
+    ExternalBindingIdHeader:
+      name: X-External-Binding-Id
+      in: header
+      required: false
       schema:
         type: string
   responses:
@@ -4017,3 +4413,133 @@ components:
         data: { $ref: '#/components/schemas/MissingMetricDatesResponse' }
         error: { nullable: true }
         request_id: { type: string }
+
+# x-iteration-11-platform-adapter-skeleton: platform adapters, plugin clients, collect logs, external callbacks
+    PlatformAdapterRequest:
+      type: object
+      properties:
+        platform: { type: string }
+        display_name: { type: string }
+        publish_mode: { type: string }
+        target_type: { type: string }
+        config: { type: object }
+      required: [platform, display_name, publish_mode, target_type]
+    PlatformAdapterResponse:
+      type: object
+      properties:
+        id: { type: string }
+        platform: { type: string }
+        display_name: { type: string }
+        publish_mode: { type: string }
+        target_type: { type: string }
+        enabled: { type: boolean }
+        version: { type: integer }
+        updated_at: { type: string, format: date-time }
+      required: [id, platform, display_name, publish_mode, target_type, enabled, version, updated_at]
+    PlatformAdapterDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/PlatformAdapterResponse'
+        - type: object
+          properties:
+            config: { type: object }
+    PluginClientRequest:
+      type: object
+      properties:
+        name: { type: string }
+        client_type: { type: string }
+        scopes: { type: array, items: { type: string } }
+        redirect_uri: { type: string }
+      required: [name, client_type]
+    PluginClientResponse:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        client_type: { type: string }
+        version: { type: string }
+        scopes: { type: array, items: { type: string } }
+        status: { type: string }
+        api_key_masked: { type: string }
+        last_active_at: { type: string, format: date-time }
+      required: [id, name, client_type, version, scopes, status, api_key_masked]
+    PluginPublishJobResponse:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        content_item_id: { type: string }
+        content_version_id: { type: string }
+        target_id: { type: string }
+        title: { type: string }
+        target_platform: { type: string }
+        target_display: { type: string }
+        status: { type: string }
+        payload_hash: { type: string }
+        scheduled_at: { type: string, format: date-time }
+        copied_at: { type: string, format: date-time }
+        published_at: { type: string, format: date-time }
+        last_error: { type: string }
+        retry_count: { type: integer }
+        actions: { type: array, items: { type: string } }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+      required: [id, project_id, content_item_id, content_version_id, target_id, title, target_platform, target_display, status, payload_hash, last_error, retry_count, created_at, updated_at]
+    SubmitPlatformCollectLogRequest:
+      type: object
+      properties:
+        project_id: { type: string }
+        publish_job_id: { type: string }
+        content_item_id: { type: string }
+        platform: { type: string }
+        external_url: { type: string }
+        error_summary: { type: string }
+      required: [project_id, publish_job_id, content_item_id, platform, external_url]
+    PlatformCollectLogResponse:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        platform: { type: string }
+        status: { type: string }
+        publish_job_id: { type: string }
+        content_item_id: { type: string }
+        external_url: { type: string }
+        error_summary: { type: string }
+        collected_at: { type: string, format: date-time }
+      required: [id, project_id, platform, status, publish_job_id, content_item_id, external_url, error_summary, collected_at]
+    PlatformCollectLogDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/PlatformCollectLogResponse'
+        - type: object
+          properties:
+            content_title: { type: string }
+            content_version: { type: string }
+            target_display: { type: string }
+    ExternalCallbackRequest:
+      type: object
+      properties:
+        binding_id: { type: string }
+        event_type: { type: string }
+        payload: { type: object }
+        stable_event_id: { type: string }
+      required: [binding_id, event_type]
+    ExternalCallbackResponse:
+      type: object
+      properties:
+        accepted: { type: boolean }
+        callback_log_id: { type: string }
+        binding_id: { type: string }
+        stable_event_id: { type: string }
+        test_result: { type: string }
+    ExternalCallbackLogResponse:
+      type: object
+      properties:
+        id: { type: string }
+        provider_id: { type: string }
+        binding_id: { type: string }
+        event_type: { type: string }
+        accepted: { type: boolean }
+        rejected_reason: { type: string }
+        boundary_violation: { type: boolean }
+        created_at: { type: string }
+      required: [id, provider_id, binding_id, event_type, accepted, boundary_violation, created_at]

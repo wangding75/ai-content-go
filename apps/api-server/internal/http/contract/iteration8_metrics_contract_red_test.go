@@ -229,9 +229,25 @@ func (s *fakeMetricsService) GetMissingDates(ctx context.Context, projectID stri
 	return metrics.MissingMetricDatesResponse{ProjectID: projectID, Items: []metrics.MissingMetricDateItem{{ContentItemID: "content-item-1", ContentVersionID: "content-version-approved-1", PublishJobID: "publish-job-1", TargetID: "publish-target-1", Platform: "wechat", MetricCode: "views", Period: metrics.PeriodDay, MetricDate: "2026-05-24", MissingReason: "required_metric_missing", BackfillHint: "补录 views 2026-05-24"}}}, nil
 }
 
+func (s *fakeMetricsService) SubmitPlatformCollectLog(ctx context.Context, req metrics.SubmitPlatformCollectLogRequest, auth metrics.PlatformCollectLogAuth, idempotencyKey string) (metrics.SubmitPlatformCollectLogResponse, error) {
+	return metrics.SubmitPlatformCollectLogResponse{}, nil
+}
+
+func (s *fakeMetricsService) ListPlatformCollectLogs(ctx context.Context, req metrics.ListPlatformCollectLogsRequest) (metrics.PagedPlatformCollectLogsResponse, error) {
+	return metrics.PagedPlatformCollectLogsResponse{}, nil
+}
+
+func (s *fakeMetricsService) GetPlatformCollectLog(ctx context.Context, collectLogID string) (metrics.PlatformCollectLogDetailResponse, error) {
+	return metrics.PlatformCollectLogDetailResponse{}, nil
+}
+
+func (s *fakeMetricsService) ConfirmPlatformCollectLogMetrics(ctx context.Context, collectLogID string, req metrics.ConfirmPlatformCollectLogMetricsRequest, idempotencyKey string) (metrics.ConfirmPlatformCollectLogMetricsResponse, error) {
+	return metrics.ConfirmPlatformCollectLogMetricsResponse{}, nil
+}
+
 func iteration8MetricsHandlerRequest(svc *fakeMetricsService, method string, path string, body []byte, idempotencyKey string) *httptest.ResponseRecorder {
 	r := chi.NewRouter()
-	handler := handlers.NewMetricsHandler(svc, nil)
+	handler := handlers.NewMetricsHandler(svc, svc, nil)
 	r.Post("/metric-templates", handler.CreateTemplate)
 	r.Get("/metric-templates", handler.ListTemplates)
 	r.Post("/metric-records", handler.CreateRecord)

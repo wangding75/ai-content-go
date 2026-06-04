@@ -1308,3 +1308,22 @@ export async function fetchPortfolioStrategySummary(portfolioID: string, params?
   const q = new URLSearchParams({ ...(params?.date_from ? { date_from: params.date_from } : {}), ...(params?.date_to ? { date_to: params.date_to } : {}) }).toString();
   return request<PortfolioStrategySummaryResponse>(`/api/v1/portfolios/${pathSegment(portfolioID)}/strategy-summary${q ? `?${q}` : ''}`);
 }
+
+
+export type PluginClientResponse = { id: string; name: string; client_type: string; version: string; scopes: string[]; status: string; api_key_masked: string; last_active_at?: string };
+
+export async function fetchPluginClients(): Promise<APIEnvelope<PagedResponse<PluginClientResponse>>> {
+  return request<PagedResponse<PluginClientResponse>>('/api/v1/plugin-clients?page=1&page_size=20');
+}
+
+export async function createPluginClient(input: { name: string; client_type: string; scopes: string[]; redirect_uri?: string }): Promise<APIEnvelope<{ client_id: string; api_key_masked: string }>> {
+  return request<{ client_id: string; api_key_masked: string }>('/api/v1/plugin-clients', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function updatePluginClient(clientID: string, input: { name?: string; client_type?: string; scopes?: string[]; status?: string; note?: string }): Promise<APIEnvelope<{ client_id: string; api_key_masked: string; operation_log_id: string }>> {
+  return request<{ client_id: string; api_key_masked: string; operation_log_id: string }>(`/api/v1/plugin-clients/${pathSegment(clientID)}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export async function rotatePluginClientKey(clientID: string): Promise<APIEnvelope<{ client_id: string; api_key_masked: string; operation_log_id: string }>> {
+  return request<{ client_id: string; api_key_masked: string; operation_log_id: string }>(`/api/v1/plugin-clients/${pathSegment(clientID)}/rotate-key`, { method: 'POST', body: JSON.stringify({}) });
+}
