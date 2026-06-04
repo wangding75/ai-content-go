@@ -228,6 +228,9 @@ PATCH /projects/{projectId}/article/metrics
 
 #### POST /projects/{projectId}/article/generation-runs
 
+路径参数：
+- `projectId` (string, required)：项目 ID
+
 **请求**：
 ```json
 {
@@ -237,10 +240,10 @@ PATCH /projects/{projectId}/article/metrics
   "seo_keywords": ["string"],
   "outline_required": true,
   "target_platform": "string",
-  "generation_config": {},
-  "idempotency_key": "string"
+  "generation_config": {}
 }
 ```
+Idempotency-Key 通过 HTTP Header 传递（非请求体字段）。
 
 **响应 (202)**：
 ```json
@@ -338,17 +341,18 @@ ArticleHandler → metrics.Service (for metric template queries)
 | GET /projects/{projectId}/article/config | NOT_FOUND, FORBIDDEN |
 | PATCH /projects/{projectId}/article/config | VALIDATION_ERROR, CONFLICT, NOT_FOUND |
 | POST /projects/{projectId}/article/generation-runs | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN, IDEMPOTENCY_CONFLICT |
-| GET /projects/{projectId}/article/generation-runs | VALIDATION_ERROR, NOT_FOUND |
-| GET /projects/{projectId}/article/generation-runs/{id} | NOT_FOUND, FORBIDDEN |
+| GET /projects/{projectId}/article/generation-runs | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN |
+| GET /projects/{projectId}/article/generation-runs/{id} | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN |
 | POST /projects/{projectId}/article/generation-runs/{id}/retry | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN, CONFLICT, IDEMPOTENCY_CONFLICT |
-| GET /projects/{projectId}/article/content-items/{itemId} | NOT_FOUND |
-| GET /projects/{projectId}/article/metrics | VALIDATION_ERROR, NOT_FOUND |
-| PATCH /projects/{projectId}/article/metrics | VALIDATION_ERROR, FORBIDDEN, IDEMPOTENCY_CONFLICT |
+| GET /projects/{projectId}/article/content-items/{itemId} | NOT_FOUND, FORBIDDEN |
+| GET /projects/{projectId}/article/metrics | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN |
+| PATCH /projects/{projectId}/article/metrics | VALIDATION_ERROR, NOT_FOUND, FORBIDDEN, IDEMPOTENCY_CONFLICT |
 
 ## 8. Change Log
 
 | 文件 | 变更类型 | 原因 |
 |------|---------|------|
+| `internal/modules/content/service.go` | **无影响** | content.Service 已具备 CreateContentType/ListProjects 等能力，Article 模块直接调用即可 |
 | `internal/modules/article/dto.go` | **新增** | Article 模块 DTO 定义 |
 | `internal/modules/article/errors.go` | **新增** | Article 模块错误常量 |
 | `internal/modules/article/service.go` | **新增** | Article 模块 Service 接口和内存实现 |
@@ -402,8 +406,8 @@ ArticleHandler → metrics.Service (for metric template queries)
   - 输出：ArticleConfigResponse、UpdateArticleConfigResponse 或 error
   - 依赖任务：Task-01（Service 接口、DTO）
   - 数据操作：读/写 article 内部配置存储；写 operation_log
-  - 修改边界：只替换 GetConfig() 和 UpdateConfig() 的空实现
-  - 禁止行为：不得修改 content 模块的 Project 数据结构
+  - 修改边界：只替换 GetConfig() 和 UpdateConfig() 的空实现，允许通过 content.Service 验证项目存在和 ContentType
+  - 禁止行为：不得修改 content 模块的 Project 数据结构或添加新方法
   - 产出类型：integration
   - 功能类型：Article 扩展配置业务实现（type id: integration）
   - 是否跨组件：否
@@ -417,7 +421,7 @@ ArticleHandler → metrics.Service (for metric template queries)
   - 输出：generation.CreateGenerationRunResponse / RetryGenerationRunResponse、ArticleGenerationRunDetailResponse、ArticleContentSnapshotResponse
   - 依赖任务：Task-01（Service 接口、DTO）、Task-03（Article 扩展配置）
   - 数据操作：读 article 配置；读 content_version 表；读 generation runs/items；写 generation runs/items；写 operation_log（retry 原因）
-  - 修改边界：只替换生成运行相关的空实现
+  - 修改边界：只替换 CreateGenerationRun/ListGenerationRuns/GetGenerationRun/RetryGenerationRun/GetContentSnapshot 的空实现，允许调用 workflow.Service（创建 WorkflowRun）、generation.Service（创建/查询 GenerationRun 和 ContentItem）、content.Service（项目验证）
   - 禁止行为：不得绕过 WorkflowRun/GenerationRun 直接写 ContentItem
   - 产出类型：integration
   - 功能类型：Article 生成业务实现（type id: integration）

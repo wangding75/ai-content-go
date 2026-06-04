@@ -28,3 +28,18 @@ files:
     type: class
     tasks:
       - "Task-06：实现 Article HTTP Handler 和路由注册"
+  - path: app/article-pack/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-07：实现 Article 前端管理台页面（FR-012 Article Pack 页）"
+  - path: app/projects/[projectId]/article/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-08：实现 Article 前端管理台页面（FR-013 内容规划与生产页）"
+  - path: app/projects/[projectId]/article/metrics/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-09：实现 Article 前端管理台页面（FR-014 指标配置页）"
