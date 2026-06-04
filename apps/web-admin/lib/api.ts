@@ -1310,41 +1310,10 @@ export async function fetchPortfolioStrategySummary(portfolioID: string, params?
 }
 
 
-export type PlatformAdapterResponse = { id: string; platform: string; display_name: string; publish_mode: string; target_type: string; enabled: boolean; version: number; updated_at: string };
 export type PluginClientResponse = { id: string; name: string; client_type: string; version: string; scopes: string[]; status: string; api_key_masked: string; last_active_at?: string };
-export type PlatformCollectLogResponse = { id: string; project_id: string; platform: string; status: string; publish_job_id: string; content_item_id: string; external_url: string; error_summary: string; collected_at: string };
-export type PlatformCollectLogDetailResponse = PlatformCollectLogResponse & { content_title: string; content_version: string; target_display: string };
-export type ExternalCallbackLogResponse = { id: string; provider_id: string; binding_id: string; event_type: string; accepted: boolean; rejected_reason: string; boundary_violation: boolean; created_at: string };
-
-export async function fetchPlatformAdapters(): Promise<APIEnvelope<PagedResponse<PlatformAdapterResponse>>> {
-  return request<PagedResponse<PlatformAdapterResponse>>('/api/v1/platform-adapters?page=1&page_size=20');
-}
 
 export async function fetchPluginClients(): Promise<APIEnvelope<PagedResponse<PluginClientResponse>>> {
   return request<PagedResponse<PluginClientResponse>>('/api/v1/plugin-clients?page=1&page_size=20');
-}
-
-export async function fetchPlatformCollectLogs(): Promise<APIEnvelope<PagedResponse<PlatformCollectLogResponse>>> {
-  return request<PagedResponse<PlatformCollectLogResponse>>('/api/v1/platform-collect-logs?page=1&page_size=20');
-}
-
-export async function fetchExternalCallbackLogs(): Promise<APIEnvelope<PagedResponse<ExternalCallbackLogResponse>>> {
-  return request<PagedResponse<ExternalCallbackLogResponse>>('/api/v1/external-automation/callback-logs?page=1&page_size=20');
-}
-
-export type PlatformAdapterDetailResponse = PlatformAdapterResponse & { config: Record<string, unknown> };
-export type PluginPublishJobResponse = { id: string; project_id: string; content_item_id: string; content_version_id: string; target_id: string; title: string; target_platform: string; target_display: string; status: string; payload_hash: string; scheduled_at?: string; copied_at?: string; published_at?: string; last_error: string; retry_count: number; actions: string[]; created_at: string; updated_at: string };
-
-export async function createPlatformAdapter(input: { platform: string; display_name: string; publish_mode: string; target_type: string; config: Record<string, unknown> }): Promise<APIEnvelope<{ adapter_id: string; version: number }>> {
-  return request<{ adapter_id: string; version: number }>('/api/v1/platform-adapters', { method: 'POST', body: JSON.stringify(input) });
-}
-
-export async function fetchPlatformAdapter(adapterID: string): Promise<APIEnvelope<PlatformAdapterDetailResponse>> {
-  return request<PlatformAdapterDetailResponse>(`/api/v1/platform-adapters/${pathSegment(adapterID)}`);
-}
-
-export async function updatePlatformAdapter(adapterID: string, input: { platform: string; display_name: string; publish_mode: string; target_type: string; config: Record<string, unknown>; enabled: boolean; note?: string }): Promise<APIEnvelope<{ adapter_id: string; version: number; operation_log_id: string }>> {
-  return request<{ adapter_id: string; version: number; operation_log_id: string }>(`/api/v1/platform-adapters/${pathSegment(adapterID)}`, { method: 'PATCH', body: JSON.stringify(input) });
 }
 
 export async function createPluginClient(input: { name: string; client_type: string; scopes: string[]; redirect_uri?: string }): Promise<APIEnvelope<{ client_id: string; api_key_masked: string }>> {
@@ -1357,64 +1326,4 @@ export async function updatePluginClient(clientID: string, input: { name?: strin
 
 export async function rotatePluginClientKey(clientID: string): Promise<APIEnvelope<{ client_id: string; api_key_masked: string; operation_log_id: string }>> {
   return request<{ client_id: string; api_key_masked: string; operation_log_id: string }>(`/api/v1/plugin-clients/${pathSegment(clientID)}/rotate-key`, { method: 'POST', body: JSON.stringify({}) });
-}
-
-export async function authenticatePlugin(input: { client_id: string; client_secret: string }): Promise<APIEnvelope<{ access_token: string; token_type: string; expires_in: number }>> {
-  return request<{ access_token: string; token_type: string; expires_in: number }>('/api/v1/plugin-auth/token', { method: 'POST', body: JSON.stringify(input) });
-}
-
-export async function fetchPluginPublishJobs(params?: { status?: string; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<PluginPublishJobResponse>>> {
-  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.status ? { status: params.status } : {}) }).toString();
-  return request<PagedResponse<PluginPublishJobResponse>>(`/api/v1/plugin/publish-jobs?${q}`);
-}
-
-export async function lockPluginPublishJob(jobID: string): Promise<APIEnvelope<{ publish_job_id: string; locked_by: string }>> {
-  return request<{ publish_job_id: string; locked_by: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/lock`, { method: 'POST', body: JSON.stringify({}) });
-}
-
-export async function markPluginPublishJobFilled(jobID: string, input: { payload: Record<string, unknown> }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; status: string; operation_log_id: string }>> {
-  return request<{ publish_job_id: string; status: string; operation_log_id: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/filled`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
-}
-
-export async function markPluginPublishJobPublished(jobID: string, input: { external_url: string; published_at?: string; note?: string }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; previous_status: string; current_status: string; operation_log_id: string }>> {
-  return request<{ publish_job_id: string; previous_status: string; current_status: string; operation_log_id: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/published`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
-}
-
-export async function markPluginPublishJobFailed(jobID: string, input: { reason: string; retryable: boolean; note?: string }, idempotencyKey: string): Promise<APIEnvelope<{ publish_job_id: string; previous_status: string; current_status: string; operation_log_id: string }>> {
-  return request<{ publish_job_id: string; previous_status: string; current_status: string; operation_log_id: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/failed`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
-}
-
-export async function submitPlatformCollectLog(input: { project_id: string; publish_job_id: string; content_item_id: string; platform: string; external_url: string; error_summary?: string }, idempotencyKey?: string): Promise<APIEnvelope<{ collect_log_id: string; status: string }>> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
-  return request<{ collect_log_id: string; status: string }>('/api/v1/platform-collect-logs', { method: 'POST', body: JSON.stringify(input), headers });
-}
-
-export async function fetchPlatformCollectLog(collectLogID: string): Promise<APIEnvelope<PlatformCollectLogDetailResponse>> {
-  return request<PlatformCollectLogDetailResponse>(`/api/v1/platform-collect-logs/${pathSegment(collectLogID)}`);
-}
-
-export async function confirmPlatformCollectLogMetrics(collectLogID: string, input: { metric_values: Record<string, number> }, idempotencyKey: string): Promise<APIEnvelope<{ collect_log_id: string; confirmed_metric_count: number; operation_log_id: string }>> {
-  return request<{ collect_log_id: string; confirmed_metric_count: number; operation_log_id: string }>(`/api/v1/platform-collect-logs/${pathSegment(collectLogID)}/confirm-metrics`, { method: 'POST', body: JSON.stringify(input), headers: { 'Idempotency-Key': idempotencyKey } });
-}
-
-export async function rotateCallbackToken(bindingID: string, input: { reason: string }): Promise<APIEnvelope<{ binding_id: string; callback_token_once: string; callback_token_masked: string; operation_log_id: string }>> {
-  return request<{ binding_id: string; callback_token_once: string; callback_token_masked: string; operation_log_id: string }>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/rotate-callback-token`, { method: 'POST', body: JSON.stringify(input) });
-}
-
-export async function updateCallbackAuth(bindingID: string, input: { callback_auth_type: string; signing_secret_ref?: string; change_reason: string }): Promise<APIEnvelope<{ binding_id: string; callback_auth_type: string; operation_log_id: string }>> {
-  return request<{ binding_id: string; callback_auth_type: string; operation_log_id: string }>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/callback-auth`, { method: 'PATCH', body: JSON.stringify(input) });
-}
-
-export async function receiveExternalCallback(input: { binding_id: string; event_type: string; payload: Record<string, unknown>; stable_event_id?: string }): Promise<APIEnvelope<{ accepted: boolean; callback_log_id: string }>> {
-  return request<{ accepted: boolean; callback_log_id: string }>('/api/v1/external-automation/callbacks', { method: 'POST', body: JSON.stringify(input) });
-}
-
-export async function fetchCallbackLogs(params?: { binding_id?: string; event_type?: string; accepted?: boolean; page?: number; page_size?: number }): Promise<APIEnvelope<PagedResponse<ExternalCallbackLogResponse>>> {
-  const q = new URLSearchParams({ page: String(params?.page ?? 1), page_size: String(params?.page_size ?? 20), ...(params?.binding_id ? { binding_id: params.binding_id } : {}), ...(params?.event_type ? { event_type: params.event_type } : {}), ...(typeof params?.accepted === 'boolean' ? { accepted: String(params.accepted) } : {}) }).toString();
-  return request<PagedResponse<ExternalCallbackLogResponse>>(`/api/v1/external-automation/callback-logs?${q}`);
-}
-
-export async function testExternalCallback(input: { binding_id: string; event_type: string; payload: Record<string, unknown> }): Promise<APIEnvelope<{ accepted: boolean; callback_log_id: string; binding_id: string; stable_event_id: string; test_result: string }>> {
-  return request<{ accepted: boolean; callback_log_id: string; binding_id: string; stable_event_id: string; test_result: string }>('/api/v1/external-automation/callbacks/test', { method: 'POST', body: JSON.stringify(input) });
 }
