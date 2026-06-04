@@ -1,0 +1,104 @@
+tasks:
+  - task: "Task-01：定义 Article DTO、错误常量和 Service 接口"
+    module: api-server/article
+    task_type: contract
+    data_operations: "无"
+    boundary: "只新增 internal/modules/article/dto.go、errors.go、service.go（包含空方法体）"
+    forbidden:
+      - "不得写业务逻辑；不得访问数据库或外部系统"
+    test_file: article_contract_test.go
+    test_cases: 6
+  - task: "Task-02：实现 Article Pack 注册业务逻辑"
+    module: api-server/article
+    task_type: business-implementation
+    data_operations: "读/写 content.Service 的 contentTypes；读/写 workflow.Service 的 templates/versions；读/写 metrics.Service 的 templates；写 operation_log（模拟）"
+    boundary: "只替换 RegisterPack() 和 GetPackStatus() 的空实现，不删除或重写 service.go"
+    forbidden:
+      - "不得使用内存存储替代声明的数据操作"
+    test_file: article_service_test.go
+    test_cases: 12
+  - task: "Task-03：实现 Article 扩展配置业务逻辑"
+    module: api-server/article
+    task_type: business-implementation
+    data_operations: "读/写 article 内部配置存储；写 operation_log"
+    boundary: "只替换 GetConfig() 和 UpdateConfig() 的空实现，允许通过 content.Service 验证项目存在和 ContentType"
+    forbidden:
+      - "不得修改 content 模块的 Project 数据结构或添加新方法"
+    test_file: article_service_config_test.go
+    test_cases: 8
+  - task: "Task-04：实现 Article 生成运行业务逻辑"
+    module: api-server/article
+    task_type: business-implementation
+    data_operations: "读 article 配置；读 content_version 表；读 generation runs/items；写 generation runs/items；写 operation_log（retry 原因）"
+    boundary: "只替换 CreateGenerationRun/ListGenerationRuns/GetGenerationRun/RetryGenerationRun/GetContentSnapshot 的空实现，允许调用 workflow.Service（创建 WorkflowRun）、generation.Service（创建/查询 GenerationRun 和 ContentItem）、content.Service（项目验证）"
+    forbidden:
+      - "不得绕过 WorkflowRun/GenerationRun 直接写 ContentItem"
+    test_file: article_service_genrun_test.go
+    test_cases: 11
+  - task: "Task-05：实现 Article 指标配置业务逻辑"
+    module: api-server/article
+    task_type: business-implementation
+    data_operations: "读 metrics templates；读/写 article 内部指标配置；写 operation_log"
+    boundary: "只替换指标配置相关的空实现"
+    forbidden:
+      - "不得直接写入 MetricRecord；不得修改 metrics.Service 数据"
+    test_file: article_service_metrics_test.go
+    test_cases: 7
+  - task: "Task-06：实现 Article HTTP Handler 和路由注册"
+    module: api-server/http
+    task_type: api
+    data_operations: "无（代理到 ArticleService）"
+    boundary: "只新增 article_handler.go；只修改 router.go 新增 Article 路由组"
+    forbidden:
+      - "不得修改已有 handler 的逻辑；不得移除已有路由"
+    test_file: article_handler_red_test.go
+    test_cases: 22
+  - task: "Task-07：实现 Article 前端管理台页面（FR-012 Article Pack 页）"
+    module: web-admin
+    task_type: ui
+    data_operations: "调用 GET /api/v1/content-packs/article/status、POST /api/v1/content-packs/article/register"
+    boundary: "只新增 page.tsx 和相关组件"
+    forbidden:
+      - "不得修改已有页面"
+    test_file: article_service_integration_test.go
+    test_cases: 6
+  - task: "Task-08：实现 Article 前端管理台页面（FR-013 内容规划与生产页）"
+    module: web-admin
+    task_type: ui
+    data_operations: "调用生成运行相关 API"
+    boundary: "只新增 page.tsx 和相关组件"
+    forbidden:
+      - "不得修改已有页面"
+    test_file: article_service_integration_test.go
+    test_cases: 6
+  - task: "Task-09：实现 Article 前端管理台页面（FR-014 指标配置页）"
+    module: web-admin
+    task_type: ui
+    data_operations: "调用指标配置 API"
+    boundary: "只新增 page.tsx 和相关组件"
+    forbidden:
+      - "不得修改已有页面"
+    test_file: article_service_integration_test.go
+    test_cases: 6
+type_tests:
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: article_service_integration_test.go
+    resources: []
+    covers:
+      - "Task-02：实现 Article Pack 注册业务逻辑"
+      - "Task-04：实现 Article 生成运行业务逻辑"
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: article_handler_red_test.go
+    resources: []
+    covers:
+      - "Task-06：实现 Article HTTP Handler 和路由注册"
+  - type: frontend-ui
+    standard: standards/testing/frontend-ui.md
+    test_file: article_handler_red_test.go
+    resources: []
+    covers:
+      - "Task-07：实现 Article 前端管理台页面（FR-012 Article Pack 页）"
+      - "Task-08：实现 Article 前端管理台页面（FR-013 内容规划与生产页）"
+      - "Task-09：实现 Article 前端管理台页面（FR-014 指标配置页）"
