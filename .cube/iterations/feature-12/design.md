@@ -374,8 +374,8 @@ ArticleHandler → metrics.Service (for metric template queries)
   - 数据操作：无
   - 修改边界：只新增 internal/modules/article/dto.go、errors.go、service.go（包含空方法体）
   - 禁止行为：不得写业务逻辑；不得访问数据库或外部系统
-  - 产出类型：contract
-  - 功能类型：Article 模块接口契约（type id: contract）
+  - 产出类型：integration
+  - 功能类型：Article 模块接口契约（type id: integration）
   - 是否跨组件：否
 
 - Task-02：实现 Article Pack 注册业务逻辑
@@ -416,7 +416,7 @@ ArticleHandler → metrics.Service (for metric template queries)
   - 输入：CreateArticleGenerationRunRequest、ListGenerationRunsRequest、RetryGenerationRunRequest、Idempotency-Key
   - 输出：generation.CreateGenerationRunResponse / RetryGenerationRunResponse、ArticleGenerationRunDetailResponse、ArticleContentSnapshotResponse
   - 依赖任务：Task-01（Service 接口、DTO）、Task-03（Article 扩展配置）
-  - 数据操作：读 article 配置；读 generation runs/items；写 generation runs/items；写 operation_log（retry 原因）
+  - 数据操作：读 article 配置；读 content_version 表；读 generation runs/items；写 generation runs/items；写 operation_log（retry 原因）
   - 修改边界：只替换生成运行相关的空实现
   - 禁止行为：不得绕过 WorkflowRun/GenerationRun 直接写 ContentItem
   - 产出类型：integration

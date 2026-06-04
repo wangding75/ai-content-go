@@ -17,6 +17,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/http/api"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/agent"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/article"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/content"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/dashboard"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/external"
@@ -129,6 +130,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		portfolioSvc = portfolio.NewService()
 	}
 	portfolioHandler := handlers.NewPortfolioHandler(portfolioSvc, logger)
+	articleHandler := handlers.NewArticleHandler(article.NewService(), content.NewService(), wfSvc, metricsSvc, eng, logger)
 	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
 
 	r.Route("/api/v1/plugin-auth", func(r chi.Router) {
@@ -310,6 +312,18 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		r.Get("/portfolios/{portfolioId}/cost-summary", portfolioHandler.GetCostSummary)
 		r.Get("/portfolios/{portfolioId}/strategy-summary", portfolioHandler.GetStrategySummary)
 
+			// Iteration 12: Article Pack
+			r.Get("/content-packs/article/status", articleHandler.GetPackStatus)
+			r.Post("/content-packs/article/register", articleHandler.RegisterPack)
+			r.Get("/projects/{projectId}/article/config", articleHandler.GetConfig)
+			r.Patch("/projects/{projectId}/article/config", articleHandler.UpdateConfig)
+			r.Post("/projects/{projectId}/article/generation-runs", articleHandler.CreateGenerationRun)
+			r.Get("/projects/{projectId}/article/generation-runs", articleHandler.ListGenerationRuns)
+			r.Get("/projects/{projectId}/article/generation-runs/{id}", articleHandler.GetGenerationRun)
+			r.Post("/projects/{projectId}/article/generation-runs/{id}/retry", articleHandler.RetryGenerationRun)
+			r.Get("/projects/{projectId}/article/content-items/{itemId}", articleHandler.GetContentSnapshot)
+			r.Get("/projects/{projectId}/article/metrics", articleHandler.GetMetricsConfig)
+			r.Patch("/projects/{projectId}/article/metrics", articleHandler.UpdateMetricsConfig)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 
