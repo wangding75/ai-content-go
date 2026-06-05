@@ -62,3 +62,18 @@
  ✓ Compiled /projects/[projectId]/article/metrics in 215ms (382 modules)
  GET /projects/demo/article/metrics 200 in 397ms
  ✓ Compiled in 839ms (600 modules)
+ GET /article-pack 200 in 279ms
+ ✓ Compiled /projects/[projectId]/article in 209ms (372 modules)
+ GET /projects/demo/article 200 in 475ms
+ ✓ Compiled /projects/[projectId]/article/metrics in 129ms (377 modules)
+ GET /projects/demo/article/metrics 200 in 339ms
+ GET /article-pack 200 in 76ms
+ GET /projects/demo/article 200 in 99ms
+ GET /article-pack 200 in 57ms
+ GET /projects/demo/article 200 in 76ms
+ GET /article-pack 200 in 52ms
+ GET /projects/demo/article 200 in 73ms
+ GET /projects/demo/article/metrics 200 in 81ms
+ GET /projects/project-1/article 200 in 131ms
+ GET /projects/project-1/article/metrics 200 in 101ms
+ GET /article-pack 200 in 58ms
