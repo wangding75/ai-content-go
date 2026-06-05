@@ -31,17 +31,9 @@ func metricsTestDB(t *testing.T) *sql.DB {
 
 func runMigrations(t *testing.T, db *sql.DB) {
 	t.Helper()
-	migrationsDir := "../../migrations"
+	migrationsDir := "../../../migrations"
 	files := []string{
-		"00001_create_operation_log.sql",
-		"00002_create_content_entry_tables.sql",
-		"00003_create_workflow_tables.sql",
-		"00004_create_iteration_2_1_tables.sql",
-		"00005_create_novel_planning_tables.sql",
-		"00006_create_content_generation_tables.sql",
-		"00007_create_content_review_tables.sql",
 		"00008_create_knowledge_memory_tables.sql",
-		"00009_create_publish_tables.sql",
 		"00010_create_metrics_tables.sql",
 	}
 	for _, file := range files {
@@ -265,10 +257,10 @@ func TestIntegrationPostgresStoreSummaryAggregation(t *testing.T) {
 		rec := MetricRecordResponse{
 			ID:               fmt.Sprintf("metric-record-avg-%d", i),
 			ProjectID:        "project-summary",
-			ContentItemID:    "content-item-1",
-			ContentVersionID: "content-version-1",
-			PublishJobID:     "publish-job-1",
-			TargetID:         "publish-target-1",
+			ContentItemID:    fmt.Sprintf("content-item-%d", i+1),
+			ContentVersionID: fmt.Sprintf("content-version-%d", i+1),
+			PublishJobID:     fmt.Sprintf("publish-job-%d", i+1),
+			TargetID:         fmt.Sprintf("publish-target-%d", i+1),
 			ContentType:      "article",
 			MetricTemplateID: tplAvg.ID,
 			Platform:         "wechat",

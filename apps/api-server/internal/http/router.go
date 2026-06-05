@@ -130,7 +130,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 		portfolioSvc = portfolio.NewService()
 	}
 	portfolioHandler := handlers.NewPortfolioHandler(portfolioSvc, logger)
-	articleHandler := handlers.NewArticleHandler(article.NewService(), content.NewService(), wfSvc, metricsSvc, eng, logger)
+	articleHandler := handlers.NewArticleHandler(article.NewService(content.NewService(), wfSvc, metricsSvc), content.NewService(), wfSvc, metricsSvc, eng, logger)
 	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
 
 	r.Route("/api/v1/plugin-auth", func(r chi.Router) {
