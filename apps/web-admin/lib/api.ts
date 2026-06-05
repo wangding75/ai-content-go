@@ -1542,3 +1542,187 @@ export async function updateProjectArticleMetrics(projectID: string, input: { en
     headers: idempotencyHeaders(idempotencyKey),
   });
 }
+
+// --- Iteration 13: Social Post Pack ---
+
+export type SocialPostPackWorkflowSummary = {
+  template_id: string;
+  code: string;
+  name: string;
+  current_version: string;
+};
+
+export type SocialPostPackMetricSummary = {
+  metric_code: string;
+  metric_name: string;
+  unit: string;
+  platform: string;
+};
+
+export type SocialPostPackStatusResponse = {
+  content_pack_id: string;
+  content_type: { id: string; code: string; name: string; project_schema: Record<string, unknown>; enabled: boolean } | null;
+  schema: Record<string, unknown>;
+  workflows: SocialPostPackWorkflowSummary[];
+  metrics: SocialPostPackMetricSummary[];
+  current_version: string;
+};
+
+export type SocialPostConfigResponse = {
+  target_platforms: string[];
+  default_variant_count: number;
+  caption_length_policy: string;
+  hashtag_policy: Record<string, unknown>;
+  cover_copy_policy: Record<string, unknown>;
+  tone_style: string;
+  forbidden_terms: string[];
+  config_version: number;
+};
+
+export type SocialPostVariantResponse = {
+  id: string;
+  content_item_id: string;
+  variant_index: number;
+  platform: string;
+  title: string;
+  body: string;
+  hashtags: string[];
+  cover_copy: string;
+  tone_style: string;
+  status: string;
+  content_version_id: string;
+  created_at: string;
+};
+
+export type SocialPostGenerationRunDetailResponse = {
+  generation_run_id: string;
+  workflow_run_id: string;
+  status: string;
+  content_item_id: string;
+  trace: { agent_task_ids: string[]; llm_call_log_ids: string[] } | null;
+  variants: SocialPostVariantResponse[];
+  error: string;
+};
+
+export type SocialPostAssetItem = {
+  id: string;
+  platform: string;
+  source_variant_id: string;
+  generation_run_id: string;
+  result: Record<string, unknown>;
+  created_at: string;
+};
+
+export type SocialPostAssetsResponse = {
+  tags: SocialPostAssetItem[];
+  cover_copy: SocialPostAssetItem[];
+  asset_suggestions: string[];
+  source_runs: string[];
+};
+
+export async function fetchSocialPostPackStatus(): Promise<APIEnvelope<SocialPostPackStatusResponse>> {
+  return request<SocialPostPackStatusResponse>('/api/v1/content-packs/social-post/status');
+}
+
+export async function registerSocialPostPack(idempotencyKey?: string): Promise<APIEnvelope<{ content_pack_id: string; content_type_id: string; registered_version: string }>> {
+  return request<{ content_pack_id: string; content_type_id: string; registered_version: string }>('/api/v1/content-packs/social-post/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      schema: { content_type_code: 'social_post', name: 'Social Post Pack', project_schema: {} },
+      workflows: [
+        { code: 'social_post_generation', name: 'Social Post Generation' },
+        { code: 'social_post_tags', name: 'Social Post Tags' },
+        { code: 'social_post_cover_copy', name: 'Social Post Cover Copy' },
+      ],
+      metrics: [
+        { metric_code: 'impressions', metric_name: '曝光', unit: 'count' },
+        { metric_code: 'clicks', metric_name: '点击', unit: 'count' },
+      ],
+      version: '2026.06.social-post.v1',
+    }),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function fetchSocialPostConfig(projectID: string): Promise<APIEnvelope<SocialPostConfigResponse>> {
+  return request<SocialPostConfigResponse>(`/api/v1/projects/${pathSegment(projectID)}/social-post/config`);
+}
+
+export async function updateSocialPostConfig(projectID: string, input: {
+  target_platforms: string[];
+  default_variant_count: number;
+  caption_length_policy: string;
+  hashtag_policy: Record<string, unknown>;
+  cover_copy_policy: Record<string, unknown>;
+  tone_style: string;
+  forbidden_terms: string[];
+}, idempotencyKey?: string): Promise<APIEnvelope<{ version_id: string; operation_log_id: string }>> {
+  return request<{ version_id: string; operation_log_id: string }>(`/api/v1/projects/${pathSegment(projectID)}/social-post/config`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function createSocialPostGenerationRun(projectID: string, input: {
+  topic: string;
+  source_content_item_id: string;
+  platform: string;
+  version_count: number;
+  tone_style: string;
+  asset_options: { generate_tags: boolean; generate_cover_copy: boolean };
+}, idempotencyKey?: string): Promise<APIEnvelope<{ generation_run_id: string; workflow_run_id: string; status: string }>> {
+  return request<{ generation_run_id: string; workflow_run_id: string; status: string }>(`/api/v1/projects/${pathSegment(projectID)}/social-post/generation-runs`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function fetchSocialPostGenerationRun(projectID: string, runID: string): Promise<APIEnvelope<SocialPostGenerationRunDetailResponse>> {
+  return request<SocialPostGenerationRunDetailResponse>(`/api/v1/projects/${pathSegment(projectID)}/social-post/generation-runs/${pathSegment(runID)}`);
+}
+
+export async function fetchSocialPostVariants(projectID: string, params: { content_item_id?: string; status?: string; platform?: string; page?: number; page_size?: number }): Promise<APIEnvelope<{ items: SocialPostVariantResponse[]; pagination: Pagination }>> {
+  const qs = new URLSearchParams();
+  if (params.content_item_id) qs.set('content_item_id', params.content_item_id);
+  if (params.status) qs.set('status', params.status);
+  if (params.platform) qs.set('platform', params.platform);
+  if (params.page) qs.set('page', String(params.page));
+  if (params.page_size) qs.set('page_size', String(params.page_size));
+  const query = qs.toString();
+  return request<{ items: SocialPostVariantResponse[]; pagination: Pagination }>(`/api/v1/projects/${pathSegment(projectID)}/social-post/variants${query ? `?${query}` : ''}`);
+}
+
+export async function selectSocialPostVariant(projectID: string, variantID: string, input: { content_item_id: string; note: string }, idempotencyKey?: string): Promise<APIEnvelope<{ selected_variant_id: string; content_version_id: string; operation_log_id: string }>> {
+  return request<{ selected_variant_id: string; content_version_id: string; operation_log_id: string }>(`/api/v1/projects/${pathSegment(projectID)}/social-post/variants/${pathSegment(variantID)}/select`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function generateSocialPostTags(projectID: string, input: { content_item_id: string; variant_id: string; platform: string; count: number; style: string }, idempotencyKey?: string): Promise<APIEnvelope<{ generation_run_id: string; workflow_run_id: string; status: string }>> {
+  return request<{ generation_run_id: string; workflow_run_id: string; status: string }>(`/api/v1/projects/${pathSegment(projectID)}/social-post/assets/tags:generate`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function generateSocialPostCoverCopy(projectID: string, input: { content_item_id: string; variant_id: string; platform: string; count: number; style: string }, idempotencyKey?: string): Promise<APIEnvelope<{ generation_run_id: string; workflow_run_id: string; status: string }>> {
+  return request<{ generation_run_id: string; workflow_run_id: string; status: string }>(`/api/v1/projects/${pathSegment(projectID)}/social-post/assets/cover-copy:generate`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function fetchSocialPostAssets(projectID: string, params: { content_item_id?: string; platform?: string; variant_id?: string }): Promise<APIEnvelope<SocialPostAssetsResponse>> {
+  const qs = new URLSearchParams();
+  if (params.content_item_id) qs.set('content_item_id', params.content_item_id);
+  if (params.platform) qs.set('platform', params.platform);
+  if (params.variant_id) qs.set('variant_id', params.variant_id);
+  const query = qs.toString();
+  return request<SocialPostAssetsResponse>(`/api/v1/projects/${pathSegment(projectID)}/social-post/assets${query ? `?${query}` : ''}`);
+}

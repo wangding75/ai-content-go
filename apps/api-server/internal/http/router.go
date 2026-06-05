@@ -31,6 +31,7 @@ import (
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/publish"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/review"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/schedule"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/socialpost"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/strategy"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/workflow"
@@ -39,10 +40,11 @@ import (
 type RouterOption func(*routerConfig)
 
 type routerConfig struct {
-	metricsService   metrics.Service
-	strategyService  strategy.Service
-	portfolioService portfolio.Service
-	externalService  external.Service
+	metricsService      metrics.Service
+	strategyService     strategy.Service
+	portfolioService    portfolio.Service
+	externalService     external.Service
+	socialPostService   socialpost.Service
 }
 
 func WithMetricsService(svc metrics.Service) RouterOption {
@@ -66,6 +68,12 @@ func WithPortfolioService(svc portfolio.Service) RouterOption {
 func WithExternalService(svc external.Service) RouterOption {
 	return func(c *routerConfig) {
 		c.externalService = svc
+	}
+}
+
+func WithSocialPostService(svc socialpost.Service) RouterOption {
+	return func(c *routerConfig) {
+		c.socialPostService = svc
 	}
 }
 
@@ -132,6 +140,13 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 	portfolioHandler := handlers.NewPortfolioHandler(portfolioSvc, logger)
 	articleHandler := handlers.NewArticleHandler(article.NewService(content.NewService(), wfSvc, metricsSvc), content.NewService(), wfSvc, metricsSvc, eng, logger)
 	publishHandler := handlers.NewPublishHandler(publish.NewService(), logger)
+	var socialPostSvc socialpost.Service
+	if cfg.socialPostService != nil {
+		socialPostSvc = cfg.socialPostService
+	} else {
+		socialPostSvc = socialpost.NewService()
+	}
+	socialPostHandler := handlers.NewSocialPostHandler(socialPostSvc, logger)
 
 	r.Route("/api/v1/plugin-auth", func(r chi.Router) {
 		r.Post("/token", publishHandler.AuthenticatePlugin)
@@ -324,6 +339,19 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 			r.Get("/projects/{projectId}/article/content-items/{itemId}", articleHandler.GetContentSnapshot)
 			r.Get("/projects/{projectId}/article/metrics", articleHandler.GetMetricsConfig)
 			r.Patch("/projects/{projectId}/article/metrics", articleHandler.UpdateMetricsConfig)
+
+			// Iteration 13: Social Post Pack
+			r.Get("/content-packs/social-post/status", socialPostHandler.GetPackStatus)
+			r.Post("/content-packs/social-post/register", socialPostHandler.RegisterPack)
+			r.Get("/projects/{projectId}/social-post/config", socialPostHandler.GetConfig)
+			r.Patch("/projects/{projectId}/social-post/config", socialPostHandler.UpdateConfig)
+			r.Post("/projects/{projectId}/social-post/generation-runs", socialPostHandler.CreateGenerationRun)
+			r.Get("/projects/{projectId}/social-post/generation-runs/{id}", socialPostHandler.GetGenerationRun)
+			r.Get("/projects/{projectId}/social-post/variants", socialPostHandler.ListVariants)
+			r.Post("/projects/{projectId}/social-post/variants/{variantId}/select", socialPostHandler.SelectVariant)
+			r.Post("/projects/{projectId}/social-post/assets/tags:generate", socialPostHandler.GenerateTags)
+			r.Post("/projects/{projectId}/social-post/assets/cover-copy:generate", socialPostHandler.GenerateCoverCopy)
+			r.Get("/projects/{projectId}/social-post/assets", socialPostHandler.GetAssets)
 	})
 	r.Get("/openapi.yaml", serveOpenAPI)
 

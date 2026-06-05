@@ -15,6 +15,8 @@ const navItems = [
   { href: '/platform-collect-logs', label: '采集日志', match: (pathname: string) => pathname === '/platform-collect-logs' },
   { href: '/external-automation/n8n', label: '外部自动化 / n8n', match: (pathname: string) => pathname === '/external-automation/n8n' },
   { href: '/llm/cost-summary', label: '成本汇总', match: (pathname: string) => pathname === '/llm/cost-summary' },
+  { href: '/article-pack', label: 'Article Pack', match: (pathname: string) => pathname === '/article-pack' },
+  { href: '/social-post-pack', label: 'Social Post Pack', match: (pathname: string) => pathname === '/social-post-pack' },
   { href: '/portfolios', label: 'Portfolio 管理', match: (pathname: string) => pathname === '/portfolios' || pathname.startsWith('/portfolios/') },
   { href: '/agent/tasks', label: 'Agent 管理', match: (pathname: string) => pathname === '/agent/tasks' || pathname.startsWith('/agent/tasks/') },
   { href: '/llm/logs', label: 'LLM Logs', match: (pathname: string) => pathname === '/llm/logs' || pathname.startsWith('/llm/logs/') },

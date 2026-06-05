@@ -1,0 +1,93 @@
+stage: 02-design
+branch: feature/13
+files:
+  - path: internal/modules/socialpost/dto.go
+    module: api-server
+    tasks:
+      - Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+  - path: internal/modules/socialpost/errors.go
+    module: api-server
+    tasks:
+      - Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+  - path: internal/modules/socialpost/service.go
+    module: api-server
+    tasks:
+      - Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+  - path: internal/modules/socialpost/store.go
+    module: api-server
+    tasks:
+      - Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+  - path: internal/modules/socialpost/memory_store.go
+    module: api-server
+    tasks:
+      - Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+  - path: internal/modules/socialpost/postgres_store.go
+    module: api-server
+    tasks:
+      - Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+  - path: migrations/00014_create_social_post_tables.sql
+    module: api-server
+    tasks:
+      - Task-02：创建 Social Post 持久化表迁移
+  - path: internal/http/handlers/social_post.go
+    module: api-server
+    tasks:
+      - Task-03：实现 Social Post Pack 注册与状态查询后端链路
+      - Task-04：实现项目 Social 配置查询与更新链路
+      - Task-05：实现短内容生成触发链路
+      - Task-06：实现生成详情查询与 trace 汇总链路
+      - Task-07：实现候选文案结果持久化与列表查询链路
+      - Task-08：实现主版本选择事务链路
+      - Task-09：实现标签生成与封面文案生成触发链路
+      - Task-10：实现资产结果持久化与查询链路
+  - path: internal/http/router.go
+    module: api-server
+    tasks:
+      - Task-03：实现 Social Post Pack 注册与状态查询后端链路
+      - Task-04：实现项目 Social 配置查询与更新链路
+      - Task-05：实现短内容生成触发链路
+      - Task-06：实现生成详情查询与 trace 汇总链路
+      - Task-07：实现候选文案结果持久化与列表查询链路
+      - Task-08：实现主版本选择事务链路
+      - Task-09：实现标签生成与封面文案生成触发链路
+      - Task-10：实现资产结果持久化与查询链路
+  - path: internal/app/server.go
+    module: api-server
+    tasks:
+      - Task-03：实现 Social Post Pack 注册与状态查询后端链路
+  - path: openapi.yaml
+    module: openapi
+    tasks:
+      - Task-11：更新 OpenAPI Social Post 契约
+  - path: lib/api.ts
+    module: web-admin
+    tasks:
+      - Task-12：实现 Social Post API 客户端与类型定义
+  - path: app/social-post-pack/page.tsx
+    module: web-admin
+    tasks:
+      - Task-13：实现 Social Post Pack 管理页面
+  - path: app/projects/[projectId]/social-post/page.tsx
+    module: web-admin
+    tasks:
+      - Task-14：实现项目 Social 配置与生成页面
+  - path: app/projects/[projectId]/social-post/variants/page.tsx
+    module: web-admin
+    tasks:
+      - Task-15：实现候选文案管理页面
+  - path: app/projects/[projectId]/social-post/assets/page.tsx
+    module: web-admin
+    tasks:
+      - Task-16：实现资产管理页面
+  - path: app/global-nav.tsx
+    module: web-admin
+    tasks:
+      - Task-13：实现 Social Post Pack 管理页面
+      - Task-17：接入全局与项目导航入口
+  - path: app/projects/[projectId]/workspace-nav.tsx
+    module: web-admin
+    tasks:
+      - Task-14：实现项目 Social 配置与生成页面
+      - Task-15：实现候选文案管理页面
+      - Task-16：实现资产管理页面
+      - Task-17：接入全局与项目导航入口

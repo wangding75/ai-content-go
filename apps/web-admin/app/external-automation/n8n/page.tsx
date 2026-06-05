@@ -87,9 +87,9 @@ export default function ExternalAutomationN8NPage() {
       setError({ message: '请选择 Binding 并填写轮换原因', request_id: 'client' });
       return;
     }
-    const result = await rotateCallbackToken(selectedBindingID, { reason: rotateReason });
+    const result = await rotateCallbackToken(selectedBindingID);
     if (result.success && result.data) {
-      setCallbackTokenOnce(result.data.callback_token_once);
+      setCallbackTokenOnce(result.data.token_masked ?? null);
       setToast(`Token 轮换成功（operation_log_id: ${result.data.operation_log_id}）`);
       setRotateReason('');
     } else {
@@ -125,13 +125,12 @@ export default function ExternalAutomationN8NPage() {
       setError({ message: 'Payload 格式无效，需为 JSON', request_id: 'client' });
       return;
     }
-    const result = await testExternalCallback({
-      binding_id: selectedBindingID,
+    const result = await testExternalCallback(selectedBindingID, {
       event_type: testEventType,
       payload,
     });
     if (result.success && result.data) {
-      setToast(`测试回调 sent（callback_log_id: ${result.data.callback_log_id}, accepted: ${result.data.accepted}）`);
+      setToast(`测试回调 sent（callback_log_id: ${result.data.callback_log_id}）`);
     } else {
       setError(pageErrorFromEnvelope(result, '测试回调失败'));
     }
@@ -139,7 +138,7 @@ export default function ExternalAutomationN8NPage() {
 
   async function loadCallbackLogs() {
     setCallbackLogsLoading(true);
-    const result = await fetchCallbackLogs(selectedBindingID ? { binding_id: selectedBindingID } : undefined);
+    const result = await fetchCallbackLogs(selectedBindingID);
     if (result.success && result.data) {
       setCallbackLogs(result.data.items);
       setError(null);
@@ -230,9 +229,9 @@ export default function ExternalAutomationN8NPage() {
             <li key={log.id} className="card">
               <p>callback_log_id: {log.id}</p>
               <p>request_id: {log.binding_id}</p>
+              <p>状态: {log.status}</p>
               <p>事件类型: {log.event_type}</p>
-              <p>接受: {log.accepted ? '是' : '否'}（{log.rejected_reason || '无拒绝原因'}）</p>
-              <p>边界: {log.boundary_violation ? '违反' : '未违反'}</p>
+              <p>创建时间: {log.created_at || '-'}</p>
             </li>
           ))}</ul>
         )}

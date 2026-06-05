@@ -13,6 +13,7 @@ import (
 	httpserver "github.com/wangding75/ai-content-go/apps/api-server/internal/http"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/metrics"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/portfolio"
+	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/socialpost"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/modules/system"
 	"github.com/wangding75/ai-content-go/apps/api-server/internal/store"
 )
@@ -36,10 +37,12 @@ func NewServer(cfg config.Config, logger *slog.Logger) (*http.Server, error) {
 		db.SetConnMaxLifetime(5 * time.Minute)
 		metricsStore := metrics.NewPostgresStore(db)
 		portfolioStore := portfolio.NewPostgresStore(db)
+		socialPostStore := socialpost.NewPostgresStore(db)
 		opts = append(
 			opts,
 			httpserver.WithMetricsService(metrics.NewService(metricsStore)),
 			httpserver.WithPortfolioService(portfolio.NewService(portfolioStore)),
+			httpserver.WithSocialPostService(socialpost.NewService(socialPostStore)),
 		)
 	}
 
