@@ -1,0 +1,64 @@
+
+> dev
+> next dev --hostname 127.0.0.1 --port 3100
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /home/wangding/pnpm-lock.yaml as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /home/wangding/git/ai-content-go/apps/web-admin/package-lock.json
+
+   ▲ Next.js 15.5.18
+   - Local:        http://127.0.0.1:3100
+   - Network:      http://127.0.0.1:3100
+
+ ✓ Starting...
+ ✓ Ready in 3.5s
+ ○ Compiling /article-pack ...
+ ✓ Compiled /article-pack in 1370ms (594 modules)
+ GET /article-pack 200 in 1836ms
+ GET /article-pack 200 in 84ms
+ ✓ Compiled /projects/[projectId]/article in 498ms (601 modules)
+ GET /projects/demo/article 200 in 1172ms
+ ✓ Compiled /projects/[projectId]/article/metrics in 282ms (608 modules)
+ GET /projects/demo/article/metrics 200 in 817ms
+ GET /article-pack 200 in 77ms
+ GET /projects/demo/article 200 in 92ms
+ GET /projects/demo/article/metrics 200 in 101ms
+ GET /article-pack 200 in 76ms
+ GET /projects/demo/article 200 in 125ms
+ GET /projects/demo/article/metrics 200 in 113ms
+ GET /article-pack 200 in 59ms
+ ✓ Compiled / in 413ms (605 modules)
+ GET / 200 in 634ms
+ GET / 200 in 50ms
+ GET /article-pack 200 in 77ms
+ GET / 200 in 52ms
+ GET / 200 in 47ms
+ GET /article-pack 200 in 61ms
+ ✓ Compiled in 794ms (605 modules)
+ GET / 200 in 208ms
+ GET / 200 in 50ms
+ GET /article-pack 200 in 64ms
+ GET /article-pack 200 in 74ms
+ ✓ Compiled /projects/[projectId]/article in 209ms (372 modules)
+ GET /projects/demo/article 200 in 581ms
+ ✓ Compiled /projects/[projectId]/article/metrics in 113ms (377 modules)
+ GET /projects/demo/article/metrics 200 in 360ms
+ GET /article-pack 200 in 81ms
+ GET /article-pack 200 in 74ms
+ GET /projects/demo/article 200 in 115ms
+ GET /projects/demo/article/metrics 200 in 92ms
+ ✓ Compiled in 953ms (600 modules)
+ ✓ Compiled in 414ms (600 modules)
+ ✓ Compiled / in 283ms (372 modules)
+ GET / 200 in 502ms
+ GET / 200 in 43ms
+ GET /article-pack 200 in 83ms
+ GET /article-pack 200 in 55ms
+ ✓ Compiled /projects/[projectId]/article in 138ms (377 modules)
+ GET /projects/demo/article 200 in 478ms
+ ✓ Compiled /projects/[projectId]/article/metrics in 215ms (382 modules)
+ GET /projects/demo/article/metrics 200 in 397ms
+ ✓ Compiled in 839ms (600 modules)
