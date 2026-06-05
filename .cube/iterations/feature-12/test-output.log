@@ -1,0 +1,21 @@
+
+> lint
+> tsc --noEmit
+
+app/external-automation/n8n/page.tsx(8,3): error TS2305: Module '"../../../lib/api"' has no exported member 'ExternalCallbackLogResponse'.
+app/external-automation/n8n/page.tsx(13,3): error TS2305: Module '"../../../lib/api"' has no exported member 'fetchCallbackLogs'.
+app/external-automation/n8n/page.tsx(14,3): error TS2305: Module '"../../../lib/api"' has no exported member 'rotateCallbackToken'.
+app/external-automation/n8n/page.tsx(15,3): error TS2305: Module '"../../../lib/api"' has no exported member 'updateCallbackAuth'.
+app/external-automation/n8n/page.tsx(16,3): error TS2305: Module '"../../../lib/api"' has no exported member 'receiveExternalCallback'.
+app/external-automation/n8n/page.tsx(17,3): error TS2305: Module '"../../../lib/api"' has no exported member 'testExternalCallback'.
+app/platform-adapters/page.tsx(4,10): error TS2305: Module '"@/lib/api"' has no exported member 'fetchPlatformAdapters'.
+app/platform-adapters/page.tsx(4,33): error TS2305: Module '"@/lib/api"' has no exported member 'createPlatformAdapter'.
+app/platform-adapters/page.tsx(4,56): error TS2305: Module '"@/lib/api"' has no exported member 'updatePlatformAdapter'.
+app/platform-adapters/page.tsx(4,79): error TS2305: Module '"@/lib/api"' has no exported member 'fetchPlatformAdapter'.
+app/platform-adapters/page.tsx(4,106): error TS2305: Module '"@/lib/api"' has no exported member 'PlatformAdapterResponse'.
+app/platform-adapters/page.tsx(4,136): error TS2305: Module '"@/lib/api"' has no exported member 'PlatformAdapterDetailResponse'.
+app/platform-collect-logs/page.tsx(4,10): error TS2305: Module '"@/lib/api"' has no exported member 'fetchPlatformCollectLogs'.
+app/platform-collect-logs/page.tsx(4,36): error TS2305: Module '"@/lib/api"' has no exported member 'fetchPlatformCollectLog'.
+app/platform-collect-logs/page.tsx(4,61): error TS2305: Module '"@/lib/api"' has no exported member 'confirmPlatformCollectLogMetrics'.
+app/platform-collect-logs/page.tsx(4,100): error TS2305: Module '"@/lib/api"' has no exported member 'PlatformCollectLogResponse'.
+app/platform-collect-logs/page.tsx(4,133): error TS2305: Module '"@/lib/api"' has no exported member 'PlatformCollectLogDetailResponse'.

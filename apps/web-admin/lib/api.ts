@@ -1310,7 +1310,130 @@ export async function fetchPortfolioStrategySummary(portfolioID: string, params?
 }
 
 
+export type PlatformAdapterResponse = {
+  id: string;
+  platform: string;
+  display_name: string;
+  publish_mode: string;
+  target_type: string;
+  enabled: boolean;
+  updated_at?: string;
+};
+
+export type PlatformAdapterDetailResponse = PlatformAdapterResponse & {
+  config: Record<string, unknown>;
+};
+
 export type PluginClientResponse = { id: string; name: string; client_type: string; version: string; scopes: string[]; status: string; api_key_masked: string; last_active_at?: string };
+
+export type PluginPublishJobResponse = {
+  id: string;
+  project_id: string;
+  status: string;
+  content_item_id?: string;
+  target_platform?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PlatformCollectLogResponse = {
+  id: string;
+  project_id: string;
+  platform: string;
+  status: string;
+  error_summary?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PlatformCollectLogDetailResponse = PlatformCollectLogResponse & {
+  metric_values?: Record<string, unknown>;
+  source_payload?: Record<string, unknown>;
+};
+
+export type ExternalCallbackLogResponse = {
+  id: string;
+  binding_id: string;
+  status: string;
+  event_type: string;
+  created_at?: string;
+};
+
+export async function createPlatformAdapter(input: { platform: string; display_name: string; publish_mode: string; target_type: string; config: Record<string, unknown> }): Promise<APIEnvelope<{ adapter_id: string; operation_log_id?: string }>> {
+  return request<{ adapter_id: string; operation_log_id?: string }>('/api/v1/platform-adapters', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function fetchPlatformAdapters(): Promise<APIEnvelope<PagedResponse<PlatformAdapterResponse>>> {
+  return request<PagedResponse<PlatformAdapterResponse>>('/api/v1/platform-adapters?page=1&page_size=20');
+}
+
+export async function fetchPlatformAdapter(adapterID: string): Promise<APIEnvelope<PlatformAdapterDetailResponse>> {
+  return request<PlatformAdapterDetailResponse>(`/api/v1/platform-adapters/${pathSegment(adapterID)}`);
+}
+
+export async function updatePlatformAdapter(adapterID: string, input: { platform: string; display_name: string; publish_mode: string; target_type: string; config: Record<string, unknown>; enabled: boolean }): Promise<APIEnvelope<{ adapter_id: string; operation_log_id?: string }>> {
+  return request<{ adapter_id: string; operation_log_id?: string }>(`/api/v1/platform-adapters/${pathSegment(adapterID)}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export async function authenticatePlugin(input: { api_key: string; client_version: string }): Promise<APIEnvelope<{ access_token: string; token_type: string; expires_in: number }>> {
+  return request<{ access_token: string; token_type: string; expires_in: number }>('/api/v1/plugin-auth/token', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export async function fetchPluginPublishJobs(projectID: string): Promise<APIEnvelope<PagedResponse<PluginPublishJobResponse>>> {
+  return request<PagedResponse<PluginPublishJobResponse>>(`/api/v1/projects/${pathSegment(projectID)}/publish-jobs?page=1&page_size=20`);
+}
+
+export async function lockPluginPublishJob(jobID: string, input: { reason?: string }, idempotencyKey?: string): Promise<APIEnvelope<{ publish_job_id: string; operation_log_id?: string }>> {
+  return request<{ publish_job_id: string; operation_log_id?: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/lock`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function markPluginPublishJobFilled(jobID: string, input: { content_version_id: string; note?: string }, idempotencyKey?: string): Promise<APIEnvelope<{ publish_job_id: string; operation_log_id?: string }>> {
+  return request<{ publish_job_id: string; operation_log_id?: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/filled`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function markPluginPublishJobPublished(jobID: string, input: { external_url: string; note?: string }, idempotencyKey?: string): Promise<APIEnvelope<{ publish_job_id: string; operation_log_id?: string }>> {
+  return request<{ publish_job_id: string; operation_log_id?: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/published`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function markPluginPublishJobFailed(jobID: string, input: { reason: string; note?: string }, idempotencyKey?: string): Promise<APIEnvelope<{ publish_job_id: string; operation_log_id?: string }>> {
+  return request<{ publish_job_id: string; operation_log_id?: string }>(`/api/v1/plugin/publish-jobs/${pathSegment(jobID)}/failed`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function submitPlatformCollectLog(input: Record<string, unknown>, idempotencyKey?: string): Promise<APIEnvelope<{ collect_log_id: string; operation_log_id?: string }>> {
+  return request<{ collect_log_id: string; operation_log_id?: string }>('/api/v1/platform-collect-logs', { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function fetchPlatformCollectLogs(): Promise<APIEnvelope<PagedResponse<PlatformCollectLogResponse>>> {
+  return request<PagedResponse<PlatformCollectLogResponse>>('/api/v1/platform-collect-logs?page=1&page_size=20');
+}
+
+export async function fetchPlatformCollectLog(collectLogID: string): Promise<APIEnvelope<PlatformCollectLogDetailResponse>> {
+  return request<PlatformCollectLogDetailResponse>(`/api/v1/platform-collect-logs/${pathSegment(collectLogID)}`);
+}
+
+export async function confirmPlatformCollectLogMetrics(collectLogID: string, input: { metric_values: Record<string, unknown> }, idempotencyKey?: string): Promise<APIEnvelope<{ collect_log_id: string; operation_log_id?: string }>> {
+  return request<{ collect_log_id: string; operation_log_id?: string }>(`/api/v1/platform-collect-logs/${pathSegment(collectLogID)}/confirm-metrics`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function rotateCallbackToken(bindingID: string): Promise<APIEnvelope<{ binding_id: string; token_masked?: string; operation_log_id?: string }>> {
+  return request<{ binding_id: string; token_masked?: string; operation_log_id?: string }>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/rotate-callback-token`, { method: 'POST', body: JSON.stringify({}) });
+}
+
+export async function updateCallbackAuth(bindingID: string, input: Record<string, unknown>): Promise<APIEnvelope<{ binding_id: string; operation_log_id?: string }>> {
+  return request<{ binding_id: string; operation_log_id?: string }>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/callback-auth`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export async function receiveExternalCallback(bindingID: string, input: Record<string, unknown>, idempotencyKey?: string): Promise<APIEnvelope<{ callback_log_id?: string; operation_log_id?: string }>> {
+  return request<{ callback_log_id?: string; operation_log_id?: string }>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/callback`, { method: 'POST', body: JSON.stringify(input), headers: idempotencyHeaders(idempotencyKey) });
+}
+
+export async function fetchCallbackLogs(bindingID: string): Promise<APIEnvelope<PagedResponse<ExternalCallbackLogResponse>>> {
+  return request<PagedResponse<ExternalCallbackLogResponse>>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/callback-logs?page=1&page_size=20`);
+}
+
+export async function testExternalCallback(bindingID: string, input: Record<string, unknown>): Promise<APIEnvelope<{ callback_log_id?: string; operation_log_id?: string }>> {
+  return request<{ callback_log_id?: string; operation_log_id?: string }>(`/api/v1/external-automation/bindings/${pathSegment(bindingID)}/test-callback`, { method: 'POST', body: JSON.stringify(input) });
+}
 
 export async function fetchPluginClients(): Promise<APIEnvelope<PagedResponse<PluginClientResponse>>> {
   return request<PagedResponse<PluginClientResponse>>('/api/v1/plugin-clients?page=1&page_size=20');
@@ -1326,4 +1449,96 @@ export async function updatePluginClient(clientID: string, input: { name?: strin
 
 export async function rotatePluginClientKey(clientID: string): Promise<APIEnvelope<{ client_id: string; api_key_masked: string; operation_log_id: string }>> {
   return request<{ client_id: string; api_key_masked: string; operation_log_id: string }>(`/api/v1/plugin-clients/${pathSegment(clientID)}/rotate-key`, { method: 'POST', body: JSON.stringify({}) });
+}
+
+export type ArticlePackStatusResponse = {
+  registered: boolean;
+  content_pack_id?: string;
+  content_type?: { id: string; code: string; name: string };
+  default_workflow_template?: { id: string; name: string; status: string };
+  default_metrics: Array<{ metric_code: string; name: string; unit: string }>;
+};
+
+export type ArticleConfigResponse = {
+  topic_style: string;
+  audience_profile: string;
+  seo_config: { keywords?: string[] } | null;
+  source_policy: string;
+  structure_policy: string;
+  default_workflow_template_version_id: string;
+  enabled_metric_codes: string[];
+  version: string;
+};
+
+export type ArticleGenerationRunSummaryResponse = {
+  generation_run_id: string;
+  workflow_run_id: string;
+  status: string;
+  topic: string;
+  created_at: string;
+};
+
+export type ArticleProjectMetricResponse = {
+  metric_code: string;
+  name: string;
+  unit: string;
+  value_type: string;
+  platform: string;
+  enabled: boolean;
+};
+
+export async function fetchArticlePackStatus(): Promise<APIEnvelope<ArticlePackStatusResponse>> {
+  return request<ArticlePackStatusResponse>('/api/v1/content-packs/article/status');
+}
+
+export async function registerArticlePack(idempotencyKey?: string): Promise<APIEnvelope<{ content_pack_id: string; content_type_id: string; registered_workflow_version_ids: string[]; metric_template_ids: string[] }>> {
+  return request<{ content_pack_id: string; content_type_id: string; registered_workflow_version_ids: string[]; metric_template_ids: string[] }>('/api/v1/content-packs/article/register', {
+    method: 'POST',
+    body: JSON.stringify({}),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function fetchArticleConfig(projectID: string): Promise<APIEnvelope<ArticleConfigResponse>> {
+  return request<ArticleConfigResponse>(`/api/v1/projects/${pathSegment(projectID)}/article/config`);
+}
+
+export async function updateArticleConfig(projectID: string, input: { topic_style: string; audience_profile: string; seo_config: { keywords?: string[] }; source_policy: string; structure_policy: string; default_workflow_template_version_id: string }, idempotencyKey?: string): Promise<APIEnvelope<{ version_id: string; operation_log_id: string }>> {
+  return request<{ version_id: string; operation_log_id: string }>(`/api/v1/projects/${pathSegment(projectID)}/article/config`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function fetchArticleGenerationRuns(projectID: string): Promise<APIEnvelope<PagedResponse<ArticleGenerationRunSummaryResponse>>> {
+  return request<PagedResponse<ArticleGenerationRunSummaryResponse>>(`/api/v1/projects/${pathSegment(projectID)}/article/generation-runs?page=1&page_size=20`);
+}
+
+export async function createArticleGenerationRun(projectID: string, input: { topic: string; audience: string; source_refs: string[]; seo_keywords: string[]; outline_required: boolean; target_platform: string; generation_config: Record<string, unknown> }, idempotencyKey?: string): Promise<APIEnvelope<{ generation_run_id: string; workflow_run_id: string; status: string }>> {
+  return request<{ generation_run_id: string; workflow_run_id: string; status: string }>(`/api/v1/projects/${pathSegment(projectID)}/article/generation-runs`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function retryArticleGenerationRun(projectID: string, runID: string, input: { reason: string }, idempotencyKey?: string): Promise<APIEnvelope<{ new_generation_run_id: string; workflow_run_id: string; operation_log_id: string }>> {
+  return request<{ new_generation_run_id: string; workflow_run_id: string; operation_log_id: string }>(`/api/v1/projects/${pathSegment(projectID)}/article/generation-runs/${pathSegment(runID)}/retry`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
+}
+
+export async function fetchProjectArticleMetrics(projectID: string): Promise<APIEnvelope<PagedResponse<ArticleProjectMetricResponse>>> {
+  return request<PagedResponse<ArticleProjectMetricResponse>>(`/api/v1/projects/${pathSegment(projectID)}/article/metrics`);
+}
+
+export async function updateProjectArticleMetrics(projectID: string, input: { enabled_metric_codes: string[]; platform_overrides?: Record<string, string[]>; note?: string }, idempotencyKey?: string): Promise<APIEnvelope<{ version_id: string; operation_log_id: string }>> {
+  return request<{ version_id: string; operation_log_id: string }>(`/api/v1/projects/${pathSegment(projectID)}/article/metrics`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+    headers: idempotencyHeaders(idempotencyKey),
+  });
 }

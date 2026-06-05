@@ -1,0 +1,45 @@
+files:
+  - path: internal/modules/article/dto.go
+    module: api-server
+    type: dto
+    tasks:
+      - "Task-01：定义 Article DTO、错误常量和 Service 接口"
+  - path: internal/modules/article/errors.go
+    module: api-server
+    type: constant
+    tasks:
+      - "Task-01：定义 Article DTO、错误常量和 Service 接口"
+  - path: internal/modules/article/service.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-01：定义 Article DTO、错误常量和 Service 接口"
+      - "Task-02：实现 Article Pack 注册业务逻辑"
+      - "Task-03：实现 Article 扩展配置业务逻辑"
+      - "Task-04：实现 Article 生成运行业务逻辑"
+      - "Task-05：实现 Article 指标配置业务逻辑"
+  - path: internal/http/handlers/article.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-06：实现 Article HTTP Handler 和路由注册"
+  - path: internal/http/router.go
+    module: api-server
+    type: class
+    tasks:
+      - "Task-06：实现 Article HTTP Handler 和路由注册"
+  - path: app/article-pack/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-07：实现 Article 前端管理台页面（FR-012 Article Pack 页）"
+  - path: app/projects/[projectId]/article/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-08：实现 Article 前端管理台页面（FR-013 内容规划与生产页）"
+  - path: app/projects/[projectId]/article/metrics/page.tsx
+    module: web-admin
+    type: class
+    tasks:
+      - "Task-09：实现 Article 前端管理台页面（FR-014 指标配置页）"

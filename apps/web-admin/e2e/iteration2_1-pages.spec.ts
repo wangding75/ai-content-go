@@ -13,6 +13,35 @@ async function expectStyledPage(page: import('@playwright/test').Page) {
 }
 
 test.describe('Iteration 2.1 Web Admin visual and functional acceptance', () => {
+  test('article pack page stays stable when status API returns unregistered payload without defaults', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', error => {
+      pageErrors.push(error.message);
+    });
+
+    await page.route('**/api/v1/content-packs/article/status', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: { registered: false, default_metrics: null },
+          error: null,
+          request_id: 'req-article-pack-unregistered',
+        }),
+      });
+    });
+
+    await page.goto(`${webBaseURL}/article-pack`);
+
+    await expect(page.getByRole('heading', { name: 'Article Pack 管理' })).toBeVisible();
+    await expect(page.getByRole('status')).toContainText('req-article-pack-unregistered');
+    await expect(page.getByText('content_pack_id=未生成')).toBeVisible();
+    await expect(page.getByText('0 项')).toBeVisible();
+    await expect(page.getByText('默认指标将在注册完成后显示。')).toBeVisible();
+    expect(pageErrors).toEqual([]);
+  });
+
   test('schedule page renders styled AppLayout and supports create, toggle, test-run, details, filters, and pagination', async ({ page }) => {
     await page.goto(`${webBaseURL}/workflow/schedules`, { waitUntil: 'domcontentloaded' });
     await page.waitForResponse((response) => new URL(response.url()).pathname === '/api/v1/workflow-schedules' && response.status() === 200);
