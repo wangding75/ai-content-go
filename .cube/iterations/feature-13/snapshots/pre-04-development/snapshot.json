@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-06-08T04:26:36.011Z",
+  "project_root": "/home/wangding/git/ai-content-go",
+  "dirs": [
+    "apps/api-server",
+    "apps/web-admin",
+    "openapi"
+  ]
+}
