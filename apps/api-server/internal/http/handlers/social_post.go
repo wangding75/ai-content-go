@@ -37,10 +37,32 @@ func mapSocialPostError(err error) int {
 	return http.StatusInternalServerError
 }
 
+func mapSocialPostEnvelopeCode(err error) api.ErrorCode {
+	if errors.Is(err, socialpost.ErrNotFound) {
+		return api.ErrorNotFound
+	}
+	if errors.Is(err, socialpost.ErrConflict) {
+		return api.ErrorConflict
+	}
+	if errors.Is(err, socialpost.ErrIdempotencyConflict) {
+		return api.ErrorIdempotencyConflict
+	}
+	if errors.Is(err, socialpost.ErrValidation) {
+		return api.ErrorValidation
+	}
+	if errors.Is(err, socialpost.ErrForbidden) {
+		return api.ErrorForbidden
+	}
+	if errors.Is(err, socialpost.ErrAgentOutputInvalid) {
+		return api.ErrorAgentOutputInvalid
+	}
+	return api.ErrorInternal
+}
+
 func (h *SocialPostHandler) GetPackStatus(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.svc.GetPackStatus(r.Context())
 	if err != nil {
-		api.WriteError(w, r, mapSocialPostError(err), api.ErrorInternal, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusOK, resp)
@@ -56,14 +78,7 @@ func (h *SocialPostHandler) RegisterPack(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.svc.RegisterPack(r.Context(), req, idempotencyKey)
 	if err != nil {
-		code := mapSocialPostError(err)
-		errCode := api.ErrorInternal
-		if errors.Is(err, socialpost.ErrIdempotencyConflict) {
-			errCode = api.ErrorIdempotencyConflict
-		} else if errors.Is(err, socialpost.ErrValidation) {
-			errCode = api.ErrorValidation
-		}
-		api.WriteError(w, r, code, errCode, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusCreated, resp)
@@ -78,7 +93,7 @@ func (h *SocialPostHandler) GetConfig(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.svc.GetConfig(r.Context(), projectID)
 	if err != nil {
-		api.WriteError(w, r, mapSocialPostError(err), api.ErrorInternal, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusOK, resp)
@@ -100,14 +115,7 @@ func (h *SocialPostHandler) UpdateConfig(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.svc.UpdateConfig(r.Context(), projectID, req, idempotencyKey)
 	if err != nil {
-		code := mapSocialPostError(err)
-		errCode := api.ErrorInternal
-		if errors.Is(err, socialpost.ErrValidation) {
-			errCode = api.ErrorValidation
-		} else if errors.Is(err, socialpost.ErrIdempotencyConflict) {
-			errCode = api.ErrorIdempotencyConflict
-		}
-		api.WriteError(w, r, code, errCode, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusOK, resp)
@@ -129,12 +137,7 @@ func (h *SocialPostHandler) CreateGenerationRun(w http.ResponseWriter, r *http.R
 
 	resp, err := h.svc.CreateGenerationRun(r.Context(), projectID, req, idempotencyKey)
 	if err != nil {
-		code := mapSocialPostError(err)
-		errCode := api.ErrorInternal
-		if errors.Is(err, socialpost.ErrValidation) {
-			errCode = api.ErrorValidation
-		}
-		api.WriteError(w, r, code, errCode, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusAccepted, resp)
@@ -150,7 +153,7 @@ func (h *SocialPostHandler) GetGenerationRun(w http.ResponseWriter, r *http.Requ
 
 	resp, err := h.svc.GetGenerationRun(r.Context(), projectID, id)
 	if err != nil {
-		api.WriteError(w, r, mapSocialPostError(err), api.ErrorInternal, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusOK, resp)
@@ -185,7 +188,7 @@ func (h *SocialPostHandler) ListVariants(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.svc.ListVariants(r.Context(), projectID, req)
 	if err != nil {
-		api.WriteError(w, r, mapSocialPostError(err), api.ErrorInternal, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusOK, resp)
@@ -208,14 +211,7 @@ func (h *SocialPostHandler) SelectVariant(w http.ResponseWriter, r *http.Request
 
 	resp, err := h.svc.SelectVariant(r.Context(), projectID, variantID, req, idempotencyKey)
 	if err != nil {
-		code := mapSocialPostError(err)
-		errCode := api.ErrorInternal
-		if errors.Is(err, socialpost.ErrValidation) {
-			errCode = api.ErrorValidation
-		} else if errors.Is(err, socialpost.ErrIdempotencyConflict) {
-			errCode = api.ErrorIdempotencyConflict
-		}
-		api.WriteError(w, r, code, errCode, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusOK, resp)
@@ -237,14 +233,7 @@ func (h *SocialPostHandler) GenerateTags(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.svc.GenerateTags(r.Context(), projectID, req, idempotencyKey)
 	if err != nil {
-		code := mapSocialPostError(err)
-		errCode := api.ErrorInternal
-		if errors.Is(err, socialpost.ErrValidation) {
-			errCode = api.ErrorValidation
-		} else if errors.Is(err, socialpost.ErrIdempotencyConflict) {
-			errCode = api.ErrorIdempotencyConflict
-		}
-		api.WriteError(w, r, code, errCode, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusAccepted, resp)
@@ -266,14 +255,7 @@ func (h *SocialPostHandler) GenerateCoverCopy(w http.ResponseWriter, r *http.Req
 
 	resp, err := h.svc.GenerateCoverCopy(r.Context(), projectID, req, idempotencyKey)
 	if err != nil {
-		code := mapSocialPostError(err)
-		errCode := api.ErrorInternal
-		if errors.Is(err, socialpost.ErrValidation) {
-			errCode = api.ErrorValidation
-		} else if errors.Is(err, socialpost.ErrIdempotencyConflict) {
-			errCode = api.ErrorIdempotencyConflict
-		}
-		api.WriteError(w, r, code, errCode, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusAccepted, resp)
@@ -294,7 +276,7 @@ func (h *SocialPostHandler) GetAssets(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.svc.GetAssets(r.Context(), projectID, req)
 	if err != nil {
-		api.WriteError(w, r, mapSocialPostError(err), api.ErrorInternal, err.Error(), nil)
+		api.WriteError(w, r, mapSocialPostError(err), mapSocialPostEnvelopeCode(err), err.Error(), nil)
 		return
 	}
 	api.WriteSuccess(w, r, http.StatusOK, resp)

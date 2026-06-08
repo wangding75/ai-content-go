@@ -1,0 +1,169 @@
+tasks:
+  - task: Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+    module: api-server/socialpost
+    task_type: contract
+    data_operations: 无
+    boundary: 只新增 `dto.go`、`errors.go`、`service.go`、`store.go`、`memory_store.go`、`postgres_store.go` 的骨架定义
+    forbidden: 不得写业务逻辑；不得访问数据库或外部系统
+    test_file: internal/modules/socialpost/task01_contract_red_test.go
+    test_cases: 7
+  - task: Task-02：创建 Social Post 持久化表迁移
+    module: api-server/migrations
+    task_type: migration
+    data_operations: 无（DDL 定义）
+    boundary: 只新增 `00014_create_social_post_tables.sql`
+    forbidden: 不得修改已有迁移文件；不得重定义 `metric_template`、`content_version`、`idempotency_record`
+    test_file: social_post_migration_red_test.go
+    test_cases: 6
+  - task: Task-03：实现 Social Post Pack 注册与状态查询后端链路
+    module: api-server/http
+    task_type: api
+    data_operations: 读 `content_type`、`workflow_template`、`workflow_template_version`、`metric_template`；写 `content_type`、`workflow_template`、`workflow_template_version`、`metric_template`；读写 `idempotency_record`
+    boundary: 只在 `social_post.go`、`service.go`、`router.go`、`server.go`、`lib/api.ts`、`openapi/openapi.yaml` 的 Social Post 相关位置新增或替换空实现
+    forbidden: 不得在 Handler 中写业务逻辑；不得新增独立 pack registration 表替代既有推导模型
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-04：实现项目 Social 配置查询与更新链路
+    module: api-server/http
+    task_type: api
+    data_operations: 读 `content_project`、`social_post_extension`；写 `social_post_extension`、`operation_log`；读写 `idempotency_record`
+    boundary: 只在 Social Post 相关 handler/service/store/OpenAPI/API client 位置新增或替换空实现
+    forbidden: 不得直接把默认配置硬编码在前端；不得省略审计记录
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-05：实现短内容生成触发链路
+    module: api-server/socialpost
+    task_type: business-implementation
+    data_operations: 读 `content_project`、`content_type`、`social_post_extension`；写 `content_item`、`generation_run`、`workflow_run`、`operation_log`；读写 `idempotency_record`；调用 `engine.Submitter`
+    boundary: 只在 Social Post 相关 handler/service/store/router/server/OpenAPI/API client 位置实现；不得重写既有 generation 模块
+    forbidden: 不得同步阻塞等待生成结果；不得绕开 workflow engine 直接伪造 trace 数据
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-06：实现生成详情查询与 trace 汇总链路
+    module: api-server/socialpost
+    task_type: api
+    data_operations: 读 `generation_run`、`workflow_run`、`social_post_variant`、`agent_task`、`llm_call_log`
+    boundary: 只在 Social Post 相关 handler/service/store/OpenAPI/API client 位置实现
+    forbidden: 不得忽略失败 trace；不得直接暴露内部状态枚举而不做对外映射
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-07：实现候选文案结果持久化与列表查询链路
+    module: api-server/socialpost
+    task_type: business-implementation
+    data_operations: 写 `social_post_variant`；读 `social_post_variant`
+    boundary: 只在 `service.go`、`store.go`、`postgres_store.go`、`memory_store.go` 与 Social Post handler/OpenAPI/API client 位置实现
+    forbidden: 不得覆盖历史版本；不得以前端 mock 数据替代真实列表查询
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-08：实现主版本选择事务链路
+    module: api-server/socialpost
+    task_type: business-implementation
+    data_operations: 读 `social_post_variant`；写 `social_post_variant`、`content_version`、`operation_log`；读写 `idempotency_record`
+    boundary: 只在 Social Post 相关 handler/service/store/OpenAPI/API client 位置实现
+    forbidden: 不得在事务外更新 selected 状态；不得绕过 `content_version` 创建直接返回空版本 ID
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-09：实现标签生成与封面文案生成触发链路
+    module: api-server/socialpost
+    task_type: business-implementation
+    data_operations: 读 `social_post_variant`、`content_item`；写 `workflow_run`、`generation_run`、`operation_log`；读写 `idempotency_record`；调用 `engine.Submitter`
+    boundary: 只在 Social Post 相关 handler/service/store/router/server/OpenAPI/API client 位置实现
+    forbidden: 不得同步生成并阻塞 HTTP；不得省略 traceable workflow run
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-10：实现资产结果持久化与查询链路
+    module: api-server/socialpost
+    task_type: business-implementation
+    data_operations: 写 `social_post_asset`；读 `social_post_asset`
+    boundary: 只在 Social Post 相关 handler/service/store/OpenAPI/API client 位置实现
+    forbidden: 不得把资产结果仅保存在组件状态或内存临时变量中
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-11：更新 OpenAPI Social Post 契约
+    module: openapi
+    task_type: contract
+    data_operations: 无
+    boundary: 只修改 `openapi/openapi.yaml` 的 Social Post 相关内容
+    forbidden: 不得删除已有路径；不得改写现有统一 Envelope schema
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-12：实现 Social Post API 客户端与类型定义
+    module: web-admin/api
+    task_type: contract
+    data_operations: 调用 Social Post HTTP API
+    boundary: 只修改 `apps/web-admin/lib/api.ts` 的 Social Post 相关内容
+    forbidden: 不得删除已有 API 类型；不得引入绕过统一 Envelope 的请求方式
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-13：实现 Social Post Pack 管理页面
+    module: web-admin
+    task_type: ui
+    data_operations: 调用 `GET/POST /api/v1/content-packs/social-post/*`
+    boundary: 只新增 `app/social-post-pack/page.tsx`；只在 `global-nav.tsx` 追加入口
+    forbidden: 不得用静态文案替代真实 API 加载；不得删除现有导航项
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-14：实现项目 Social 配置与生成页面
+    module: web-admin
+    task_type: ui
+    data_operations: 调用配置查询/更新、生成创建、生成详情查询 API
+    boundary: 只新增 `app/projects/[projectId]/social-post/page.tsx`；只在 `workspace-nav.tsx` 追加入口
+    forbidden: 不得省略加载态、空态、错误态；不得把 run 结果写死在页面
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-15：实现候选文案管理页面
+    module: web-admin
+    task_type: ui
+    data_operations: 调用 `GET variants`、`POST select`
+    boundary: 只新增 `app/projects/[projectId]/social-post/variants/page.tsx`；只在 `workspace-nav.tsx` 追加入口
+    forbidden: 不得用 mock 数据填充主表；不得省略分页结构与主选结果反馈
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-16：实现资产管理页面
+    module: web-admin
+    task_type: ui
+    data_operations: 调用 `POST tags:generate`、`POST cover-copy:generate`、`GET assets`
+    boundary: 只新增 `app/projects/[projectId]/social-post/assets/page.tsx`；只在 `workspace-nav.tsx` 追加入口
+    forbidden: 不得把结果仅保存在组件常量中；不得跳过真实 API 查询层
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+  - task: Task-17：接入全局与项目导航入口
+    module: web-admin/navigation
+    task_type: ui
+    data_operations: 无
+    boundary: 只修改 `app/global-nav.tsx`、`app/projects/[projectId]/workspace-nav.tsx`
+    forbidden: 不得移除现有导航项；不得更改现有匹配逻辑语义
+    test_file: social_post_handler_red_test.go
+    test_cases: 56
+type_tests:
+  - type: web-e2e
+    standard: standards/testing/web-e2e.md
+    test_file: social_post_handler_red_test.go
+    resources: []
+    covers:
+      - Task-03：实现 Social Post Pack 注册与状态查询后端链路
+      - Task-04：实现项目 Social 配置查询与更新链路
+      - Task-06：实现生成详情查询与 trace 汇总链路
+  - type: integration
+    standard: standards/testing/integration.md
+    test_file: social_post_handler_red_test.go
+    resources: []
+    covers:
+      - Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口
+      - Task-02：创建 Social Post 持久化表迁移
+      - Task-05：实现短内容生成触发链路
+      - Task-07：实现候选文案结果持久化与列表查询链路
+      - Task-08：实现主版本选择事务链路
+      - Task-09：实现标签生成与封面文案生成触发链路
+      - Task-10：实现资产结果持久化与查询链路
+  - type: frontend-ui
+    standard: standards/testing/frontend-ui.md
+    test_file: social_post_handler_red_test.go
+    resources: []
+    covers:
+      - Task-12：实现 Social Post API 客户端与类型定义
+      - Task-13：实现 Social Post Pack 管理页面
+      - Task-14：实现项目 Social 配置与生成页面
+      - Task-15：实现候选文案管理页面
+      - Task-16：实现资产管理页面
+      - Task-17：接入全局与项目导航入口
