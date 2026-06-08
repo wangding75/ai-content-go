@@ -12,52 +12,120 @@ branch: feature/13
 tasks:
   - task: "Task-01：定义 Social Post DTO、错误常量和 Service / Store 接口"
     test_file: internal/modules/socialpost/task01_contract_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 7
+    test_total: 7
   - task: "Task-02：创建 Social Post 持久化表迁移"
     test_file: social_post_migration_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 6
+    test_total: 6
   - task: "Task-03：实现 Social Post Pack 注册与状态查询后端链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 13
+    test_total: 13
   - task: "Task-04：实现项目 Social 配置查询与更新链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 10
+    test_total: 10
   - task: "Task-05：实现短内容生成触发链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 6
+    test_total: 6
   - task: "Task-06：实现生成详情查询与 trace 汇总链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 4
+    test_total: 4
   - task: "Task-07：实现候选文案结果持久化与列表查询链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 3
+    test_total: 3
   - task: "Task-08：实现主版本选择事务链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 7
+    test_total: 7
   - task: "Task-09：实现标签生成与封面文案生成触发链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 9
+    test_total: 9
   - task: "Task-10：实现资产结果持久化与查询链路"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 4
+    test_total: 4
   - task: "Task-11：更新 OpenAPI Social Post 契约"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 1
+    test_total: 1
   - task: "Task-12：实现 Social Post API 客户端与类型定义"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 1
+    test_total: 1
   - task: "Task-13：实现 Social Post Pack 管理页面"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 1
+    test_total: 1
   - task: "Task-14：实现项目 Social 配置与生成页面"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 1
+    test_total: 1
   - task: "Task-15：实现候选文案管理页面"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 1
+    test_total: 1
   - task: "Task-16：实现资产管理页面"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 1
+    test_total: 1
   - task: "Task-17：接入全局与项目导航入口"
     test_file: social_post_handler_red_test.go
-    phase: locked
+    phase: done
+    started_at: "2026-06-08 12:33"
+    completed_at: "2026-06-08 12:33"
+    test_passed: 1
+    test_total: 1

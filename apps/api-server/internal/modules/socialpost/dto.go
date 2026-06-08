@@ -135,6 +135,7 @@ type ListSocialPostVariantsRequest struct {
 type SocialPostVariantResponse struct {
 	ID               string   `json:"id"`
 	ContentItemID    string   `json:"content_item_id"`
+	GenerationRunID  string   `json:"generation_run_id"`
 	VariantIndex     int      `json:"variant_index"`
 	Platform         string   `json:"platform"`
 	Title            string   `json:"title"`

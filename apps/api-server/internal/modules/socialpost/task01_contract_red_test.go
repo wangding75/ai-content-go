@@ -18,7 +18,6 @@ func hasSocialPostJSONField(t reflect.Type, jsonName string) bool {
 
 // @Test
 func TestTask01SocialPostDTOsExposeAllRequiredFields(t *testing.T) {
-	// RegisterPack
 	regReqType := reflect.TypeOf(RegisterSocialPostPackRequest{})
 	for _, field := range []string{"schema", "workflows", "metrics", "version"} {
 		if !hasSocialPostJSONField(regReqType, field) {
@@ -32,7 +31,6 @@ func TestTask01SocialPostDTOsExposeAllRequiredFields(t *testing.T) {
 		}
 	}
 
-	// Pack status
 	statusType := reflect.TypeOf(SocialPostPackStatusResponse{})
 	for _, field := range []string{"content_pack_id", "content_type", "schema", "workflows", "metrics", "current_version"} {
 		if !hasSocialPostJSONField(statusType, field) {
@@ -40,7 +38,6 @@ func TestTask01SocialPostDTOsExposeAllRequiredFields(t *testing.T) {
 		}
 	}
 
-	// Config
 	configRespType := reflect.TypeOf(SocialPostConfigResponse{})
 	for _, field := range []string{"target_platforms", "default_variant_count", "caption_length_policy", "hashtag_policy", "cover_copy_policy", "tone_style", "forbidden_terms", "config_version"} {
 		if !hasSocialPostJSONField(configRespType, field) {
@@ -60,7 +57,6 @@ func TestTask01SocialPostDTOsExposeAllRequiredFields(t *testing.T) {
 		}
 	}
 
-	// Generation run
 	createRunReqType := reflect.TypeOf(CreateSocialPostGenerationRunRequest{})
 	for _, field := range []string{"topic", "source_content_item_id", "platform", "version_count", "tone_style", "asset_options"} {
 		if !hasSocialPostJSONField(createRunReqType, field) {
@@ -86,9 +82,8 @@ func TestTask01SocialPostDTOsExposeAllRequiredFields(t *testing.T) {
 		}
 	}
 
-	// Variants
 	variantRespType := reflect.TypeOf(SocialPostVariantResponse{})
-	for _, field := range []string{"id", "content_item_id", "variant_index", "platform", "title", "body", "hashtags", "cover_copy", "tone_style", "status", "content_version_id", "created_at"} {
+	for _, field := range []string{"id", "content_item_id", "generation_run_id", "variant_index", "platform", "title", "body", "hashtags", "cover_copy", "tone_style", "status", "content_version_id", "created_at"} {
 		if !hasSocialPostJSONField(variantRespType, field) {
 			t.Fatalf("SocialPostVariantResponse missing json field %q", field)
 		}
@@ -112,7 +107,6 @@ func TestTask01SocialPostDTOsExposeAllRequiredFields(t *testing.T) {
 		}
 	}
 
-	// Assets
 	tagsReqType := reflect.TypeOf(GenerateSocialPostTagsRequest{})
 	for _, field := range []string{"content_item_id", "variant_id", "platform", "count", "style"} {
 		if !hasSocialPostJSONField(tagsReqType, field) {
@@ -215,26 +209,26 @@ func TestTask01NewMemoryStoreCreatesValidStore(t *testing.T) {
 }
 
 // @Test
-func TestTask01ServiceSkeletonMethodsReturnErrInternal(t *testing.T) {
+func TestTask01ServiceReadMethodsWorkWithMemoryStore(t *testing.T) {
 	svc := NewService()
 	_, err := svc.GetPackStatus(nil)
 	if err == nil {
-		t.Fatal("GetPackStatus skeleton must return error")
+		t.Fatal("GetPackStatus must return error when pack not registered")
 	}
 	_, err = svc.GetConfig(nil, "p-1")
-	if err == nil {
-		t.Fatal("GetConfig skeleton must return error")
+	if err != nil {
+		t.Fatalf("GetConfig must return defaults when no config exists, got: %v", err)
 	}
 	_, err = svc.GetGenerationRun(nil, "p-1", "gr-1")
-	if err == nil {
-		t.Fatal("GetGenerationRun skeleton must return error")
+	if err != nil {
+		t.Fatalf("GetGenerationRun should not error on memory store, got: %v", err)
 	}
 	_, err = svc.ListVariants(nil, "p-1", ListSocialPostVariantsRequest{})
-	if err == nil {
-		t.Fatal("ListVariants skeleton must return error")
+	if err != nil {
+		t.Fatalf("ListVariants should not error on memory store, got: %v", err)
 	}
 	_, err = svc.GetAssets(nil, "p-1", GetSocialPostAssetsRequest{})
-	if err == nil {
-		t.Fatal("GetAssets skeleton must return error")
+	if err != nil {
+		t.Fatalf("GetAssets should not error on memory store, got: %v", err)
 	}
 }

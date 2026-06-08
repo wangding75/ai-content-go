@@ -154,7 +154,7 @@ export default function ExternalAutomationN8NPage() {
         <div className="page-hero__header">
           <div>
             <h1>外部自动化 / n8n</h1>
-            <p>管理 n8n Provider 和 workflow_run.completed webhook binding，页面只展示 masked token。</p>
+            <p>管理 n8n Provider 和 workflow_run.completed webhook binding，页面只展示 masked token。边界：所有 token 仅展示 masked 版本。</p>
           </div>
           <span className="badge badge--success">token_masked</span>
         </div>

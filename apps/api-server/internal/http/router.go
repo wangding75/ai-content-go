@@ -146,6 +146,7 @@ func NewRouter(systemService system.Service, logger *slog.Logger, opts ...Router
 	} else {
 		socialPostSvc = socialpost.NewService()
 	}
+	socialpost.SetDependencies(socialPostSvc, content.NewService(), wfSvc, metricsSvc, eng)
 	socialPostHandler := handlers.NewSocialPostHandler(socialPostSvc, logger)
 
 	r.Route("/api/v1/plugin-auth", func(r chi.Router) {
