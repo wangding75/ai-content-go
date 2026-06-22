@@ -2765,6 +2765,279 @@ paths:
       security:
         - bearerAuth: []
 
+  /api/v1/content-packs/social-post/status:
+    get:
+      summary: Get Social Post pack status
+      description: Returns the registration status, schema, workflows, metrics and current version of the Social Post pack.
+      tags: [social-post]
+      operationId: getSocialPostPackStatus
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+      responses:
+        '200': { description: Pack status, content: { application/json: { schema: { $ref: '#/components/schemas/SocialPostPackStatusEnvelope' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/content-packs/social-post/register:
+    post:
+      summary: Register Social Post pack
+      description: Registers the Social Post content type, workflow templates, metric templates and records idempotency.
+      tags: [social-post]
+      operationId: registerSocialPostPack
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterSocialPostPackRequest' }
+      responses:
+        '200': { description: Pack registered, content: { application/json: { schema: { $ref: '#/components/schemas/RegisterSocialPostPackEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/config:
+    get:
+      summary: Get project Social Post config
+      description: Returns the Social Post configuration for a project. Returns default structure if none exists.
+      tags: [social-post]
+      operationId: getSocialPostConfig
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Config data, content: { application/json: { schema: { $ref: '#/components/schemas/SocialPostConfigEnvelope' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+    patch:
+      summary: Update project Social Post config
+      description: Updates the Social Post configuration and writes an operation log.
+      tags: [social-post]
+      operationId: updateSocialPostConfig
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSocialPostConfigRequest' }
+      responses:
+        '200': { description: Config updated, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateSocialPostConfigEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/generation-runs:
+    post:
+      summary: Create Social Post generation run
+      description: Triggers an async generation run for social post variants.
+      tags: [social-post]
+      operationId: createSocialPostGenerationRun
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSocialPostGenerationRunRequest' }
+      responses:
+        '200': { description: Generation run created, content: { application/json: { schema: { $ref: '#/components/schemas/CreateSocialPostGenerationRunEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/generation-runs/{id}:
+    get:
+      summary: Get generation run detail
+      description: Returns generation run detail including workflow status, trace and variants.
+      tags: [social-post]
+      operationId: getSocialPostGenerationRun
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Generation run detail, content: { application/json: { schema: { $ref: '#/components/schemas/SocialPostGenerationRunDetailEnvelope' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/variants:
+    get:
+      summary: List Social Post variants
+      description: Lists social post variants with filtering and pagination.
+      tags: [social-post]
+      operationId: listSocialPostVariants
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: content_item_id
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: platform
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { description: Variant list, content: { application/json: { schema: { $ref: '#/components/schemas/SocialPostVariantsEnvelope' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/variants/{variantId}/select:
+    post:
+      summary: Select a variant as primary
+      description: Selects a variant as the primary version, archives previous selection, creates content version and audit log.
+      tags: [social-post]
+      operationId: selectSocialPostVariant
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: variantId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SelectSocialPostVariantRequest' }
+      responses:
+        '200': { description: Variant selected, content: { application/json: { schema: { $ref: '#/components/schemas/SelectSocialPostVariantEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/assets/tags:generate:
+    post:
+      summary: Generate tags for a variant
+      description: Triggers async tag generation workflow for a social post variant.
+      tags: [social-post]
+      operationId: generateSocialPostTags
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GenerateSocialPostTagsRequest' }
+      responses:
+        '200': { description: Tag generation triggered, content: { application/json: { schema: { $ref: '#/components/schemas/GenerateSocialPostAssetEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/assets/cover-copy:generate:
+    post:
+      summary: Generate cover copy for a variant
+      description: Triggers async cover copy generation workflow for a social post variant.
+      tags: [social-post]
+      operationId: generateSocialPostCoverCopy
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - $ref: '#/components/parameters/IdempotencyKeyHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GenerateSocialPostCoverCopyRequest' }
+      responses:
+        '200': { description: Cover copy generation triggered, content: { application/json: { schema: { $ref: '#/components/schemas/GenerateSocialPostAssetEnvelope' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
+  /api/v1/projects/{projectId}/social-post/assets:
+    get:
+      summary: Get Social Post assets
+      description: Returns tags, cover copy assets and suggestions for a project.
+      tags: [social-post]
+      operationId: getSocialPostAssets
+      parameters:
+        - $ref: '#/components/parameters/RequestIdHeader'
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: content_item_id
+          in: query
+          schema: { type: string }
+        - name: platform
+          in: query
+          schema: { type: string }
+        - name: variant_id
+          in: query
+          schema: { type: string }
+      responses:
+        '200': { description: Asset list, content: { application/json: { schema: { $ref: '#/components/schemas/SocialPostAssetsEnvelope' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/InternalError' }
+      security:
+        - bearerAuth: []
 components:
   parameters:
     RequestIdHeader:
@@ -4543,3 +4816,316 @@ components:
         boundary_violation: { type: boolean }
         created_at: { type: string }
       required: [id, provider_id, binding_id, event_type, accepted, boundary_violation, created_at]
+    RegisterSocialPostPackRequest:
+      type: object
+      properties:
+        schema:
+          type: object
+          properties:
+            content_type_code: { type: string }
+            name: { type: string }
+            project_schema: { type: object }
+          required: [content_type_code, name, project_schema]
+        workflows:
+          type: array
+          items:
+            type: object
+            properties:
+              code: { type: string }
+              name: { type: string }
+            required: [code, name]
+        metrics:
+          type: array
+          items:
+            type: object
+            properties:
+              metric_code: { type: string }
+              metric_name: { type: string }
+              unit: { type: string }
+            required: [metric_code, metric_name, unit]
+        version: { type: string }
+      required: [schema, workflows, metrics, version]
+    RegisterSocialPostPackResponse:
+      type: object
+      properties:
+        content_pack_id: { type: string }
+        content_type_id: { type: string }
+        registered_version: { type: string }
+      required: [content_pack_id, content_type_id, registered_version]
+    ContentTypeResponse:
+      type: object
+      properties:
+        id: { type: string }
+        code: { type: string }
+        name: { type: string }
+        project_schema: { type: object }
+        enabled: { type: boolean }
+      required: [id, code, name, enabled]
+    PackWorkflowSummary:
+      type: object
+      properties:
+        template_id: { type: string }
+        code: { type: string }
+        name: { type: string }
+        current_version: { type: string }
+      required: [template_id, code, name, current_version]
+    PackMetricSummary:
+      type: object
+      properties:
+        metric_code: { type: string }
+        metric_name: { type: string }
+        unit: { type: string }
+        platform: { type: string }
+      required: [metric_code, metric_name, unit]
+    SocialPostPackStatusResponse:
+      type: object
+      properties:
+        content_pack_id: { type: string }
+        content_type:
+          $ref: '#/components/schemas/ContentTypeResponse'
+        schema: { type: object }
+        workflows:
+          type: array
+          items: { $ref: '#/components/schemas/PackWorkflowSummary' }
+        metrics:
+          type: array
+          items: { $ref: '#/components/schemas/PackMetricSummary' }
+        current_version: { type: string }
+      required: [content_pack_id, schema, workflows, metrics, current_version]
+    SocialPostPackStatusEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/SocialPostPackStatusResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    RegisterSocialPostPackEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/RegisterSocialPostPackResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    UpdateSocialPostConfigRequest:
+      type: object
+      properties:
+        target_platforms: { type: array, items: { type: string } }
+        default_variant_count: { type: integer }
+        caption_length_policy: { type: string }
+        hashtag_policy: { type: object }
+        cover_copy_policy: { type: object }
+        tone_style: { type: string }
+        forbidden_terms: { type: array, items: { type: string } }
+      required: [target_platforms, default_variant_count, caption_length_policy, hashtag_policy, cover_copy_policy, tone_style, forbidden_terms]
+    SocialPostConfigResponse:
+      type: object
+      properties:
+        target_platforms: { type: array, items: { type: string } }
+        default_variant_count: { type: integer }
+        caption_length_policy: { type: string }
+        hashtag_policy: { type: object }
+        cover_copy_policy: { type: object }
+        tone_style: { type: string }
+        forbidden_terms: { type: array, items: { type: string } }
+        config_version: { type: integer }
+      required: [target_platforms, default_variant_count, config_version]
+    SocialPostConfigEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/SocialPostConfigResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    UpdateSocialPostConfigResponse:
+      type: object
+      properties:
+        version_id: { type: string }
+        operation_log_id: { type: string }
+      required: [version_id, operation_log_id]
+    UpdateSocialPostConfigEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/UpdateSocialPostConfigResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    CreateSocialPostGenerationRunRequest:
+      type: object
+      properties:
+        topic: { type: string }
+        source_content_item_id: { type: string }
+        platform: { type: string }
+        version_count: { type: integer, minimum: 1, maximum: 10 }
+        tone_style: { type: string }
+        asset_options:
+          type: object
+          properties:
+            generate_tags: { type: boolean }
+            generate_cover_copy: { type: boolean }
+      required: [topic, source_content_item_id, platform, version_count, tone_style, asset_options]
+    CreateSocialPostGenerationRunResponse:
+      type: object
+      properties:
+        generation_run_id: { type: string }
+        workflow_run_id: { type: string }
+        status: { type: string }
+      required: [generation_run_id, workflow_run_id, status]
+    CreateSocialPostGenerationRunEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/CreateSocialPostGenerationRunResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    GenerationTrace:
+      type: object
+      properties:
+        agent_task_ids: { type: array, items: { type: string } }
+        llm_call_log_ids: { type: array, items: { type: string } }
+    SocialPostVariantResponse:
+      type: object
+      properties:
+        id: { type: string }
+        content_item_id: { type: string }
+        generation_run_id: { type: string }
+        variant_index: { type: integer }
+        platform: { type: string }
+        title: { type: string }
+        body: { type: string }
+        hashtags: { type: array, items: { type: string } }
+        cover_copy: { type: string }
+        tone_style: { type: string }
+        status: { type: string }
+        content_version_id: { type: string }
+        created_at: { type: string, format: date-time }
+      required: [id, content_item_id, generation_run_id, variant_index, platform, title, body, hashtags, cover_copy, tone_style, status, content_version_id, created_at]
+    SocialPostGenerationRunDetailResponse:
+      type: object
+      properties:
+        generation_run_id: { type: string }
+        workflow_run_id: { type: string }
+        status: { type: string }
+        content_item_id: { type: string }
+        trace: { $ref: '#/components/schemas/GenerationTrace' }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/SocialPostVariantResponse' }
+        error: { type: string }
+      required: [generation_run_id, workflow_run_id, status, content_item_id, variants, error]
+    SocialPostGenerationRunDetailEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/SocialPostGenerationRunDetailResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    SocialPostVariantsEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/SocialPostVariantResponse' }
+            pagination:
+              type: object
+              properties:
+                page: { type: integer }
+                page_size: { type: integer }
+                total: { type: integer }
+                has_next: { type: boolean }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    SelectSocialPostVariantRequest:
+      type: object
+      properties:
+        content_item_id: { type: string }
+        note: { type: string }
+      required: [content_item_id, note]
+    SelectSocialPostVariantResponse:
+      type: object
+      properties:
+        selected_variant_id: { type: string }
+        content_version_id: { type: string }
+        operation_log_id: { type: string }
+      required: [selected_variant_id, content_version_id, operation_log_id]
+    SelectSocialPostVariantEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/SelectSocialPostVariantResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    GenerateSocialPostTagsRequest:
+      type: object
+      properties:
+        content_item_id: { type: string }
+        variant_id: { type: string }
+        platform: { type: string }
+        count: { type: integer }
+        style: { type: string }
+      required: [content_item_id, variant_id, platform, count, style]
+    GenerateSocialPostCoverCopyRequest:
+      type: object
+      properties:
+        content_item_id: { type: string }
+        variant_id: { type: string }
+        platform: { type: string }
+        count: { type: integer }
+        style: { type: string }
+      required: [content_item_id, variant_id, platform, count, style]
+    GenerateSocialPostAssetResponse:
+      type: object
+      properties:
+        generation_run_id: { type: string }
+        workflow_run_id: { type: string }
+        status: { type: string }
+      required: [generation_run_id, workflow_run_id, status]
+    GenerateSocialPostAssetEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/GenerateSocialPostAssetResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]
+    SocialPostAssetItem:
+      type: object
+      properties:
+        id: { type: string }
+        platform: { type: string }
+        source_variant_id: { type: string }
+        generation_run_id: { type: string }
+        result: { type: object }
+        created_at: { type: string, format: date-time }
+      required: [id, platform, source_variant_id, generation_run_id, result, created_at]
+    SocialPostAssetsResponse:
+      type: object
+      properties:
+        tags:
+          type: array
+          items: { $ref: '#/components/schemas/SocialPostAssetItem' }
+        cover_copy:
+          type: array
+          items: { $ref: '#/components/schemas/SocialPostAssetItem' }
+        asset_suggestions: { type: array, items: { type: string } }
+        source_runs: { type: array, items: { type: string } }
+      required: [tags, cover_copy, asset_suggestions, source_runs]
+    SocialPostAssetsEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        data: { $ref: '#/components/schemas/SocialPostAssetsResponse' }
+        error: { type: object, nullable: true }
+        request_id: { type: string }
+      required: [success, data, error, request_id]

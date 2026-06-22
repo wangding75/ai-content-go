@@ -12,7 +12,12 @@ export default function SocialPostPackPage() {
   async function load() {
     try {
       const envelope = await fetchSocialPostPackStatus();
-      if (!envelope.success || !envelope.data) {
+      if (!envelope.success) {
+        if (envelope.error?.code === 'NOT_FOUND') {
+          setStatus({ content_pack_id: '', content_type: null, schema: {}, workflows: [], metrics: [], current_version: '' });
+          setError(null);
+          return;
+        }
         setError(pageErrorFromEnvelope(envelope, '加载 Social Post Pack 状态失败'));
         return;
       }
