@@ -1,7 +1,0 @@
---- FAIL: TestIteration21ExternalAutomationProviderMasksTokenAndRejectsDuplicateProvider (0.00s)
-    iteration_2_1_task05_service_test.go:22: create provider: validation error
---- FAIL: TestIteration21ExternalAutomationBindingRequiresExistingProviderAndValidWebhook (0.00s)
-    iteration_2_1_task05_service_test.go:44: create provider: validation error
-FAIL
-FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/modules/external	0.008s
-FAIL

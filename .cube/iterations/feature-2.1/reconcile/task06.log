@@ -1,5 +1,0 @@
---- FAIL: TestIteration21OpenAPIDeclaresNewScheduleLLMAndExternalAutomationPaths (0.00s)
-    iteration_2_1_task06_contract_test.go:82: openapi must contain /api/v1/workflow-schedules
-FAIL
-FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/store	0.013s
-FAIL

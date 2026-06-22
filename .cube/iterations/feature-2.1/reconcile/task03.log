@@ -1,7 +1,0 @@
---- FAIL: TestIteration21ScheduleHTTPCreateReturns201EnvelopeWithDefaultCount (0.00s)
-    iteration_2_1_task03_schedule_handler_test.go:25: expected 201, got 400: {"success":false,"data":null,"error":{"code":"VALIDATION_ERROR","message":"create schedule not implemented","details":null},"request_id":"LAPTOP-MUCR3O1G/hrw4Yh5ILz-000001"}
---- FAIL: TestIteration21ScheduleHTTPTestRunReturns202AndWorkflowRunID (0.00s)
-    iteration_2_1_task03_schedule_handler_test.go:53: setup create schedule expected 201, got 400: {"success":false,"data":null,"error":{"code":"VALIDATION_ERROR","message":"create schedule not implemented","details":null},"request_id":"LAPTOP-MUCR3O1G/hrw4Yh5ILz-000002"}
-FAIL
-FAIL	github.com/wangding75/ai-content-go/apps/api-server/internal/http/handlers	0.010s
-FAIL
